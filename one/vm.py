@@ -18,7 +18,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 """
 
 
-class Create(object):
+class Vm(object):
 
     """Docstring for vm. """
 
