@@ -17,6 +17,18 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, see <http://www.gnu.org/licenses/>.
 """
 
+import os
+import subprocess
+
+REMOTES_DIR = "/var/lib/one/remotes"
+
+ONE_LOCATION = os.getenv("ONE_LOCATION")
+if ONE_LOCATION:
+    REMOTES_DIR = os.path.join(ONE_LOCATION, "var/remotes")
+
+SCRIPTS_COMMON = "/scripts_common.sh"
+LIBFS = "/datastore/libfs.sh"
+
 
 def _source(file, command, args=None):
     sourced_cmd = "source {} && {}".format(file, command)
@@ -26,3 +38,31 @@ def _source(file, command, args=None):
     exec_string = ["bash", "-c", sourced_cmd]
 
     return exec_string
+
+
+def _wait_for_subp(cmd):
+    return subprocess.Popen(cmd).wait()
+
+
+def ssh_exec_and_log(args):
+    return _wait_for_subp(_source(SCRIPTS_COMMON, "ssh_exec_and_log", args))
+
+
+def exec_and_log(args):
+    return _wait_for_subp(_source(SCRIPTS_COMMON, "exec_and_log", args))
+
+
+def error_message(args):
+    return _wait_for_subp(_source(SCRIPTS_COMMON, "error_message", args))
+
+
+def log_info(args):
+    return _wait_for_subp(_source(SCRIPTS_COMMON, "log_ingo", args))
+
+
+def mkfs_command(args):
+    return _wait_for_subp(_source(SCRIPTS_COMMON, "mkfs_command", args))
+
+
+def set_up_datastore(args):
+    return _wait_for_subp(_source(SCRIPTS_COMMON, "set_up_datastore", args))
