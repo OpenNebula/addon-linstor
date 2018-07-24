@@ -22,8 +22,20 @@ import one.util as util
 
 def test__source():
 
-    assert util._source("foo.sh", "foo_cmd") == ["bash", "-c", "source foo.sh && foo_cmd"]
+    assert util._source("foo.sh", "foo_cmd") == [
+        "bash",
+        "-c",
+        "source foo.sh && foo_cmd",
+    ]
 
-    assert util._source("bar.sh", "bar_cmd", ["args"]) == ["bash", "-c", "source bar.sh && bar_cmd args"]
+    assert util._source("bar.sh", "bar_cmd", ["args"]) == [
+        "bash",
+        "-c",
+        "source bar.sh && bar_cmd args",
+    ]
 
-    assert util._source("bar.sh", "bar_cmd", ["multi", "args"]) == ["bash", "-c", "source bar.sh && bar_cmd multi args"]
+    assert util._source("bar.sh", "bar_cmd", ["multi", "args"]) == [
+        "bash",
+        "-c",
+        "source bar.sh && bar_cmd multi args",
+    ]

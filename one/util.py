@@ -19,10 +19,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 
 def _source(file, command, args=None):
-    sourced_cmd = 'source {} && {}'.format(file, command)
+    sourced_cmd = "source {} && {}".format(file, command)
     if args:
         sourced_cmd = sourced_cmd + " {}".format(" ".join(args))
 
-    exec_string = ['bash', '-c', sourced_cmd]
+    exec_string = ["bash", "-c", sourced_cmd]
 
     return exec_string
