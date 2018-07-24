@@ -17,27 +17,13 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, see <http://www.gnu.org/licenses/>.
 """
 
-import xml.etree.ElementTree as ET
-
-import one
+import one.util as util
 
 
-class DriverAction(object):
+def test__source():
 
-    """Docstring for vm. """
+    assert util._source("foo.sh", "foo_cmd") == ["bash", "-c", "source foo.sh && foo_cmd"]
 
-    def __init__(self, xml):
-        root = ET.fromstring(xml)
+    assert util._source("bar.sh", "bar_cmd", ["args"]) == ["bash", "-c", "source bar.sh && bar_cmd args"]
 
-        self._image = one.image.Image(ET.tostring(root.find("IMAGE")))
-        self._datastore = one.datastore.Datastore(ET.tostring(root.find("DATASTORE")))
-
-    @property
-    def image(self):
-        """Returns image"""
-        return self._image
-
-    @property
-    def datastore(self):
-        """Returns datastore"""
-        return self._datastore
+    assert util._source("bar.sh", "bar_cmd", ["multi", "args"]) == ["bash", "-c", "source bar.sh && bar_cmd multi args"]
