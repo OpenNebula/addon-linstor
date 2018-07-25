@@ -43,7 +43,7 @@ class Resource(object):
         if not auto_place or nodes:
             self._auto_place = 1
         self._path = None
-        self._sizeMib = sizeMiB
+        self._sizeMiB = sizeMiB
 
     def deploy(self):
         self._run_command(["rd", "c", self.name])
@@ -116,7 +116,7 @@ class Resource(object):
 
     @property
     def sizeMiB(self):
-        return self._sizeMib
+        return self._sizeMiB
 
     @property
     def auto_place(self):
