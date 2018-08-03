@@ -36,11 +36,6 @@ def main():
 
     driver = driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
 
-    if driver.image.FS_type == "save_as":
-        util.log_info("No need to create new image, exiting.")
-        print(res.name)
-        sys.exit(0)
-
     res = resource.Resource(
         name="OpenNebula-Image-{}".format(IMAGE_ID),
         sizeMiB=driver.image.size,
@@ -48,6 +43,11 @@ def main():
         nodes=driver.datastore.deployment_nodes,
         storage_pool=driver.datastore.storage_pool,
     )
+
+    if driver.image.FS_type == "save_as":
+        util.log_info("No need to create new image, exiting.")
+        print(res.name)
+        sys.exit(0)
 
     util.set_up_datastore(
         [
