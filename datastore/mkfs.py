@@ -50,7 +50,11 @@ def main():
     )
 
     util.set_up_datastore(
-        [driver.base_path, driver.restricted_dirs, driver.safe_dirs].join(" ")
+        [
+            driver.datastore.base_path,
+            driver.datastore.restricted_dirs,
+            driver.datastore.safe_dirs,
+        ].join(" ")
     )
 
     util.log_info("Creation a new resource: {}".format(res))
