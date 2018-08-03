@@ -50,11 +50,11 @@ def main():
         sys.exit(0)
 
     util.set_up_datastore(
-        [
+        " ".join([
             driver.datastore.base_path,
             driver.datastore.restricted_dirs,
             driver.datastore.safe_dirs,
-        ].join(" ")
+        ])
     )
 
     util.log_info("Creation a new resource: {}".format(res))
@@ -80,11 +80,11 @@ def main():
     res_host = random.choice(res.deployed_nodes)
 
     rc = util.ssh_exec_and_log(
-        [
+        " ".join([
             res_host,
             register_command,
             "Error registering {}, on {}".format(res, res_host),
-        ].join(" ")
+        ])
     )
 
     if int(rc) != 0:
