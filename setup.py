@@ -26,6 +26,7 @@ from glob import glob
 from setuptools.command.install import install
 
 REMOTES_DIR = "/var/lib/one/remotes"
+DRIVER_NAME = "linstor"
 
 ONE_LOCATION = os.getenv("ONE_LOCATION")
 if ONE_LOCATION:
@@ -62,8 +63,8 @@ setup(
     name="addon-linstor",
     version=version(),
     data_files=[
-        (os.path.join(REMOTES_DIR, "tm"), glob("tm/*")),
-        (os.path.join(REMOTES_DIR, "datastore"), glob("datastore/*")),
+        (os.path.join(REMOTES_DIR, "tm", DRIVER_NAME), glob("tm/*")),
+        (os.path.join(REMOTES_DIR, "datastore", DRIVER_NAME), glob("datastore/*")),
     ],
     license="GLP2",
     description="Linstor addon for OpenNebula",
