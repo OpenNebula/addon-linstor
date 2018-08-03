@@ -28,13 +28,13 @@ def test__source():
         "source foo.sh && foo_cmd",
     ]
 
-    assert util._source("bar.sh", "bar_cmd", ["args"]) == [
+    assert util._source("bar.sh", "bar_cmd", "args") == [
         "bash",
         "-c",
         "source bar.sh && bar_cmd args",
     ]
 
-    assert util._source("bar.sh", "bar_cmd", ["multi", "args"]) == [
+    assert util._source("bar.sh", "bar_cmd", "multi args") == [
         "bash",
         "-c",
         "source bar.sh && bar_cmd multi args",

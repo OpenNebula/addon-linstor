@@ -24,8 +24,8 @@ import base64
 import random
 import sys
 
-from one import util, driver_action
 from linstor import resource
+from one import driver_action, util
 
 DRIVER_ACTION = sys.argv[1]
 IMAGE_ID = sys.argv[2]
@@ -41,16 +41,16 @@ def main():
         print(res.name)
         sys.exit(0)
 
-    util.set_up_datastore(
-        driver.base_path, driver.restricted_dirs, driver.safe_dirs
-    )
-
     res = resource.Resource(
         name="OpenNebula-Image-{}".format(IMAGE_ID),
         sizeMiB=driver.image.size,
         auto_place=driver.datastore.auto_place,
         nodes=driver.datastore.deployment_nodes,
         storage_pool=driver.datastore.storage_pool,
+    )
+
+    util.set_up_datastore(
+        [driver.base_path, driver.restricted_dirs, driver.safe_dirs].join(" ")
     )
 
     util.log_info("Creation a new resource: {}".format(res))
@@ -76,7 +76,11 @@ def main():
     res_host = random.choice(res.deployed_nodes)
 
     rc = util.ssh_exec_and_log(
-        res_host, register_command, "Error registering {}, on {}".format(res, res_host)
+        [
+            res_host,
+            register_command,
+            "Error registering {}, on {}".format(res, res_host),
+        ].join(" ")
     )
 
     if int(rc) != 0:
