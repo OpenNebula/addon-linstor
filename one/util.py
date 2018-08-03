@@ -27,13 +27,13 @@ if ONE_LOCATION:
     REMOTES_DIR = os.path.join(ONE_LOCATION, "var/remotes")
 
 SCRIPTS_COMMON = REMOTES_DIR + "/scripts_common.sh"
-LIBFS = os.path.join(REMOTES_DIR, "/datastore/") + "libfs.sh"
+LIBFS = REMOTES_DIR + "/datastore/" + "libfs.sh"
 
 
-def _source(file, command, args=None):
+def _source(file, command, string_args=None):
     sourced_cmd = "source {} && {}".format(file, command)
-    if args:
-        sourced_cmd = sourced_cmd + " {}".format(args)
+    if string_args:
+        sourced_cmd = sourced_cmd + " {}".format(string_args)
 
     exec_string = ["bash", "-c", sourced_cmd]
 
@@ -44,25 +44,25 @@ def _wait_for_subp(cmd):
     return subprocess.Popen(cmd).wait()
 
 
-def ssh_exec_and_log(*args):
-    return _wait_for_subp(_source(SCRIPTS_COMMON, "ssh_exec_and_log", args))
+def ssh_exec_and_log(string_args):
+    return _wait_for_subp(_source(SCRIPTS_COMMON, "ssh_exec_and_log", string_args))
 
 
-def exec_and_log(*args):
-    return _wait_for_subp(_source(SCRIPTS_COMMON, "exec_and_log", args))
+def exec_and_log(string_args):
+    return _wait_for_subp(_source(SCRIPTS_COMMON, "exec_and_log", string_args))
 
 
-def error_message(*args):
-    return _wait_for_subp(_source(SCRIPTS_COMMON, "error_message", args))
+def error_message(string_args):
+    return _wait_for_subp(_source(SCRIPTS_COMMON, "error_message", string_args))
 
 
-def log_info(*args):
-    return _wait_for_subp(_source(SCRIPTS_COMMON, "log_info", args))
+def log_info(string_args):
+    return _wait_for_subp(_source(SCRIPTS_COMMON, "log_info", string_args))
 
 
-def mkfs_command(*args):
-    return _wait_for_subp(_source(SCRIPTS_COMMON, "mkfs_command", args))
+def mkfs_command(string_args):
+    return _wait_for_subp(_source(SCRIPTS_COMMON, "mkfs_command", string_args))
 
 
-def set_up_datastore(*args):
-    return _wait_for_subp(_source(SCRIPTS_COMMON, "set_up_datastore", args))
+def set_up_datastore(string_args):
+    return _wait_for_subp(_source(LIBFS, "set_up_datastore", string_args))

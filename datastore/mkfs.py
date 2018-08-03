@@ -24,7 +24,7 @@ import base64
 import random
 import sys
 
-from linstor import resource
+from linstor_helper import resource
 from one import driver_action, util
 
 DRIVER_ACTION = sys.argv[1]
@@ -57,11 +57,10 @@ def main():
         ])
     )
 
-    util.log_info("Creation a new resource: {}".format(res))
+    #util.log_info("Creation of a new resource: {}".format(res))
     res.deploy()
 
-    register_command = """
-    (cat << EOF
+    register_command = """cat << EOF
       set -e
 
       export PATH=/usr/sbin:/sbin:\$PATH
@@ -72,12 +71,11 @@ def main():
 
       $SUDO $(mkfs_command "{1}" "{0}" "{2}")
 
-    EOF
-    ) """.format(
+    EOF""".format(
         driver.image.FS_type, res.path, res.sizeMiB
     )
 
-    res_host = random.choice(res.deployed_nodes)
+    res_host = random.choice(res.deployed_nodes())
 
     rc = util.ssh_exec_and_log(
         " ".join([
@@ -89,14 +87,11 @@ def main():
 
     if int(rc) != 0:
         res.delete()
+        sys.exit(1)
 
-    util.log_info("Created {} on {}".format(res, res_host))
-    util.log_info("Exiting datastore mkfs.")
+    #util.log_info("Created {} on {}".format(res, res_host))
+    #util.log_info("Exiting datastore mkfs.")
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        util.error_message("Failed to mfks: {}".format(e))
-        sys.exit(1)
+    main()

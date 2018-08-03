@@ -40,6 +40,7 @@ class Resource(object):
         self._controllers = controllers
         self._nodes = nodes
         self._storage_pool = storage_pool
+        self._auto_place = auto_place
         if not auto_place or nodes:
             self._auto_place = 1
         self._path = None
@@ -52,7 +53,7 @@ class Resource(object):
 
     def deploy(self):
         self._run_command(["rd", "c", self.name], clean_on_failure=True)
-        self._run_command(["vd", "c", self.sizeMiB + "MiB"], clean_on_failure=True)
+        self._run_command(["vd", "c", self.name, self.sizeMiB + "MiB"], clean_on_failure=True)
 
         if self.nodes:
             self._run_command(
@@ -81,7 +82,7 @@ class Resource(object):
         self._run_command(["rd", "d", self.name])
 
     def list(self):
-        self._run_command(["r", "l"])
+        return self._run_command(["r", "l"])
 
     def deployed_nodes(self):
         return self._deployed_nodes(json.loads(self.list())[0]["resources"])
@@ -121,25 +122,23 @@ class Resource(object):
 
     @property
     def sizeMiB(self):
-        return self._sizeMiB
+        return str(self._sizeMiB)
 
     @property
     def auto_place(self):
-        return self._auto_place
+        return str(self._auto_place)
 
     def _run_command(self, command, clean_on_failure=False):
-        command = ["linstor", "-m", "--controllers", self._controllers].extend(command)
-
-        util.log_info("({}) {}".format(self.name, command))
+        if not self._controllers:
+            final = ["linstor", "-m"] + command
+        else:
+            final = ["linstor", "-m", "--controllers", self._controllers] + command
 
         try:
-            return subprocess.check_output(
-                command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            )
-        except subprocess.CalledProcessError as e:
-            util.error_message(e.output)
-            if clean_on_failure:
-                self.delete()
+            return subprocess.check_output(" ".join(final), shell=True, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as cpe:
+            print final
+            print cpe.output
             raise
 
     def _match_nodes(self, res_states):

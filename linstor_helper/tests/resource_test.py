@@ -19,7 +19,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import json
 
-from linstor import resource
+from linstor_helper import resource
 
 NODE_DATA = """
 [

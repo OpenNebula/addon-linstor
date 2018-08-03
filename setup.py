@@ -68,7 +68,7 @@ setup(
     ],
     license="GLP2",
     description="Linstor addon for OpenNebula",
-    packages=["one", "linstor"],
+    packages=["one", "linstor_helper"],
     author="Hayley Swimelar",
     author_email="hayley@linbit.com",
     url="https://github.com/LINBIT/addon-linstor",
