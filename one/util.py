@@ -26,8 +26,8 @@ ONE_LOCATION = os.getenv("ONE_LOCATION")
 if ONE_LOCATION:
     REMOTES_DIR = os.path.join(ONE_LOCATION, "var/remotes")
 
-SCRIPTS_COMMON = os.path.join(REMOTES_DIR,"/scripts_common.sh")
-LIBFS = os.path.join(REMOTES_DIR, "/datastore/libfs.sh")
+SCRIPTS_COMMON = REMOTES_DIR+"/scripts_common.sh"
+LIBFS = os.path.join(REMOTES_DIR, "/datastore/") + "libfs.sh"
 
 
 def _source(file, command, args=None):
@@ -57,7 +57,7 @@ def error_message(*args):
 
 
 def log_info(*args):
-    return _wait_for_subp(_source(SCRIPTS_COMMON, "log_ingo", args))
+    return _wait_for_subp(_source(SCRIPTS_COMMON, "log_info", args))
 
 
 def mkfs_command(*args):
