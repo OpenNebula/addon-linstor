@@ -19,7 +19,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import xml.etree.ElementTree as ET
 
-import one
+from one import datastore, image
 
 
 class DriverAction(object):
@@ -29,8 +29,8 @@ class DriverAction(object):
     def __init__(self, xml):
         root = ET.fromstring(xml)
 
-        self._image = one.image.Image(ET.tostring(root.find("IMAGE")))
-        self._datastore = one.datastore.Datastore(ET.tostring(root.find("DATASTORE")))
+        self._image = image.Image(ET.tostring(root.find("IMAGE")))
+        self._datastore = datastore.Datastore(ET.tostring(root.find("DATASTORE")))
 
     @property
     def image(self):

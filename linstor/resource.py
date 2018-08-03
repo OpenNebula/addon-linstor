@@ -20,7 +20,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 import json
 import subprocess
 
-import one
+from one import util
 
 
 class Resource(object):
@@ -130,14 +130,14 @@ class Resource(object):
     def _run_command(self, command, clean_on_failure=False):
         command = ["linstor", "-m", "--controllers", self._controllers].extend(command)
 
-        one.util.log_info("({}) {}".format(self.name, command))
+        util.log_info("({}) {}".format(self.name, command))
 
         try:
             return subprocess.check_output(
                 command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
             )
         except subprocess.CalledProcessError as e:
-            one.util.error_message(e.output)
+            util.error_message(e.output)
             if clean_on_failure:
                 self.delete()
             raise

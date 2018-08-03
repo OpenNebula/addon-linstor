@@ -24,7 +24,7 @@ import base64
 import random
 import sys
 
-import one
+from one import util, driver_action
 from linstor import resource
 
 DRIVER_ACTION = sys.argv[1]
@@ -32,16 +32,16 @@ IMAGE_ID = sys.argv[2]
 
 
 def main():
-    one.util.log_info("Entering datastore mkfs.")
+    util.log_info("Entering datastore mkfs.")
 
-    driver = one.driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
+    driver = driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
 
     if driver.image.FS_type == "save_as":
-        one.util.log_info("No need to create new image, exiting.")
+        util.log_info("No need to create new image, exiting.")
         print(res.name)
         sys.exit(0)
 
-    one.util.set_up_datastore(
+    util.set_up_datastore(
         driver.base_path, driver.restricted_dirs, driver.safe_dirs
     )
 
@@ -53,7 +53,7 @@ def main():
         storage_pool=driver.datastore.storage_pool,
     )
 
-    one.util.log_info("Creation a new resource: {}".format(res))
+    util.log_info("Creation a new resource: {}".format(res))
     res.deploy()
 
     register_command = """
@@ -75,20 +75,20 @@ def main():
 
     res_host = random.choice(res.deployed_nodes)
 
-    rc = one.util.ssh_exec_and_log(
+    rc = util.ssh_exec_and_log(
         res_host, register_command, "Error registering {}, on {}".format(res, res_host)
     )
 
     if int(rc) != 0:
         res.delete()
 
-    one.util.log_info("Created {} on {}".format(res, res_host))
-    one.util.log_info("Exiting datastore mkfs.")
+    util.log_info("Created {} on {}".format(res, res_host))
+    util.log_info("Exiting datastore mkfs.")
 
 
 if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        one.util.error_message("Failed to mfks: {}".format(e))
+        util.error_message("Failed to mfks: {}".format(e))
         sys.exit(1)
