@@ -20,14 +20,14 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 import os
 import subprocess
 
-REMOTES_DIR = "/var/lib/one/remotes"
+REMOTES_DIR = "/var/lib/one/remotes/"
 
 ONE_LOCATION = os.getenv("ONE_LOCATION")
 if ONE_LOCATION:
     REMOTES_DIR = os.path.join(ONE_LOCATION, "var/remotes")
 
-SCRIPTS_COMMON = "/scripts_common.sh"
-LIBFS = "/datastore/libfs.sh"
+SCRIPTS_COMMON = os.path.join(REMOTES_DIR,"/scripts_common.sh")
+LIBFS = os.path.join(REMOTES_DIR, "/datastore/libfs.sh")
 
 
 def _source(file, command, args=None):
