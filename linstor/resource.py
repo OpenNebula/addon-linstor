@@ -45,9 +45,14 @@ class Resource(object):
         self._path = None
         self._sizeMiB = sizeMiB
 
+        def __str__(self):
+            return "resource name: {}, size in MiB: {}, storage_pool: {}, auto_place: {}, nodes: {}".format(
+                self.name, self.sizeMiB, self.storage_pool, self.auto_place, self.nodes
+            )
+
     def deploy(self):
-        self._run_command(["rd", "c", self.name])
-        self._run_command(["vd", "c", self.sizeMiB + "MiB"])
+        self._run_command(["rd", "c", self.name], clean_on_failure=True)
+        self._run_command(["vd", "c", self.sizeMiB + "MiB"], clean_on_failure=True)
 
         if self.nodes:
             self._run_command(

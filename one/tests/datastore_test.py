@@ -54,6 +54,8 @@ TEST_XML_1 = """
       <LN_TARGET><![CDATA[NONE]]></LN_TARGET>
       <TM_MAD><![CDATA[shared]]></TM_MAD>
       <TYPE><![CDATA[IMAGE_DS]]></TYPE>
+      <LINSTOR_STORAGE_POOL>drbdpool</LINSTOR_STORAGE_POOL>
+      <LINSTOR_AUTO_PLACE>3</LINSTOR_AUTO_PLACE>
    </TEMPLATE>
 </DATASTORE>
 """
@@ -109,6 +111,9 @@ def test_create_datastore():
     assert test_datastore.total_mb == "86845"
     assert test_datastore.free_mb == "20777"
     assert test_datastore.used_mb == "1000"
+    assert test_datastore.storage_pool == "drbdpool"
+    assert test_datastore.auto_place == "3"
+    assert test_datastore.deployment_nodes is None
 
     test_datastore = datastore.Datastore(TEST_XML_2)
 

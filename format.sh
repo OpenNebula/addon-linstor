@@ -9,7 +9,7 @@ fi
 # Redirect output to stderr.
 exec 1>&2
 
-changed_python=$(git diff-index --diff-filter=ACMRT --cached --name-only HEAD -- | grep -E "*.py$")
+changed_python=$(git diff-index --diff-filter=ACMRT --name-only HEAD -- | grep -E "*.py$")
 if [ -n "$changed_python" ]
 then
   set -x

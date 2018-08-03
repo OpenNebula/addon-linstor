@@ -28,6 +28,7 @@ class Image(object):
         self._ID = root.find("ID").text
         self._size = root.find("SIZE").text
         self._datastore_ID = root.find("DATASTORE_ID").text
+        self._FS_type = root.find("FSTYPE").text
 
     @property
     def ID(self):
@@ -43,3 +44,8 @@ class Image(object):
     def datastore_ID(self):
         """Returns name"""
         return self._datastore_ID
+
+    @property
+    def FS_type(self):
+        """Returns FS_type"""
+        return self._FS_type

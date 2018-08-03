@@ -33,6 +33,13 @@ class Datastore(object):
         self._free_mb = root.find("FREE_MB").text
         self._used_mb = root.find("USED_MB").text
 
+        self._base_path = root.find("BASE_PATH")
+        self._auto_place = root.find("TEMPLATE").find("LINSTOR_AUTO_PLACE")
+        self._deployment_nodes = root.find("TEMPLATE").find("LINSTOR_DEPLOYMENT_NODES")
+        self._storage_pool = root.find("TEMPLATE").find("LINSTOR_STORAGE_POOL")
+        self._restricted_dirs = root.find("TEMPLATE").find("RESTRICTED_DIRS")
+        self._safe_dirs = root.find("TEMPLATE").find("SAFE_DIRS")
+
     @property
     def ID(self):
         """Returns ID"""
@@ -67,3 +74,51 @@ class Datastore(object):
     def used_mb(self):
         """Returns used_mb"""
         return self._used_mb
+
+    @property
+    def base_path(self):
+        """Returns base_path"""
+        try:
+            return self._base_path.text
+        except AttributeError:
+            return None
+
+    @property
+    def auto_place(self):
+        """Returns auto_place"""
+        try:
+            return self._auto_place.text
+        except AttributeError:
+            return None
+
+    @property
+    def deployment_nodes(self):
+        """Returns deployment_nodes"""
+        try:
+            return self._deployment_nodes.text
+        except AttributeError:
+            return None
+
+    @property
+    def storage_pool(self):
+        """Returns storage_pool"""
+        try:
+            return self._storage_pool.text
+        except AttributeError:
+            return None
+
+    @property
+    def restricted_dirs(self):
+        """Returns restricted_dirs"""
+        try:
+            return self._restricted_dirs.text
+        except AttributeError:
+            return None
+
+    @property
+    def safe_dirs(self):
+        """Returns safe_dirs"""
+        try:
+            return self._safe_dirs.text
+        except AttributeError:
+            return None
