@@ -49,7 +49,7 @@ class OverrideInstall(install):
         install.run(self)
 
         usr = pwd.getpwnam(ONE_USER)
-        mode = 755
+        mode = 0o755
 
         for filepath in self.get_outputs():
             if REMOTES_DIR in filepath:
@@ -68,6 +68,7 @@ setup(
     ],
     license="GLP2",
     description="Linstor addon for OpenNebula",
+    packages=["one", "linstor"],
     author="Hayley Swimelar",
     author_email="hayley@linbit.com",
     url="https://github.com/LINBIT/addon-linstor",
