@@ -20,13 +20,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
 
-import os
-import sys
-
 
 def main():
     """Test main function"""
-    print(os.path.dirname(os.path.abspath(__file__)), sys.argv)
+    print("USED_MB={0}\nTOTAL_MB={1}\nFREE_MB={1}".format(0, 50000000))
 
 
 if __name__ == "__main__":
