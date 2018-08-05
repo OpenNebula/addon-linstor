@@ -36,6 +36,8 @@ def main():
 
     res.delete()
 
+    util.log_info("Exiting datastore rm.")
+
 
 if __name__ == "__main__":
     main()

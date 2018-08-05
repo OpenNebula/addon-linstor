@@ -50,14 +50,16 @@ def main():
         sys.exit(0)
 
     util.set_up_datastore(
-        " ".join([
-            driver.datastore.base_path,
-            driver.datastore.restricted_dirs,
-            driver.datastore.safe_dirs,
-        ])
+        " ".join(
+            [
+                driver.datastore.base_path,
+                driver.datastore.restricted_dirs,
+                driver.datastore.safe_dirs,
+            ]
+        )
     )
 
-    #util.log_info("Creation of a new resource: {}".format(res))
+    util.log_info("Creation of a new resource: {}".format(res))
     res.deploy()
 
     register_command = """cat << EOF
@@ -78,19 +80,21 @@ def main():
     res_host = random.choice(res.deployed_nodes())
 
     rc = util.ssh_exec_and_log(
-        " ".join([
-            res_host,
-            register_command,
-            "Error registering {}, on {}".format(res, res_host),
-        ])
+        " ".join(
+            [
+                res_host,
+                register_command,
+                "Error registering {}, on {}".format(res, res_host),
+            ]
+        )
     )
 
     if int(rc) != 0:
         res.delete()
         sys.exit(1)
 
-    #util.log_info("Created {} on {}".format(res, res_host))
-    #util.log_info("Exiting datastore mkfs.")
+    util.log_info("Created {} on {}".format(res, res_host))
+    util.log_info("Exiting datastore mkfs.")
 
 
 if __name__ == "__main__":
