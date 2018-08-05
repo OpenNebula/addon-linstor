@@ -29,6 +29,7 @@ class Image(object):
         self._size = root.find("SIZE").text
         self._datastore_ID = root.find("DATASTORE_ID").text
         self._FS_type = root.find("FSTYPE").text
+        self._path = root.find("PATH").text
 
     @property
     def ID(self):
@@ -49,3 +50,8 @@ class Image(object):
     def FS_type(self):
         """Returns FS_type"""
         return self._FS_type
+
+    @property
+    def path(self):
+        """Returns path"""
+        return self._path
