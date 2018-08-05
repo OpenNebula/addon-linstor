@@ -17,10 +17,10 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, see <http://www.gnu.org/licenses/>.
 """
 
+from __future__ import print_function
+
 import json
 import subprocess
-
-from one import util
 
 
 class Resource(object):
@@ -53,7 +53,9 @@ class Resource(object):
 
     def deploy(self):
         self._run_command(["rd", "c", self.name], clean_on_failure=True)
-        self._run_command(["vd", "c", self.name, self.sizeMiB + "MiB"], clean_on_failure=True)
+        self._run_command(
+            ["vd", "c", self.name, self.sizeMiB + "MiB"], clean_on_failure=True
+        )
 
         if self.nodes:
             self._run_command(
@@ -135,10 +137,12 @@ class Resource(object):
             final = ["linstor", "-m", "--controllers", self._controllers] + command
 
         try:
-            return subprocess.check_output(" ".join(final), shell=True, stderr=subprocess.STDOUT)
+            return subprocess.check_output(
+                " ".join(final), shell=True, stderr=subprocess.STDOUT
+            )
         except subprocess.CalledProcessError as cpe:
-            print final
-            print cpe.output
+            print(final)
+            print(cpe.output)
             raise
 
     def _match_nodes(self, res_states):

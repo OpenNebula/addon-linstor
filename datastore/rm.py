@@ -20,13 +20,21 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
 
-import os
 import sys
+
+from linstor_helper import resource
+from one import util
+
+DRIVER_ACTION = sys.argv[1]
+IMAGE_ID = sys.argv[2]
 
 
 def main():
-    """Test main function"""
-    print(os.path.dirname(os.path.abspath(__file__)), sys.argv)
+    util.log_info("Entering datastore rm.")
+
+    res = resource.Resource(name="OpenNebula-Image-{}".format(IMAGE_ID))
+
+    res.delete()
 
 
 if __name__ == "__main__":
