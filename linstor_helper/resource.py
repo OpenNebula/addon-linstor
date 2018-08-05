@@ -94,7 +94,7 @@ class Resource(object):
 
     def clone(self, clone_name):
         snap_name = self.name + "-snap"
-        self._run_command(["resource-definition", "create", snap_name])
+        self._run_command(["resource-definition", "create", clone_name])
         self._run_command(["snapshot", "create", self.name, snap_name])
         self._run_command(
             [
