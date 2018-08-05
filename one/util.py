@@ -21,7 +21,7 @@ from __future__ import print_function
 
 import os
 import subprocess
-import sys
+import syslog
 
 REMOTES_DIR = "/var/lib/one/remotes/"
 
@@ -43,10 +43,6 @@ def _source(file, command, string_args=None):
     return exec_string
 
 
-def _print_to_stderr(msg):
-    print(msg, file=sys.stderr)
-
-
 def _wait_for_subp(cmd):
     return subprocess.Popen(cmd).wait()
 
@@ -60,13 +56,14 @@ def exec_and_log(string_args):
 
 
 def error_message(msg):
-    _print_to_stderr(
-        "ERROR MESSAGE --8<------\n{}\nERROR MESSAGE ------>8--\n".format(msg)
+    _syslog.syslog(
+        syslog.LOG_ERR,
+        "ERROR MESSAGE --8<------\n{}\nERROR MESSAGE ------>8--\n".format(msg),
     )
 
 
 def log_info(msg):
-    _print_to_stderr("INFO {}".format(msg))
+    syslog.syslog(syslog.LOG_INFO, "INFO {}".format(msg))
 
 
 def mkfs_command(string_args):
