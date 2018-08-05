@@ -22,6 +22,8 @@ from __future__ import print_function
 import json
 import subprocess
 
+from one import util
+
 
 class Resource(object):
 
@@ -52,22 +54,32 @@ class Resource(object):
             )
 
     def deploy(self):
-        self._run_command(["rd", "c", self.name], clean_on_failure=True)
         self._run_command(
-            ["vd", "c", self.name, self.sizeMiB + "MiB"], clean_on_failure=True
+            ["resource-definition", "create", self.name], clean_on_failure=True
+        )
+        self._run_command(
+            ["volume-definition", "create", self.name, self.sizeMiB + "MiB"],
+            clean_on_failure=True,
         )
 
         if self.nodes:
             self._run_command(
-                ["r", "c", " ".join(self.nodes), self.name, "-s", self.storage_pool],
+                [
+                    "resource",
+                    "create",
+                    " ".join(self.nodes),
+                    self.name,
+                    "-s",
+                    self.storage_pool,
+                ],
                 clean_on_failure=True,
             )
 
         if self.auto_place:
             self._run_command(
                 [
-                    "r",
-                    "c",
+                    "resource",
+                    "create",
                     self.name,
                     "--auto-place",
                     self.auto_place,
@@ -82,8 +94,8 @@ class Resource(object):
 
     def clone(self, clone_name):
         snap_name = self.name + "-snap"
-        self._run_command(["rd", "c", snap_name])
-        self._run_command(["snapshot", "c", self.name, snap_name])
+        self._run_command(["resource-definition", "create", snap_name])
+        self._run_command(["snapshot", "create", self.name, snap_name])
         self._run_command(
             [
                 "snapshot",
@@ -110,13 +122,13 @@ class Resource(object):
                 clone_name,
             ]
         )
-        self._run_command(["snapshot", "d", self.name, snap_name])
+        self._run_command(["snapshot", "delete", self.name, snap_name])
 
     def delete(self):
-        self._run_command(["rd", "d", self.name])
+        self._run_command(["resource-definition", "delete", self.name])
 
     def list(self):
-        return self._run_command(["r", "l"])
+        return self._run_command(["resource", "list"])
 
     def deployed_nodes(self):
         return self._deployed_nodes(json.loads(self.list())[0]["resources"])
@@ -168,13 +180,14 @@ class Resource(object):
         else:
             final = ["linstor", "-m", "--controllers", self._controllers] + command
 
+        util.log_info("running linstor {}".format(command))
+
         try:
             return subprocess.check_output(
                 " ".join(final), shell=True, stderr=subprocess.STDOUT
             )
         except subprocess.CalledProcessError as cpe:
-            print(final)
-            print(cpe.output)
+            util.error_message(cpe.output)
             raise
 
     def _match_nodes(self, res_states):
