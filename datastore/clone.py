@@ -31,13 +31,13 @@ IMAGE_ID = sys.argv[2]
 
 
 def main():
-    util.log_info("Entering datastore mkfs.")
+    util.log_info("Entering datastore clone")
 
     driver = driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
 
-    res = resource.Resource(name=driver.image.path)
+    res = resource.Resource(name="OpenNebula-Image-{}".format(driver.image.cloning_ID))
 
-    clone = "OpenNebula-Clone-{}".format(IMAGE_ID)
+    clone = "OpenNebula-Image-{}".format(IMAGE_ID)
 
     res.clone(clone)
 

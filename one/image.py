@@ -30,6 +30,7 @@ class Image(object):
         self._datastore_ID = root.find("DATASTORE_ID").text
         self._FS_type = root.find("FSTYPE").text
         self._path = root.find("PATH").text
+        self._cloning_ID = root.find("CLONING_ID").text
 
     @property
     def ID(self):
@@ -55,3 +56,8 @@ class Image(object):
     def path(self):
         """Returns path"""
         return self._path
+
+    @property
+    def cloning_ID(self):
+        """Returns cloning_ID"""
+        return self._cloning_ID
