@@ -20,17 +20,28 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
 
-import os
+import base64
 import sys
 
-from one import vm
+from linstor_helper import resource
+from one import driver_action, util
+
+DRIVER_ACTION = sys.argv[1]
+IMAGE_ID = sys.argv[2]
 
 
 def main():
-    """Test main function"""
-    print(os.path.dirname(os.path.abspath(__file__)), sys.argv)
-    new_test_vm = vm.Create("peter")
-    print(new_test_vm.name)
+    util.log_info("Entering datastore mkfs.")
+
+    driver = driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
+
+    res = resource.Resource(name=driver.image.path)
+
+    clone = "OpenNebula-Clone-{}".format(IMAGE_ID)
+
+    res.clone(clone)
+
+    util.log_info("Exiting datastore clone.")
 
 
 if __name__ == "__main__":
