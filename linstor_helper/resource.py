@@ -80,6 +80,38 @@ class Resource(object):
         self.path = self.list()
         return
 
+    def clone(self, clone_name):
+        snap_name = self.name + "-snap"
+        self._run_command(["rd", "c", snap_name])
+        self._run_command(["snapshot", "c", self.name, snap_name])
+        self._run_command(
+            [
+                "snapshot",
+                "volume-definition",
+                "restore",
+                "--from-resource",
+                self.name,
+                "--from-snapshot",
+                snap_name,
+                "--to-resource",
+                clone_name,
+            ]
+        )
+        self._run_command(
+            [
+                "snapshot",
+                "resource",
+                "restore",
+                "--from-resource",
+                self.name,
+                "--from-snapshot",
+                snap_name,
+                "--to-resource",
+                clone_name,
+            ]
+        )
+        self._run_command(["snapshot", "d", self.name, snap_name])
+
     def delete(self):
         self._run_command(["rd", "d", self.name])
 
