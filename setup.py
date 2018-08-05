@@ -53,7 +53,7 @@ class OverrideInstall(install):
 
         for filepath in self.get_outputs():
             if REMOTES_DIR in filepath:
-                endpoint = filepath.strip(".py")
+                endpoint = filepath[:-3]
                 os.rename(filepath, endpoint)
                 os.chown(endpoint, usr.pw_uid, usr.pw_gid)
                 os.chmod(endpoint, mode)
