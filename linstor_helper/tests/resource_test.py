@@ -345,6 +345,91 @@ NODE_DATA = """
 ]
 """
 
+INTERFACE_DATA = """
+[
+  {
+    "nodes": [
+      {
+        "connection_status": 2,
+        "uuid": "9198fcab-2ed6-4039-8385-2e25cfd2aa35",
+        "net_interfaces": [
+          {
+            "address": "192.168.6.193",
+            "uuid": "bb679899-01fc-4ba6-8485-05e0426074b7",
+            "name": "default"
+          }
+        ],
+        "props": [
+          {
+            "value": "default",
+            "key": "CurStltConnName"
+          }
+        ],
+        "type": "SATELLITE",
+        "name": "attila"
+      },
+      {
+        "connection_status": 2,
+        "uuid": "10f01093-2516-4d30-bc8d-a7b1ab5e72b2",
+        "net_interfaces": [
+          {
+            "address": "192.168.6.192",
+            "uuid": "b34eff00-3eb0-49cf-b6a2-ebf4056e20fb",
+            "name": "default"
+          }
+        ],
+        "props": [
+          {
+            "value": "default",
+            "key": "CurStltConnName"
+          }
+        ],
+        "type": "SATELLITE",
+        "name": "boudicca"
+      },
+      {
+        "connection_status": 2,
+        "uuid": "172da4c8-250a-468f-bc0c-f4a4fd5d8d04",
+        "net_interfaces": [
+          {
+            "address": "192.168.6.191",
+            "uuid": "d94c7bfe-9117-4bcd-831e-745ca78ca5ec",
+            "name": "default"
+          }
+        ],
+        "props": [
+          {
+            "value": "default",
+            "key": "CurStltConnName"
+          }
+        ],
+        "type": "SATELLITE",
+        "name": "charlemagne"
+      },
+      {
+        "connection_status": 0,
+        "uuid": "c78d312b-77a1-44f2-802f-ca0dac78e0ba",
+        "net_interfaces": [
+          {
+            "address": "192.168.6.190",
+            "uuid": "8e9e4cdd-9241-4b4d-ba12-ea6100dbc33b",
+            "name": "default"
+          }
+        ],
+        "props": [
+          {
+            "value": "default",
+            "key": "CurStltConnName"
+          }
+        ],
+        "type": "CONTROLLER",
+        "name": "vercingetorix"
+      }
+    ]
+  }
+]
+"""
+
 
 def test_path():
     res = resource.Resource(name="bill")
@@ -361,3 +446,8 @@ def test_deployment_nodes():
     assert set(res._deployed_nodes(json.loads(NODE_DATA)[0]["resources"])) == set(
         ["charlemagne", "boudicca", "attila"]
     )
+
+
+def test_get_node_interface():
+    res = resource.Resource(name="bill")
+    assert res._get_node_interface(INTERFACE_DATA, "vercingetorix") == "192.168.6.190"

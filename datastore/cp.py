@@ -21,7 +21,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
 
 import base64
-import random
+import shlex
 import sys
 
 from linstor_helper import resource
@@ -46,29 +46,66 @@ def main():
 
     res.deploy()
 
-    register_command = """cat << EOF
-      set -e
-
-      export PATH=/usr/sbin:/sbin:\$PATH
-
-      if [ -z "{0}" ] || [ "{0}" == "raw" ]; then
-        exit 0
-      fi
-
-      $SUDO $(mkfs_command "{1}" "{0}" "{2}")
-
-    EOF""".format(
-        driver.image.FS_type, res.path, res.sizeMiB
+    util.set_up_datastore(
+        " ".join(
+            [
+                driver.datastore.base_path,
+                driver.datastore.restricted_dirs,
+                driver.datastore.safe_dirs,
+            ]
+        )
     )
 
-    res_host = random.choice(res.deployed_nodes())
+    downloader_args = util.set_downloader_args(
+        " ".join(
+            [
+                driver.image.md5,
+                driver.image.sha1,
+                driver.image.no_decompress,
+                driver.image.limit_transfer_bw,
+                driver.image.path,
+                "-",
+            ]
+        )
+    )
+
+    copy_command = util.get_copy_command(shlex.split([downloader_args]))
+
+    if driver.image.path.startswith("http"):
+        util.log_info(
+            "Downloading {} to the image repository".format(driver.image.path)
+        )
+
+        if int(util.check_restricted(driver.image.path)) == 1:
+            util.error_message(
+                "Not allowed to copy images from {}".format(
+                    driver.datastore.restricted_dirs
+                )
+            )
+            util.error_message(
+                "Not allowed to copy image file {}".format(driver.image.path)
+            )
+
+            res.delete()
+
+        util.log_info(
+            "Copying local image {} to the image repository".format(driver.image.path)
+        )
+
+    hosts = res.deployed_nodes()
 
     rc = util.ssh_exec_and_log(
         " ".join(
             [
-                res_host,
-                register_command,
-                "Error registering {}, on {}".format(res, res_host),
+                "eval",
+                copy_command,
+                "|",
+                "ssh",
+                res.get_node_interface(hosts[0]),
+                "dd",
+                "of={}".format(res.path),
+                "bs=2M",
+                "Error registering {}, on {}".format(res, hosts[0]),
             ]
         )
     )

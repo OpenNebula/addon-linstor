@@ -138,6 +138,18 @@ class Resource(object):
             map(lambda x: x["node_name"], filter(self._match_nodes, res_states))
         )
 
+    def get_node_interface(self, node):
+        return self._get_node_interface(
+            self._run_command(["node", "interface", "list"]), node
+        )
+
+    @staticmethod
+    def _get_node_interface(interface_list, node):
+        interface_data = json.loads(interface_list)[0]["nodes"]
+        return list(filter(lambda x: x["name"] == node, interface_data))[0][
+            "net_interfaces"
+        ][0]["address"]
+
     @property
     def path(self):
         return self._path

@@ -31,6 +31,7 @@ if ONE_LOCATION:
 
 SCRIPTS_COMMON = REMOTES_DIR + "/scripts_common.sh"
 LIBFS = REMOTES_DIR + "/datastore/" + "libfs.sh"
+DOWNLOADER = REMOTES_DIR + "/datastore/" + "downloader.sh"
 
 
 def _source(file, command, string_args=None):
@@ -45,6 +46,11 @@ def _source(file, command, string_args=None):
 
 def _wait_for_subp(cmd):
     return subprocess.Popen(cmd).wait()
+
+
+def _get_subp_out(cmd):
+    out, _ = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()
+    return out
 
 
 def ssh_exec_and_log(string_args):
@@ -72,3 +78,15 @@ def mkfs_command(string_args):
 
 def set_up_datastore(string_args):
     return _wait_for_subp(_source(LIBFS, "set_up_datastore", string_args))
+
+
+def set_downloader_args(string_args):
+    return _get_subp_out(_source(LIBFS, "set_downloader_args", string_args))
+
+
+def check_restricted(string_args):
+    return _get_subp_out(_source(LIBFS, "check_restricted", string_args))
+
+
+def get_copy_command(list_args):
+    return _get_subp_out([DOWNLOADER] + list_args)

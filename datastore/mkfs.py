@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Linstor addon for OpenNebula
+instor addon for OpenNebula
 Copyright © 2018 LINBIT USA, LLC
 
 This program is free software; you can redistribute it and/or modify
