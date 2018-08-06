@@ -62,9 +62,9 @@ def exec_and_log(string_args):
 
 
 def error_message(msg):
-    _syslog.syslog(
+    syslog.syslog(
         syslog.LOG_ERR,
-        "ERROR MESSAGE --8<------\n{}\nERROR MESSAGE ------>8--\n".format(msg),
+        msg
     )
 
 
