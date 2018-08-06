@@ -140,7 +140,7 @@ class Resource(object):
 
     def get_node_interface(self, node):
         return self._get_node_interface(
-            self._run_command(["node", "interface", "list"]), node
+            self._run_command(["node", "interface", "list", node]), node
         )
 
     @staticmethod
