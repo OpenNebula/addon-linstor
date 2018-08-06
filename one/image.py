@@ -32,6 +32,11 @@ class Image(object):
         self._path = root.find("PATH").text
         self._cloning_ID = root.find("CLONING_ID").text
 
+        self._md5 = root.find("TEMPLATE").find("MD5")
+        self._sha1 = root.find("TEMPLATE").find("SHA1")
+        self._no_decompress = root.find("TEMPLATE").find("NO_DECOMPRESS")
+        self._limit_transfer_bw = root.find("TEMPLATE").find("LIMIT_TRANSFER_BW")
+
     @property
     def ID(self):
         """Returns name"""
@@ -61,3 +66,35 @@ class Image(object):
     def cloning_ID(self):
         """Returns cloning_ID"""
         return self._cloning_ID
+
+    @property
+    def md5(self):
+        """Returns md5"""
+        try:
+            return self._md5.text
+        except AttributeError:
+            return None
+
+    @property
+    def sha1(self):
+        """Returns sha1"""
+        try:
+            return self._sha1.text
+        except AttributeError:
+            return None
+
+    @property
+    def no_decompress(self):
+        """Returns no_decompress"""
+        try:
+            return self._no_decompress.text
+        except AttributeError:
+            return None
+
+    @property
+    def limit_transfer_bw(self):
+        """Returns limit_transfer_bw"""
+        try:
+            return self._limit_transfer_bw.text
+        except AttributeError:
+            return None

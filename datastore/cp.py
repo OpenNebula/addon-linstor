@@ -20,13 +20,64 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
 
-import os
+import base64
+import random
 import sys
+
+from linstor_helper import resource
+from one import driver_action, util
+
+DRIVER_ACTION = sys.argv[1]
+IMAGE_ID = sys.argv[2]
 
 
 def main():
-    """Test main function"""
-    print(os.path.dirname(os.path.abspath(__file__)), sys.argv)
+    util.log_info("Entering datastore cp")
+
+    driver = driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
+
+    res = resource.Resource(
+        name="OpenNebula-Image-{}".format(IMAGE_ID),
+        sizeMiB=driver.image.size,
+        auto_place=driver.datastore.auto_place,
+        nodes=driver.datastore.deployment_nodes,
+        storage_pool=driver.datastore.storage_pool,
+    )
+
+    res.deploy()
+
+    register_command = """cat << EOF
+      set -e
+
+      export PATH=/usr/sbin:/sbin:\$PATH
+
+      if [ -z "{0}" ] || [ "{0}" == "raw" ]; then
+        exit 0
+      fi
+
+      $SUDO $(mkfs_command "{1}" "{0}" "{2}")
+
+    EOF""".format(
+        driver.image.FS_type, res.path, res.sizeMiB
+    )
+
+    res_host = random.choice(res.deployed_nodes())
+
+    rc = util.ssh_exec_and_log(
+        " ".join(
+            [
+                res_host,
+                register_command,
+                "Error registering {}, on {}".format(res, res_host),
+            ]
+        )
+    )
+
+    if int(rc) != 0:
+        res.delete()
+        sys.exit(1)
+
+    util.log_info("Exiting datastore cp")
 
 
 if __name__ == "__main__":
