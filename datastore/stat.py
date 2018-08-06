@@ -23,6 +23,7 @@ from __future__ import print_function
 import base64
 import os
 import sys
+import xml.etree.ElementTree as ET
 
 from one import driver_action, util
 
@@ -33,9 +34,10 @@ IMAGE_ID = sys.argv[2]
 def main():
     util.log_info("Entering datastore stat.")
 
-    driver = driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
-
-    print(os.stat(driver.image.path).ST_SIZE / 1024 / 1024)
+    path = (
+        ET.fromstring(base64.b64decode(driver_action)).find("IMAGE").find("PATH").text
+    )
+    print(os.stat(path).ST_SIZE / 1024 / 1024)
 
 
 if __name__ == "__main__":
