@@ -25,19 +25,25 @@ import os
 import sys
 import xml.etree.ElementTree as ET
 
-from one import driver_action, util
+from one import util
 
 DRIVER_ACTION = sys.argv[1]
 IMAGE_ID = sys.argv[2]
 
 
 def main():
-    util.log_info("Entering datastore stat.")
+    util.log_info("Entering datastore stat")
 
     path = (
-        ET.fromstring(base64.b64decode(driver_action)).find("IMAGE").find("PATH").text
+        ET.fromstring(base64.b64decode(DRIVER_ACTION)).find("IMAGE").find("PATH").text
     )
-    print(os.stat(path).ST_SIZE / 1024 / 1024)
+
+    size_MiB = os.path.getsize(path) / 1024 / 1024
+    if not size_MiB:
+        size_MiB = 4
+    print(size_MiB)
+
+    util.log_info("Entering datastore stat")
 
 
 if __name__ == "__main__":
