@@ -88,5 +88,7 @@ def check_restricted(string_args):
     return _get_subp_out(_source(LIBFS, "check_restricted", string_args))
 
 
-def get_copy_command(list_args):
-    return _get_subp_out([DOWNLOADER] + list_args)
+def get_copy_command(string_args):
+    cmd = DOWNLOADER + " " + string_args
+    out, _ = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True).communicate()
+    return out

@@ -69,7 +69,7 @@ def main():
         )
     )
 
-    copy_command = util.get_copy_command(shlex.split(downloader_args))
+    copy_command = util.get_copy_command(downloader_args)
 
     if driver.image.path.startswith("http"):
         util.log_info(
