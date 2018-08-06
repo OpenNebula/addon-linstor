@@ -73,7 +73,7 @@ class Image(object):
         try:
             return self._md5.text
         except AttributeError:
-            return None
+            return ""
 
     @property
     def sha1(self):
@@ -81,7 +81,7 @@ class Image(object):
         try:
             return self._sha1.text
         except AttributeError:
-            return None
+            return ""
 
     @property
     def no_decompress(self):
@@ -89,7 +89,7 @@ class Image(object):
         try:
             return self._no_decompress.text
         except AttributeError:
-            return None
+            return ""
 
     @property
     def limit_transfer_bw(self):
@@ -97,4 +97,4 @@ class Image(object):
         try:
             return self._limit_transfer_bw.text
         except AttributeError:
-            return None
+            return ""
