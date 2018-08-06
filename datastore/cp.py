@@ -95,19 +95,17 @@ def main():
     hosts = res.deployed_nodes()
 
     rc = util.ssh_exec_and_log(
-        " ".join(
-            [
-                "eval",
-                copy_command,
-                "|",
-                "ssh",
-                res.get_node_interface(hosts[0]),
-                "dd",
-                "of={}".format(res.path),
-                "bs=2M",
-                "Error registering {}, on {}".format(res, hosts[0]),
-            ]
-        )
+        [
+            "eval",
+            copy_command,
+            "|",
+            "ssh",
+            res.get_node_interface(hosts[0]),
+            "dd",
+            "of={}".format(res.path),
+            "bs=2M",
+            "Error registering {}, on {}".format(res, hosts[0]),
+        ]
     )
 
     if int(rc) != 0:
