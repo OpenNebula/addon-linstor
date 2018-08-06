@@ -21,7 +21,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
 
 import base64
-import shlex
 import sys
 
 from linstor_helper import resource
@@ -95,17 +94,19 @@ def main():
     hosts = res.deployed_nodes()
 
     rc = util.ssh_exec_and_log(
-        [
-            "eval",
-            copy_command,
-            "|",
-            "ssh",
-            res.get_node_interface(hosts[0]),
-            "dd",
-            "of={}".format(res.path),
-            "bs=2M",
-            "Error registering {}, on {}".format(res, hosts[0]),
-        ]
+        " ".join(
+            [
+                "eval",
+                copy_command,
+                "|",
+                "ssh",
+                res.get_node_interface(hosts[0]),
+                "dd",
+                "of={}".format(res.path),
+                "bs=2M",
+                "Error registering {}, on {}".format(res, hosts[0]),
+            ]
+        )
     )
 
     if int(rc) != 0:
