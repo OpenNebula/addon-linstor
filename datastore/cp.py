@@ -93,7 +93,7 @@ def main():
 
     hosts = res.deployed_nodes()
 
-    rc = util.ssh_exec_and_log(
+    rc = util.exec_and_log(
         " ".join(
             [
                 "'",
