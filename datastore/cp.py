@@ -105,6 +105,7 @@ def main():
                 "of={} ".format(res.path),
                 "bs=2M ",
                 "' ",
+                "' ",
                 "Error registering {}, on {}".format(res, hosts[0]),
                 "'",
             ]
