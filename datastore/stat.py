@@ -22,9 +22,8 @@ from __future__ import print_function
 
 import base64
 import sys
-import xml.etree.ElementTree as ET
 
-from one import util
+from one import driver_action, util
 
 DRIVER_ACTION = sys.argv[1]
 IMAGE_ID = sys.argv[2]
@@ -33,11 +32,15 @@ IMAGE_ID = sys.argv[2]
 def main():
     util.log_info("Entering datastore stat")
 
-    path = (
-        ET.fromstring(base64.b64decode(DRIVER_ACTION)).find("IMAGE").find("PATH").text
-    )
+    driver = driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
 
-    print(util.fs_size(path))
+    print(
+        util.fs_size(
+            driver.image.path
+            + driver.image.no_decompress
+            + driver.image.limit_transfer_bw
+        )
+    )
 
     util.log_info("Exit datastore stat")
 

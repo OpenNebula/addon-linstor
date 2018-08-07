@@ -24,54 +24,61 @@ class Image(object):
     """Docstring for vm. """
 
     def __init__(self, xml):
-        root = ET.fromstring(xml)
-        self._ID = root.find("ID").text
-        self._size = root.find("SIZE").text
-        self._datastore_ID = root.find("DATASTORE_ID").text
-        self._FS_type = root.find("FSTYPE").text
-        self._path = root.find("PATH").text
-        self._cloning_ID = root.find("CLONING_ID").text
-
-        self._md5 = root.find("TEMPLATE").find("MD5")
-        self._sha1 = root.find("TEMPLATE").find("SHA1")
-        self._no_decompress = root.find("TEMPLATE").find("NO_DECOMPRESS")
-        self._limit_transfer_bw = root.find("TEMPLATE").find("LIMIT_TRANSFER_BW")
+        self._root = ET.fromstring(xml)
 
     @property
     def ID(self):
         """Returns name"""
-        return self._ID
+        try:
+            return self._root.find("ID").text
+        except AttributeError:
+            return ""
 
     @property
     def size(self):
         """Returns name"""
-        return self._size
+        try:
+            return self._root.find("SIZE").text
+        except AttributeError:
+            return ""
 
     @property
     def datastore_ID(self):
         """Returns name"""
-        return self._datastore_ID
+        try:
+            return self._root.find("DATASTORE_ID").text
+        except AttributeError:
+            return ""
 
     @property
     def FS_type(self):
         """Returns FS_type"""
-        return self._FS_type
+        try:
+            return self._root.find("FSTYPE").text
+        except AttributeError:
+            return ""
 
     @property
     def path(self):
         """Returns path"""
-        return self._path
+        try:
+            return self._root.find("PATH").text
+        except AttributeError:
+            return ""
 
     @property
     def cloning_ID(self):
         """Returns cloning_ID"""
-        return self._cloning_ID
+        try:
+            return self._root.find("CLONING_ID").text
+        except AttributeError:
+            return ""
 
     @property
     def md5(self):
         """Returns md5"""
         try:
-            return self._md5.text
+            return self._root.find("TEMPLATE").find("MD5").text
         except AttributeError:
             return '""'
 
@@ -79,7 +86,7 @@ class Image(object):
     def sha1(self):
         """Returns sha1"""
         try:
-            return self._sha1.text
+            return self._root.find("TEMPLATE").find("SHA1").text
         except AttributeError:
             return '""'
 
@@ -87,7 +94,7 @@ class Image(object):
     def no_decompress(self):
         """Returns no_decompress"""
         try:
-            return self._no_decompress.text
+            return self._root.find("TEMPLATE").find("NO_DECOMPRESS").text
         except AttributeError:
             return '""'
 
@@ -95,6 +102,6 @@ class Image(object):
     def limit_transfer_bw(self):
         """Returns limit_transfer_bw"""
         try:
-            return self._limit_transfer_bw.text
+            return self._root.find("TEMPLATE").find("LIMIT_TRANSFER_BW").text
         except AttributeError:
             return '""'
