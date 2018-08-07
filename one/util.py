@@ -62,10 +62,7 @@ def exec_and_log(string_args):
 
 
 def error_message(msg):
-    syslog.syslog(
-        syslog.LOG_ERR,
-        msg
-    )
+    syslog.syslog(syslog.LOG_ERR, msg)
 
 
 def log_info(msg):
@@ -89,6 +86,4 @@ def check_restricted(string_args):
 
 
 def get_copy_command(string_args):
-    cmd = DOWNLOADER + " " + string_args
-    out, _ = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True).communicate()
-    return out
+    return DOWNLOADER + " " + string_args
