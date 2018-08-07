@@ -85,5 +85,9 @@ def check_restricted(string_args):
     return _get_subp_out(_source(LIBFS, "check_restricted", string_args))
 
 
+def fs_size(string_args):
+    return _get_subp_out(_source(LIBFS, "fs_size", string_args))
+
+
 def get_copy_command(string_args):
     return DOWNLOADER + " " + string_args

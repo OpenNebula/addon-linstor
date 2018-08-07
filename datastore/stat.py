@@ -38,8 +38,8 @@ def main():
         ET.fromstring(base64.b64decode(DRIVER_ACTION)).find("IMAGE").find("PATH").text
     )
 
-    size_MiB = os.path.getsize(path) / 1024 / 1024
-    if not size_MiB:
+    size_MiB = util.fs_size(path)
+    if int(size_MiB) < 4:
         size_MiB = 4
     print(size_MiB)
 
