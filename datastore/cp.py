@@ -97,12 +97,11 @@ def main():
         " ".join(
             [
                 "'",
-                "eval",
                 copy_command,
                 " | ",
-                "ssh ",
+                "$SSH ",
                 res.get_node_interface(hosts[0]),
-                "dd ",
+                "$DD ",
                 "of={} ".format(res.path),
                 "bs=2M ",
                 "' ",
