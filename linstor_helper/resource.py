@@ -125,7 +125,7 @@ class Resource(object):
         self._run_command(["snapshot", "delete", self.name, snap_name])
 
     def delete(self):
-        self._run_command(["resource-definition", "delete", self.name, "0"])
+        self._run_command(["resource-definition", "delete", self.name])
 
     def list(self):
         return self._run_command(["resource", "list"])
