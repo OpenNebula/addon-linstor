@@ -21,7 +21,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
 
 import base64
-import os
 import sys
 import xml.etree.ElementTree as ET
 
@@ -38,12 +37,9 @@ def main():
         ET.fromstring(base64.b64decode(DRIVER_ACTION)).find("IMAGE").find("PATH").text
     )
 
-    size_MiB = util.fs_size(path)
-    if int(size_MiB) < 4:
-        size_MiB = 4
-    print(size_MiB)
+    print(util.fs_size(path))
 
-    util.log_info("Entering datastore stat")
+    util.log_info("Exit datastore stat")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Linstor addon for OpenNebula
+instor addon for OpenNebula
 Copyright © 2018 LINBIT USA, LLC
 
 This program is free software; you can redistribute it and/or modify
@@ -35,7 +35,7 @@ class Resource(object):
         controllers=None,
         nodes=None,
         auto_place=None,
-        sizeMiB=1024,
+        sizeMiB=4,
         storage_pool="DfltStorPool",
     ):
         self._name = name
@@ -180,6 +180,8 @@ class Resource(object):
 
     @property
     def sizeMiB(self):
+        if int(self._sizeMiB) < 4:
+            return "4"
         return str(self._sizeMiB)
 
     @property
