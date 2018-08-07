@@ -1,49 +1,66 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-"""
-Linstor addon for OpenNebula
-Copyright © 2018 LINBIT USA, LLC
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, see <http://www.gnu.org/licenses/>.
-"""
-
-from __future__ import print_function
-
-import base64
-import sys
-
-from one import driver_action, util
-
-DRIVER_ACTION = sys.argv[1]
-IMAGE_ID = sys.argv[2]
+#!/bin/bash
+# OpenNebula Driver for Linstor
+# Copyright 2018 LINBIT USA LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 
-def main():
-    util.log_info("Entering datastore stat")
+if [ -z "${ONE_LOCATION}" ]; then
+    LIB_LOCATION=/usr/lib/one
+else
+    LIB_LOCATION=$ONE_LOCATION/lib
+fi
 
-    driver = driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
+. $LIB_LOCATION/sh/scripts_common.sh
 
-    print(
-        util.fs_size(
-            driver.image.path
-            + driver.image.no_decompress
-            + driver.image.limit_transfer_bw
-        )
-    )
+DRIVER_PATH=$(dirname $0)
+source ${DRIVER_PATH}/../libfs.sh
 
-    util.log_info("Exit datastore stat")
+# -------- Get stat and datastore arguments from OpenNebula core ------------
 
+DRV_ACTION=$1
+ID=$2
 
-if __name__ == "__main__":
-    main()
+XPATH="${DRIVER_PATH}/../xpath.rb -b $DRV_ACTION"
+
+unset i XPATH_ELEMENTS
+
+while IFS= read -r -d '' element; do
+    XPATH_ELEMENTS[i++]="$element"
+done < <($XPATH /DS_DRIVER_ACTION_DATA/IMAGE/PATH \
+                /DS_DRIVER_ACTION_DATA/DATASTORE/TEMPLATE/NO_DECOMPRESS \
+                /DS_DRIVER_ACTION_DATA/DATASTORE/TEMPLATE/LIMIT_TRANSFER_BW)
+
+unset i
+
+SRC="${XPATH_ELEMENTS[i++]}"
+NO_DECOMPRESS="${XPATH_ELEMENTS[i++]}"
+LIMIT_TRANSFER_BW="${XPATH_ELEMENTS[i++]}"
+
+# ------------------------------------------------------------------------------
+#  Compute the size
+# ------------------------------------------------------------------------------
+
+SIZE=`fs_size "${SRC}" "${NO_DECOMPRESS}" "${LIMIT_TRANSFER_BW}"`
+
+if [ $? -ne 0 ]; then
+    if [ "${SIZE:-0}" = '0' ]; then
+        error_message "Cannot determine size for ${SRC}"
+    else
+        error_message "${SIZE}"
+    fi
+
+    exit -1
+fi
+
+echo "${SIZE}"
