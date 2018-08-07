@@ -30,8 +30,9 @@ if ONE_LOCATION:
     REMOTES_DIR = os.path.join(ONE_LOCATION, "var/remotes")
 
 SCRIPTS_COMMON = REMOTES_DIR + "/scripts_common.sh"
-LIBFS = REMOTES_DIR + "/datastore/" + "libfs.sh"
-DOWNLOADER = REMOTES_DIR + "/datastore/" + "downloader.sh"
+UTILS_DIR = REMOTES_DIR + "/datastore/"
+LIBFS = UTILS_DIR + "libfs.sh"
+DOWNLOADER = UTILS_DIR + "downloader.sh"
 
 
 def _source(file, command, string_args=None):
@@ -86,7 +87,9 @@ def check_restricted(string_args):
 
 
 def fs_size(string_args):
-    return _get_subp_out(_source(LIBFS, "fs_size", string_args))
+    return _get_subp_out(
+        _source(LIBFS, 'UTILS_PATH="{}" fs_size'.format(UTILS_DIR), string_args)
+    )
 
 
 def get_copy_command(string_args):
