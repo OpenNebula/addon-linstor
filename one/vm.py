@@ -16,16 +16,72 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, see <http://www.gnu.org/licenses/>.
 """
+import xml.etree.ElementTree as ET
 
 
 class Vm(object):
 
     """Docstring for vm. """
 
-    def __init__(self, name):
-        self._name = name
+    def __init__(self, xml, disk_ID):
+        self._root = ET.fromstring(xml)
+        for disk in self._root.find("TEMPLATE").findall("DISK"):
+            if disk.find("DISK_ID").text == disk_ID:
+                self._disk = disk
+                break
 
     @property
-    def name(self):
+    def ID(self):
         """Returns name"""
-        return self._name
+        try:
+            return self._root.find("ID").text
+        except AttributeError:
+            return ""
+
+    @property
+    def disk_ID(self):
+        """Returns disk_ID"""
+        try:
+            return self._disk.find("DISK_ID").text
+        except AttributeError:
+            return ""
+
+    @property
+    def disk_image_ID(self):
+        """Returns disk_image_ID"""
+        try:
+            return self._disk.find("IMAGE_ID").text
+        except AttributeError:
+            return ""
+
+    @property
+    def disk_type(self):
+        """Returns disk_type"""
+        try:
+            return self._disk.find("TYPE").text
+        except AttributeError:
+            return ""
+
+    @property
+    def disk_save_as(self):
+        """Returns disk_save_as"""
+        try:
+            return self._disk.find("SAVE_AS").text
+        except AttributeError:
+            return ""
+
+    @property
+    def disk_target(self):
+        """Returns disk_target"""
+        try:
+            return self._disk.find("TARGET").text
+        except AttributeError:
+            return ""
+
+    @property
+    def disk_persistent(self):
+        """Returns disk_persistent"""
+        try:
+            return self._disk.find("PERSISTENT").text
+        except AttributeError:
+            return ""
