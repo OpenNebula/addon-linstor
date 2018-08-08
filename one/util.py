@@ -33,6 +33,7 @@ SCRIPTS_COMMON = REMOTES_DIR + "/scripts_common.sh"
 UTILS_DIR = REMOTES_DIR + "/datastore/"
 LIBFS = UTILS_DIR + "libfs.sh"
 DOWNLOADER = UTILS_DIR + "downloader.sh"
+TM_COMMON = REMOTES_DIR + "/tm/tm_common.sh"
 
 
 def _source(file, command, string_args=None):
@@ -74,6 +75,10 @@ def mkfs_command(string_args):
     return _wait_for_subp(_source(SCRIPTS_COMMON, "mkfs_command", string_args))
 
 
+def ssh_make_path(string_args):
+    return _wait_for_subp(_source(SCRIPTS_COMMON, "ssh_make_path", string_args))
+
+
 def set_up_datastore(string_args):
     return _wait_for_subp(_source(LIBFS, "set_up_datastore", string_args))
 
@@ -84,6 +89,14 @@ def set_downloader_args(string_args):
 
 def check_restricted(string_args):
     return _get_subp_out(_source(LIBFS, "check_restricted", string_args))
+
+
+def arg_host(string_args):
+    return _get_subp_out(_source(TM_COMMON, "arg_host", string_args))
+
+
+def arg_path(string_args):
+    return _get_subp_out(_source(TM_COMMON, "arg_path", string_args))
 
 
 def fs_size(string_args):
