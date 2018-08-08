@@ -1,32 +1,87 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Linstor addon for OpenNebula
-Copyright © 2018 LINBIT USA, LLC
+OpenNebula Driver for Linstor
+Copyright 2018 LINBIT USA LLC
 
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
+  http://www.apache.org/licenses/LICENSE-2.0
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, see <http://www.gnu.org/licenses/>.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 """
 
 from __future__ import print_function
 
-import os
 import sys
+
+from linstor_helper import resource
+from one import util, vm
+
+SRC = sys.argv[1]
+DST = sys.argv[2]
+VM_ID = sys.argv[3]
+DS_ID = sys.argv[4]
 
 
 def main():
-    """Test main function"""
-    print(os.path.dirname(os.path.abspath(__file__)), sys.argv)
+    util.log_info("Entering tm delete")
+
+    src_host = util.arg_host(SRC)
+    src_path = util.arg_path(SRC)
+
+    disk_ID = src_path.split(".")[1]
+
+    unlink_command = """cat << EOF
+      set -e
+
+      rm -f "{}"
+    EOF""".format(
+        src_path
+    )
+
+    util.ssh_exec_and_log(
+        " ".join(
+            [
+                "'",
+                src_host,
+                unlink_command,
+                "'",
+                "'",
+                "Error: Unable to remove symbloic link {} on {}".format(
+                    src_path, src_host
+                ),
+                "'",
+            ]
+        )
+    )
+
+    target_vm = vm.Vm(util.show_vm(VM_ID), disk_ID)
+
+    res_name = "OpenNebula-Image-{}".format(target_vm.disk_image_ID)
+
+    if not target_vm.disk_persistent:
+        if target_vm.disk_type == "CDROM":
+            util.log_info("{} is a non-persistent CDROM image".format(res_name))
+        else:
+            res_name = "{}-vm{}-disk{}".format(res_name, VM_ID, disk_ID)
+            util.log_info(
+                "{} is a non-persistent OS or DATABLOCK image".format(res_name)
+            )
+    else:
+        util.log_info("{} is a persistent OS or DATABLOCK image".format(res_name))
+
+    res = resource.Resource(name=res_name)
+
+    res.unassign(src_host)
+
+    util.log_info("Exiting tm mvds")
 
 
 if __name__ == "__main__":
