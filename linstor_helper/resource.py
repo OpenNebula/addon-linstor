@@ -133,6 +133,12 @@ class Resource(object):
     def deployed_nodes(self):
         return self._deployed_nodes(json.loads(self.list())[0]["resources"])
 
+    def assign(self, node):
+        return self._run_command(["resource", "create", node, self.name, "--diskless"])
+
+    def unassign(self, node):
+        return self._run_command(["resource", "delete", node, self.name, "--quiet"])
+
     def _deployed_nodes(self, res_states):
         return list(
             map(lambda x: x["node_name"], filter(self._match_nodes, res_states))
