@@ -20,6 +20,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
 
 import os
+import shlex
 import subprocess
 import syslog
 
@@ -97,6 +98,10 @@ def arg_host(string_args):
 
 def arg_path(string_args):
     return _get_subp_out(_source(TM_COMMON, "arg_path", string_args))
+
+
+def show_vm(vm_ID):
+    return _get_subp_out(shlex.split("onevm show -x {}".format(vm_ID)))
 
 
 def fs_size(string_args):
