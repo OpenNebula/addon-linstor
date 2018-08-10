@@ -61,15 +61,11 @@ def main():
     util.ssh_exec_and_log(
         " ".join(
             [
-                "'",
                 dst_host,
                 link_command,
-                "'",
-                "'",
                 "Error: Unable to link {} to {} on {}".format(
                     clone.name, dst_path, dst_host
                 ),
-                "'",
             ]
         )
     )

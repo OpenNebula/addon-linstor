@@ -54,14 +54,10 @@ def main():
     util.ssh_exec_and_log(
         " ".join(
             [
-                "'",
                 src_host,
                 "rm -rf",
                 src_path,
-                "'",
-                "'",
                 "Error removing {} on {}".format(src_path, src_host),
-                "'",
             ]
         )
     )
@@ -100,15 +96,11 @@ def main():
     util.ssh_exec_and_log(
         " ".join(
             [
-                "'",
                 dst_host,
                 link_command,
-                "'",
-                "'",
                 "Error: Unable to link {} to {} on {}".format(
                     res_name, dst_path, dst_host
                 ),
-                "'",
             ]
         )
     )

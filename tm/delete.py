@@ -50,15 +50,11 @@ def main():
     util.ssh_exec_and_log(
         " ".join(
             [
-                "'",
                 dst_host,
                 unlink_command,
-                "'",
-                "'",
                 "Error: Unable to remove symbloic link {} on {}".format(
                     dst_path, dst_host
                 ),
-                "'",
             ]
         )
     )
