@@ -89,7 +89,6 @@ class Resource(object):
                 clean_on_failure=True,
             )
 
-        self.path = self.list()
         return
 
     def clone(self, clone_name):
@@ -158,6 +157,8 @@ class Resource(object):
 
     @property
     def path(self):
+        if self._path is None:
+            self.path = self.list()
         return self._path
 
     @path.setter
