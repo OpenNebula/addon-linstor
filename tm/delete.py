@@ -33,11 +33,11 @@ DS_ID = sys.argv[3]
 def main():
     util.log_info("Entering tm delete")
 
-    dst_host = util.arg_host(DST)
-    dst_path = util.arg_path(DST)
-    os.path.dirname(dst_path)
+    dst_host = util.arg_host(DST).strip()
+    dst_path = util.arg_path(DST).strip()
+    os.path.dirname(dst_path).strip()
 
-    disk_ID = dst_path.split(".")[1]
+    disk_ID = dst_path.split(".")[1].strip()
 
     unlink_command = """cat << EOF
       set -e

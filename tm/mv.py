@@ -40,14 +40,14 @@ def main():
         )
         sys.exit(0)
 
-    src_host = util.arg_host(SRC)
-    src_path = util.arg_path(SRC)
+    src_host = util.arg_host(SRC).strip()
+    src_path = util.arg_path(SRC).strip()
 
-    disk_ID = SRC.split(".")[1]
+    disk_ID = SRC.split(".")[1].strip()
 
-    dst_host = util.arg_host(DST)
-    dst_path = util.arg_path(DST)
-    dst_dir = os.path.dirname(dst_path)
+    dst_host = util.arg_host(DST).strip()
+    dst_path = util.arg_path(DST).strip()
+    dst_dir = os.path.dirname(dst_path).strip()
 
     # Make a new path for the dst_host, remove the src_host's path.
     util.ssh_make_path(" ".join([dst_host, dst_dir]))
