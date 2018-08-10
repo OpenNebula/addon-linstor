@@ -23,7 +23,7 @@ import os
 import sys
 
 from linstor_helper import resource
-from one import util, vm
+from one import util
 
 SRC = sys.argv[1]
 DST = sys.argv[2]
@@ -34,15 +34,13 @@ DS_ID = sys.argv[4]
 def main():
     util.log_info("Entering tm ln")
 
-    disk_ID = SRC.split(".")[1]
+    src_path = util.arg_path(SRC)
 
     dst_host = util.arg_host(DST)
     dst_path = util.arg_path(DST)
     dst_dir = os.path.dirname(dst_path)
 
-    target_vm = vm.Vm(util.show_vm(VM_ID), disk_ID)
-
-    res = resource.Resource(name="OpenNebula-Image-{}".format(target_vm.disk_image_ID))
+    res = resource.Resource(name=src_path)
     res.assign(dst_host)
 
     link_command = """cat << EOF

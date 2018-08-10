@@ -37,7 +37,7 @@ def main():
 
     target_vm = vm.Vm(util.show_vm(VM_ID), disk_ID)
 
-    res_name = "OpenNebula-Image-{}".format(target_vm.disk_image_ID)
+    res_name = target_vm.disk_source
     if not target_vm.disk_persistent:
         res_name = "{}-vm{}-disk{}".format(res_name, VM_ID, disk_ID)
 

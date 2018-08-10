@@ -85,3 +85,11 @@ class Vm(object):
             return self._disk.find("PERSISTENT").text
         except AttributeError:
             return ""
+
+    @property
+    def disk_source(self):
+        """Returns disk_source"""
+        try:
+            return self._disk.find("SOURCE").text
+        except AttributeError:
+            return ""
