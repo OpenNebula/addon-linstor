@@ -18,15 +18,16 @@ limitations under the License.
 """
 
 
-from __future__ import print_function
-
-import os
 import sys
+
+from one import util
 
 
 def main():
-    """Test main function"""
-    print(os.path.dirname(os.path.abspath(__file__)), sys.argv)
+    util.log_info("Entering datastore/snap_flatten")
+    util.log_info("Operation not supported!")
+    util.log_info("Entering datastore/snap_flatten")
+    sys.exit(1)
 
 
 if __name__ == "__main__":
