@@ -117,6 +117,8 @@ def main():
 
     util.log_info("Exiting datastore cp")
 
+    print(res.name)
+
 
 if __name__ == "__main__":
     main()

@@ -96,6 +96,8 @@ def main():
     util.log_info("Created {} on {}".format(res, res_host))
     util.log_info("Exiting datastore mkfs.")
 
+    print(res.name)
+
 
 if __name__ == "__main__":
     main()

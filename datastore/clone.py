@@ -42,6 +42,8 @@ def main():
 
     util.log_info("Exiting datastore clone.")
 
+    print(clone)
+
 
 if __name__ == "__main__":
     main()
