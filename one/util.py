@@ -56,7 +56,7 @@ def log_info(msg):
 
 
 def _wait_for_subp(cmd):
-    log_info("running shell command: {}".format(cmd))
+    log_info("running shell command: {}".format(" ".join(cmd)))
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     _, err = proc.communicate()
 
@@ -67,7 +67,7 @@ def _wait_for_subp(cmd):
 
 
 def _get_subp_out(cmd):
-    log_info("running shell command: {}".format(cmd))
+    log_info("running shell command: {}".format(" ".join(cmd)))
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
 
