@@ -47,12 +47,32 @@ def _source(file, command, string_args=None):
     return exec_string
 
 
+def error_message(msg):
+    syslog.syslog(syslog.LOG_ERR, msg)
+
+
+def log_info(msg):
+    syslog.syslog(syslog.LOG_INFO, "INFO {}".format(msg))
+
+
 def _wait_for_subp(cmd):
-    return subprocess.Popen(cmd).wait()
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    _, err = proc.communicate()
+
+    if proc.returncode != 0:
+        error_message("command {} failed: {}".format(cmd, err))
+
+    return proc.returncode
 
 
 def _get_subp_out(cmd):
-    out, _ = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = proc.communicate()
+
+    if proc.returncode != 0:
+        error_message("command {} failed: {}".format(cmd, err))
+        raise subprocess.CalledProcessError
+
     return out
 
 
@@ -62,14 +82,6 @@ def ssh_exec_and_log(string_args):
 
 def exec_and_log(string_args):
     return _wait_for_subp(_source(SCRIPTS_COMMON, "exec_and_log", string_args))
-
-
-def error_message(msg):
-    syslog.syslog(syslog.LOG_ERR, msg)
-
-
-def log_info(msg):
-    syslog.syslog(syslog.LOG_INFO, "INFO {}".format(msg))
 
 
 def mkfs_command(string_args):
