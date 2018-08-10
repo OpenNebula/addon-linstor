@@ -42,7 +42,7 @@ def main():
     dst_path = util.arg_path(DST)
     dst_dir = os.path.dirname(dst_path)
 
-    res = resource.Resource(name=src_path)
+    res = resource.Resource(name=src_path.strip())
     clone = resource.Resource("{}-vm{}-disk{}".format(res.name, VM_ID, disk_ID))
 
     res.clone(clone.name)

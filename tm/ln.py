@@ -40,7 +40,7 @@ def main():
     dst_path = util.arg_path(DST)
     dst_dir = os.path.dirname(dst_path)
 
-    res = resource.Resource(name=src_path)
+    res = resource.Resource(name=src_path.strip())
     res.assign(dst_host)
 
     link_command = """cat << EOF
