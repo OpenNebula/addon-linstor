@@ -43,22 +43,20 @@ def main():
     res = resource.Resource(name=src_path)
     res.assign(dst_host)
 
-    link_command = """cat << EOF
-      set -e
-
-      mkdir -p "{}"
-
-      ln -fs "{}" "{}"
-    EOF""".format(
-        dst_dir, res.path, dst_path
+    link_command = " ; ".join(
+        [
+            "set -e",
+            "mkdir -p {}".format(dst_dir),
+            "ln -fs {} {}".format(res.path, dst_path),
+        ]
     )
 
     util.ssh_exec_and_log(
         " ".join(
             [
-                dst_host,
-                link_command,
-                "Error: Unable to link {} to {} on {}".format(
+                '"{}"'.format(dst_host),
+                '"{}"'.format(link_command),
+                '"Error: Unable to link {} to {} on {}"'.format(
                     res.name, dst_path, dst_host
                 ),
             ]
