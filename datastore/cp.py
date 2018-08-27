@@ -100,9 +100,9 @@ def main():
                         [
                             copy_command,
                             "|",
-                            "$SSH",
+                            "ssh",
                             res.get_node_interface(hosts[0]),
-                            "$DD",
+                            "dd",
                             "of={}".format(res.path),
                             "bs=2M",
                         ]
