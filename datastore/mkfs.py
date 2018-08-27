@@ -67,8 +67,7 @@ def main():
 
       export PATH=/usr/sbin:/sbin:\$PATH
 
-      if [ -z "{0}" ] || [ "{0}" == "raw" ]; then
-        exit 0
+      if [ -z "{0}" ] || [ "{0}" == "raw" ]; then exit 0;
       fi
 
       $SUDO $(mkfs_command "{1}" "{0}" "{2}")

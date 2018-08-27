@@ -67,7 +67,7 @@ def main():
         )
     )
 
-    copy_command = util.get_copy_command(downloader_args)
+    copy_command = util.get_copy_command(downloader_args).strip()
 
     if driver.image.path.startswith("http"):
         util.log_info(
@@ -95,18 +95,20 @@ def main():
     rc = util.exec_and_log(
         " ".join(
             [
-                "'",
-                copy_command,
-                " | ",
-                "$SSH ",
-                res.get_node_interface(hosts[0]),
-                "$DD ",
-                "of={} ".format(res.path),
-                "bs=2M ",
-                "' ",
-                "' ",
-                "Error registering {}, on {}".format(res, hosts[0]),
-                "'",
+                '"{}"'.format(
+                    " ".join(
+                        [
+                            copy_command,
+                            "|",
+                            "$SSH",
+                            res.get_node_interface(hosts[0]),
+                            "$DD",
+                            "of={}".format(res.path),
+                            "bs=2M",
+                        ]
+                    )
+                ),
+                '"{}"'.format("Error registering {}, on {}".format(res.name, hosts[0])),
             ]
         )
     )
