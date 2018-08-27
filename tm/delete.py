@@ -39,21 +39,17 @@ def main():
 
     disk_ID = dst_path.split(".")[1].strip()
 
-    unlink_command = """cat << EOF
-      set -e
-
-      rm -f "{}"
-    EOF""".format(
-        dst_path
-    )
+    unlink_command = " ; ".join(["set -e", "rm -f {}".format(dst_path)])
 
     util.ssh_exec_and_log(
         " ".join(
             [
-                dst_host,
-                unlink_command,
-                "Error: Unable to remove symbloic link {} on {}".format(
-                    dst_path, dst_host
+                '"{}"'.format(dst_host),
+                '"{}"'.format(unlink_command),
+                '"{}"'.format(
+                    "Error: Unable to remove symbloic link {} on {}".format(
+                        dst_path, dst_host
+                    )
                 ),
             ]
         )

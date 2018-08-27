@@ -85,21 +85,17 @@ def main():
     # TODO: we should check the bridge list from the datastore to see if src_host is in that list and is therefore a storage node that we shouldn't be unassigning volumes from.
     res.unassign(src_host)
 
-    link_command = """cat << EOF
-      set -e
-
-      ln -fs "{}" "{}"
-    EOF""".format(
-        res.path, dst_path
-    )
+    link_command = " ; ".join(["set -e", "ln -fs {} {}".format(res.path, dst_path)])
 
     util.ssh_exec_and_log(
         " ".join(
             [
-                dst_host,
-                link_command,
-                "Error: Unable to link {} to {} on {}".format(
-                    res_name, dst_path, dst_host
+                '"{}"'.format(dst_host),
+                '"{}"'.format(link_command),
+                '"{}"'.format(
+                    "Error: Unable to link {} to {} on {}".format(
+                        res_name, dst_path, dst_host
+                    )
                 ),
             ]
         )

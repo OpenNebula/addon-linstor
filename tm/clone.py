@@ -48,23 +48,22 @@ def main():
     res.clone(clone.name)
     clone.assign(dst_host)
 
-    link_command = """cat << EOF
-      set -e
-
-      mkdir -p "{}"
-
-      ln -fs "{}" "{}"
-    EOF""".format(
-        dst_dir, res.path, dst_path
+    link_command = " ; ".join(
+        [
+            "set -e" "mkdir -p {}".format(dst_dir),
+            "ln -fs {} {}".format(res.path, dst_path),
+        ]
     )
 
     util.ssh_exec_and_log(
         " ".join(
             [
-                dst_host,
-                link_command,
-                "Error: Unable to link {} to {} on {}".format(
-                    clone.name, dst_path, dst_host
+                '"{}"'.format(dst_host),
+                '"{}"'.format(link_command),
+                '"{}"'.format(
+                    "Error: Unable to link {} to {} on {}".format(
+                        clone.name, dst_path, dst_host
+                    )
                 ),
             ]
         )
