@@ -54,10 +54,9 @@ def main():
     util.ssh_exec_and_log(
         " ".join(
             [
-                src_host,
-                "rm -rf",
-                src_path,
-                "Error removing {} on {}".format(src_path, src_host),
+                '"{}"'.format(src_host),
+                '"rm -rf {}"'.format(src_path),
+                '"{}"'.format("Error removing {} on {}".format(src_path, src_host)),
             ]
         )
     )
