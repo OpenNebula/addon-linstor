@@ -82,8 +82,13 @@ def ssh_exec_and_log(string_args):
     return _wait_for_subp(_source(SCRIPTS_COMMON, "ssh_exec_and_log", string_args))
 
 
-def exec_and_log(string_args):
-    return _wait_for_subp(_source(SCRIPTS_COMMON, "exec_and_log", string_args))
+def exec_and_log(cmd, message):
+    rc = _wait_for_subp(["bash", "-c", cmd])
+
+    if int(rc) != 0:
+        error_message(message)
+
+    return rc
 
 
 def mkfs_command(string_args):

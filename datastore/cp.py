@@ -95,22 +95,16 @@ def main():
     rc = util.exec_and_log(
         " ".join(
             [
-                '"{}"'.format(
-                    " ".join(
-                        [
-                            copy_command,
-                            "|",
-                            "ssh",
-                            res.get_node_interface(hosts[0]),
-                            "dd",
-                            "of={}".format(res.path),
-                            "bs=2M",
-                        ]
-                    )
-                ),
-                '"{}"'.format("Error registering {}, on {}".format(res.name, hosts[0])),
+                copy_command,
+                "|",
+                "ssh",
+                res.get_node_interface(hosts[0]),
+                "dd",
+                "of={}".format(res.path),
+                "bs=2M",
             ]
-        )
+        ),
+        '"{}"'.format("Error registering {} on {}".format(res.name, hosts[0])),
     )
 
     if int(rc) != 0:
