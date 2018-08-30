@@ -34,7 +34,7 @@ DS_ID = sys.argv[4]
 def main():
     util.log_info("Entering tm clone")
 
-    disk_ID = SRC.split(".")[1].strip()
+    disk_ID = SRC.split(".")[-1].strip()
 
     src_path = util.arg_path(SRC).strip()
 

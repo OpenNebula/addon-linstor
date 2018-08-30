@@ -33,7 +33,7 @@ DS_ID = sys.argv[5]
 def main():
     util.log_info("Entering tm cpds")
 
-    disk_ID = SRC.split(".")[1].strip()
+    disk_ID = SRC.split(".")[-1].strip()
 
     target_vm = vm.Vm(util.show_vm(VM_ID), disk_ID)
 

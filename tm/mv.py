@@ -43,7 +43,7 @@ def main():
     src_host = util.arg_host(SRC).strip()
     src_path = util.arg_path(SRC).strip()
 
-    disk_ID = SRC.split(".")[1].strip()
+    disk_ID = SRC.split(".")[-1].strip()
 
     dst_host = util.arg_host(DST).strip()
     dst_path = util.arg_path(DST).strip()

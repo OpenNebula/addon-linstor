@@ -37,7 +37,7 @@ def main():
     dst_path = util.arg_path(DST).strip()
     os.path.dirname(dst_path).strip()
 
-    disk_ID = dst_path.split(".")[1].strip()
+    disk_ID = dst_path.split(".")[-1].strip()
 
     unlink_command = " ; ".join(["set -e", "rm -f {}".format(dst_path)])
 
