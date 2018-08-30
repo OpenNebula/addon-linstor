@@ -34,13 +34,11 @@ DS_ID = sys.argv[4]
 def main():
     util.log_info("Entering tm clone")
 
-    disk_ID = SRC.split(".")[-1].strip()
-
     src_path = util.arg_path(SRC).strip()
-
     dst_host = util.arg_host(DST).strip()
     dst_path = util.arg_path(DST).strip()
     dst_dir = os.path.dirname(dst_path).strip()
+    disk_ID = dst_path.split(".")[-1].strip()
 
     res = resource.Resource(name=src_path)
     clone = resource.Resource("{}-vm{}-disk{}".format(res.name, VM_ID, disk_ID))
