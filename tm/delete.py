@@ -74,6 +74,9 @@ def main():
 
     res.unassign(dst_host)
 
+    if not target_vm.disk_persistent:
+        res.delete()
+
     util.log_info("Exiting tm delete")
 
 
