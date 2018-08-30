@@ -26,8 +26,8 @@ from one import util, vm
 
 SRC = sys.argv[1]
 DST = sys.argv[2]
-VM_ID = sys.argv[3]
-DS_ID = sys.argv[4]
+VM_ID = sys.argv[4]
+DS_ID = sys.argv[5]
 
 
 def main():
