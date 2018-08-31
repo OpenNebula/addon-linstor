@@ -19,6 +19,7 @@ limitations under the License.
 
 from __future__ import print_function
 
+import os
 import sys
 
 from linstor_helper import resource
@@ -36,6 +37,7 @@ def main():
     src_path = util.arg_path(SRC).strip()
     dst_host = util.arg_host(DST).strip()
     dst_path = util.arg_path(DST).strip()
+    dst_dir = os.path.dirname(dst_path).strip()
     disk_ID = dst_path.split(".")[-1].strip()
 
     res = resource.Resource(name=src_path)
@@ -46,8 +48,7 @@ def main():
 
     link_command = " ; ".join(
         [
-            "set -e",
-            "mkdir -p {}".format(dst_path),
+            "set -e" "mkdir -p {}".format(dst_dir),
             "ln -fs {} {}".format(res.path, dst_path),
         ]
     )
