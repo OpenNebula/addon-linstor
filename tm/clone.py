@@ -50,7 +50,7 @@ def main():
         [
             "set -e",
             "mkdir -p {}".format(dst_dir),
-            "ln -fs {} {}".format(res.path, dst_path),
+            "ln -fs {} {}".format(clone.path, dst_path),
         ]
     )
 
