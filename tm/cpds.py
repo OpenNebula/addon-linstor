@@ -35,10 +35,10 @@ def main():
 
     disk_ID = SRC.split(".")[-1].strip()
 
-    target_vm = vm.Vm(util.show_vm(VM_ID), disk_ID)
+    target_vm = vm.Vm(util.show_vm(VM_ID))
 
-    res_name = target_vm.disk_source
-    if not target_vm.disk_persistent:
+    res_name = target_vm.disk_source(disk_ID)
+    if not target_vm.disk_persistent(disk_ID):
         res_name = "{}-vm{}-disk{}".format(res_name, VM_ID, disk_ID)
 
     res = resource.Resource(name=res_name)

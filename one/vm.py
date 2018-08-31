@@ -15,20 +15,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
 import xml.etree.ElementTree as ET
+
+from one import util
 
 
 class Vm(object):
 
     """Docstring for vm. """
 
-    def __init__(self, xml, disk_ID):
+    def __init__(self, xml):
         self._root = ET.fromstring(xml)
+        self._disks = {}
         for disk in self._root.find("TEMPLATE").findall("DISK"):
-            if disk.find("DISK_ID").text == disk_ID:
-                self._disk = disk
-                break
+            self._disks[disk.find("DISK_ID").text] = disk
 
     @property
     def ID(self):
@@ -39,57 +39,58 @@ class Vm(object):
             return ""
 
     @property
-    def disk_ID(self):
-        """Returns disk_ID"""
-        try:
-            return self._disk.find("DISK_ID").text
-        except AttributeError:
-            return ""
+    def disk_IDs(self):
+        """Returns IDs of all attached disks."""
+        return list(self._disks)
 
-    @property
-    def disk_image_ID(self):
+    def disk(self, disk_ID):
+        """Returns disk with the given ID"""
+        try:
+            return self._disks[disk_ID]
+        except KeyError:
+            util.error_message(
+                "couldn't find disk {} on vm {}".format(disk_ID, self.ID)
+            )
+            raise
+
+    def disk_image_ID(self, disk_ID):
         """Returns disk_image_ID"""
         try:
-            return self._disk.find("IMAGE_ID").text
+            return self.disk(disk_ID).find("IMAGE_ID").text
         except AttributeError:
             return ""
 
-    @property
-    def disk_type(self):
+    def disk_type(self, disk_ID):
         """Returns disk_type"""
         try:
-            return self._disk.find("TYPE").text
+            return self.disk(disk_ID).find("TYPE").text
         except AttributeError:
             return ""
 
-    @property
-    def disk_save_as(self):
+    def disk_save_as(self, disk_ID):
         """Returns disk_save_as"""
         try:
-            return self._disk.find("SAVE_AS").text
+            return self.disk(disk_ID).find("SAVE_AS").text
         except AttributeError:
             return ""
 
-    @property
-    def disk_target(self):
+    def disk_target(self, disk_ID):
         """Returns disk_target"""
         try:
-            return self._disk.find("TARGET").text
+            return self.disk(disk_ID).find("TARGET").text
         except AttributeError:
             return ""
 
-    @property
-    def disk_persistent(self):
+    def disk_persistent(self, disk_ID):
         """Returns disk_persistent"""
         try:
-            return self._disk.find("PERSISTENT").text
+            return self.disk(disk_ID).find("PERSISTENT").text
         except AttributeError:
             return ""
 
-    @property
-    def disk_source(self):
+    def disk_source(self, disk_ID):
         """Returns disk_source"""
         try:
-            return self._disk.find("SOURCE").text
+            return self._disk(disk_ID).find("SOURCE").text
         except AttributeError:
             return ""

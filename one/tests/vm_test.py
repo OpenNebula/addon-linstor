@@ -193,20 +193,18 @@ TEXT_XML_1 = """
 
 
 def test_create_vm():
-    test_vm = vm.Vm(TEXT_XML_1, "0")
+    test_vm = vm.Vm(TEXT_XML_1)
     assert test_vm.ID == "0"
-    assert test_vm.disk_ID == "0"
-    assert test_vm.disk_image_ID == "146"
-    assert test_vm.disk_target == "hdb"
-    assert test_vm.disk_persistent == "YES"
-    assert test_vm.disk_save_as == ""
-    assert test_vm.disk_type == "FILE"
+    assert ["0", "1", "2"] == sorted(test_vm.disk_IDs)
 
-    test_vm = vm.Vm(TEXT_XML_1, "2")
-    assert test_vm.ID == "0"
-    assert test_vm.disk_ID == "2"
-    assert test_vm.disk_image_ID == "149"
-    assert test_vm.disk_target == "hdc"
-    assert test_vm.disk_persistent == "NO"
-    assert test_vm.disk_save_as == ""
-    assert test_vm.disk_type == "BLOCK"
+    assert test_vm.disk_image_ID("0") == "146"
+    assert test_vm.disk_target("0") == "hdb"
+    assert test_vm.disk_persistent("0") == "YES"
+    assert test_vm.disk_save_as("0") == ""
+    assert test_vm.disk_type("0") == "FILE"
+
+    assert test_vm.disk_image_ID("2") == "149"
+    assert test_vm.disk_target("2") == "hdc"
+    assert test_vm.disk_persistent("2") == "NO"
+    assert test_vm.disk_save_as("2") == ""
+    assert test_vm.disk_type("2") == "BLOCK"

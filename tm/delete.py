@@ -55,12 +55,12 @@ def main():
         )
     )
 
-    target_vm = vm.Vm(util.show_vm(VM_ID), disk_ID)
+    target_vm = vm.Vm(util.show_vm(VM_ID))
 
-    res_name = target_vm.disk_source
+    res_name = target_vm.disk_source(disk_ID)
 
-    if not target_vm.disk_persistent:
-        if target_vm.disk_type == "CDROM":
+    if not target_vm.disk_persistent(disk_ID):
+        if target_vm.disk_type(disk_ID) == "CDROM":
             util.log_info("{} is a non-persistent CDROM image".format(res_name))
         else:
             res_name = "{}-vm{}-disk{}".format(res_name, VM_ID, disk_ID)
@@ -74,7 +74,7 @@ def main():
 
     res.unassign(dst_host)
 
-    if not target_vm.disk_persistent:
+    if not target_vm.disk_persistent(disk_ID):
         res.delete()
 
     util.log_info("Exiting tm delete")
