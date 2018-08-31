@@ -48,7 +48,8 @@ def main():
 
     link_command = " ; ".join(
         [
-            "set -e" "mkdir -p {}".format(dst_dir),
+            "set -e",
+            "mkdir -p {}".format(dst_dir),
             "ln -fs {} {}".format(res.path, dst_path),
         ]
     )
