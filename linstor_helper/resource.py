@@ -140,6 +140,16 @@ class Resource(object):
     def unassign(self, node):
         return self._run_command(["resource", "delete", node, self.name, "--quiet"])
 
+    def enable_dual_primary(self):
+        self._run_command(
+            ["resource-definition", self.name, "--allow-two-primaries", "yes"]
+        )
+
+    def disable_dual_primary(self):
+        self._run_command(
+            ["resource-definition", self.name, "--allow-two-primaries", "no"]
+        )
+
     def _deployed_nodes(self, res_states):
         return list(
             map(lambda x: x["node_name"], filter(self._match_nodes, res_states))

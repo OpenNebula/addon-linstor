@@ -18,16 +18,31 @@ limitations under the License.
 """
 
 
+import base64
 import sys
 
-from one import util
+from linstor_helper import resource
+from one import util, vm
+
+SRC_HOST = sys.argv[1]
+DST_HOST = sys.argv[2]
+DST_PATH = sys.argv[3]
+VM_ID = sys.argv[4]
+DS_ID = sys.argv[5]
+TEMPLATE = sys.argv[6]
 
 
 def main():
     util.log_info("Entering tm/premigrate")
-    util.log_info("Operation not supported!")
-    util.log_info("Entering tm/premigrate")
-    sys.exit(1)
+
+    target_vm = vm.Vm(base64.b64decode(TEMPLATE))
+
+    for disk in target_vm.disk_IDs:
+        res = resource.Resource(name=target_vm.disk_source(disk_ID))
+        res.assign(DST_HOST)
+        res.enable_dual_primary()
+
+    util.log_info("Exiting tm/premigrate")
 
 
 if __name__ == "__main__":
