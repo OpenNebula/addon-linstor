@@ -91,6 +91,6 @@ class Vm(object):
     def disk_source(self, disk_ID):
         """Returns disk_source"""
         try:
-            return self._disk(disk_ID).find("SOURCE").text
+            return self.disk(disk_ID).find("SOURCE").text
         except AttributeError:
             return ""

@@ -208,3 +208,7 @@ def test_create_vm():
     assert test_vm.disk_persistent("2") == "NO"
     assert test_vm.disk_save_as("2") == ""
     assert test_vm.disk_type("2") == "BLOCK"
+    assert (
+        test_vm.disk_source("2")
+        == "/var/lib/one//datastores/1/baee88c26cb6055334aaed153a7c8327"
+    )
