@@ -142,12 +142,24 @@ class Resource(object):
 
     def enable_dual_primary(self):
         self._run_command(
-            ["resource-definition", self.name, "--allow-two-primaries", "yes"]
+            [
+                "resource-definition",
+                "drbd-options",
+                self.name,
+                "--allow-two-primaries",
+                "yes",
+            ]
         )
 
     def disable_dual_primary(self):
         self._run_command(
-            ["resource-definition", self.name, "--allow-two-primaries", "no"]
+            [
+                "resource-definition",
+                "drbd-options",
+                self.name,
+                "--allow-two-primaries",
+                "no",
+            ]
         )
 
     def _deployed_nodes(self, res_states):
