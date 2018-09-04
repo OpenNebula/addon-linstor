@@ -38,7 +38,7 @@ def main():
     target_vm = vm.Vm(base64.b64decode(TEMPLATE))
 
     for disk in target_vm.disk_IDs:
-        res = resource.Resource(name=target_vm.disk_source(disk_ID))
+        res = resource.Resource(name=target_vm.disk_source(disk))
         res.assign(DST_HOST)
         res.enable_dual_primary()
 
