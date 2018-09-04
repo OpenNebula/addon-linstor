@@ -133,6 +133,8 @@ class Resource(object):
         return self._deployed_nodes(json.loads(self.list())[0]["resources"])
 
     def assign(self, node):
+        if node in self.deployed_nodes():
+            return "0"
         return self._run_command(["resource", "create", node, self.name, "--diskless"])
 
     def unassign(self, node):
