@@ -38,7 +38,10 @@ def main():
     target_vm = vm.Vm(base64.b64decode(TEMPLATE))
 
     for disk in target_vm.disk_IDs:
-        res = resource.Resource(name=target_vm.disk_source(disk))
+        res_name = target_vm.disk_source(disk)
+        if target_vm.disk_persistent(disk) != "YES":
+            res_name = "{}-vm{}-disk{}".format(res_name, VM_ID, disk)
+        res = resource.Resource(name=res_name)
         res.unassign(DST_HOST)
         res.disable_dual_primary()
 
