@@ -251,7 +251,7 @@ class Resource(object):
         return self._storage_pool_total_MiB
 
     def update_storage_info(self):
-        self._update_storage_info(self._run_command("storage-pool", "list"))
+        self._update_storage_info(self._run_command(["storage-pool", "list"]))
 
     def _update_storage_info(self, sp_info):
         pool_data = json.loads(sp_info)[0]["stor_pools"]
