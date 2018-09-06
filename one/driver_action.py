@@ -29,7 +29,9 @@ class DriverAction(object):
     def __init__(self, xml):
         root = ET.fromstring(xml)
 
-        self._image = image.Image(ET.tostring(root.find("IMAGE")))
+        image_element = root.find("IMAGE")
+        if image_element is not None:
+            self._image = image.Image(ET.tostring(image_element))
         self._datastore = datastore.Datastore(ET.tostring(root.find("DATASTORE")))
 
     @property
