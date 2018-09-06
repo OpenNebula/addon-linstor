@@ -1175,6 +1175,267 @@ NODE_DATA_1 = """
 ]
 """
 
+STORAGE_POOL_DATA_0 = """
+[
+  {
+    "stor_pools": [
+      {
+        "stor_pool_dfn_uuid": "3d6d66f2-d966-4aad-bdab-740db8341c4a",
+        "node_uuid": "9198fcab-2ed6-4039-8385-2e25cfd2aa35",
+        "stor_pool_name": "thin",
+        "stor_pool_uuid": "193bd06a-1267-4478-ac23-85f75290f14b",
+        "static_traits": [
+          {
+            "value": "Thin",
+            "key": "Provisioning"
+          },
+          {
+            "value": "true",
+            "key": "SupportsSnapshots"
+          }
+        ],
+        "driver": "LvmThinDriver",
+        "vlms": [
+          {
+            "meta_disk": "internal",
+            "device_path": "/dev/drbd1005",
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "193bd06a-1267-4478-ac23-85f75290f14b",
+            "vlm_minor_nr": 1005,
+            "backing_disk": "/dev/drbdpool/OpenNebula-Image-195_00000",
+            "vlm_uuid": "5d6c0701-c251-409a-bf73-bac41155cd5d",
+            "vlm_dfn_uuid": "04aa8545-ab4a-4a2c-ab50-cc99514a78de"
+          },
+          {
+            "meta_disk": "internal",
+            "device_path": "/dev/drbd1006",
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "193bd06a-1267-4478-ac23-85f75290f14b",
+            "vlm_minor_nr": 1006,
+            "backing_disk": "/dev/drbdpool/OpenNebula-Image-196_00000",
+            "vlm_uuid": "6cd16507-62bc-4d18-b6f2-3e7cf25fab8e",
+            "vlm_dfn_uuid": "f016717e-834a-43b1-af47-a8fa30fed65e"
+          },
+          {
+            "meta_disk": "internal",
+            "device_path": "/dev/drbd1000",
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "193bd06a-1267-4478-ac23-85f75290f14b",
+            "vlm_minor_nr": 1000,
+            "backing_disk": "/dev/drbdpool/OpenNebula-Image-198_00000",
+            "vlm_uuid": "a11c654d-519f-48a2-947f-5e200088b53b",
+            "vlm_dfn_uuid": "f3bc0824-0eda-47f3-8068-7c33f3472d22"
+          },
+          {
+            "meta_disk": "internal",
+            "device_path": "/dev/drbd1003",
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "193bd06a-1267-4478-ac23-85f75290f14b",
+            "vlm_minor_nr": 1003,
+            "backing_disk": "/dev/drbdpool/OpenNebula-Image-199_00000",
+            "vlm_uuid": "0df0d836-da0d-409d-81e5-8ad9e015b9c9",
+            "vlm_dfn_uuid": "7fff48f4-1781-4bb1-8614-fd845a4a592d"
+          },
+          {
+            "meta_disk": "internal",
+            "device_path": "/dev/drbd1001",
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "193bd06a-1267-4478-ac23-85f75290f14b",
+            "vlm_minor_nr": 1001,
+            "backing_disk": "/dev/drbdpool/OpenNebula-Image-207_00000",
+            "vlm_uuid": "5a36de3e-fca2-4593-b706-cdc7a170ed2a",
+            "vlm_dfn_uuid": "cb6c1a1e-81f0-4f4e-8d1d-dbfd553e6ef2"
+          },
+          {
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "193bd06a-1267-4478-ac23-85f75290f14b",
+            "vlm_minor_nr": 1002,
+            "vlm_uuid": "983319ba-b7db-4c65-862f-81cfe63190bd",
+            "vlm_props": [
+              {
+                "value": "OpenNebula-Image-207",
+                "key": "RestoreFromResource"
+              },
+              {
+                "value": "OpenNebula-Image-207-snap",
+                "key": "RestoreFromSnapshot"
+              }
+            ],
+            "vlm_dfn_uuid": "c66147da-ca2e-4ce2-a0ae-5bdd6d044196"
+          }
+        ],
+        "node_name": "attila",
+        "props": [
+          {
+            "value": "drbdpool",
+            "key": "StorDriver/LvmVg"
+          },
+          {
+            "value": "drbdthinpool",
+            "key": "StorDriver/ThinPool"
+          }
+        ],
+        "free_space": {
+          "free_capacity": 11330625,
+          "stor_pool_uuid": "193bd06a-1267-4478-ac23-85f75290f14b",
+          "stor_pool_name": "thin",
+          "total_capacity": 14663680
+        }
+      },
+      {
+        "stor_pool_dfn_uuid": "3d6d66f2-d966-4aad-bdab-740db8341c4a",
+        "node_uuid": "10f01093-2516-4d30-bc8d-a7b1ab5e72b2",
+        "stor_pool_name": "thin",
+        "stor_pool_uuid": "921af4e0-ff6d-43d6-b56a-a3f8cd45678f",
+        "static_traits": [
+          {
+            "value": "Thin",
+            "key": "Provisioning"
+          },
+          {
+            "value": "true",
+            "key": "SupportsSnapshots"
+          }
+        ],
+        "driver": "LvmThinDriver",
+        "vlms": [
+          {
+            "meta_disk": "internal",
+            "device_path": "/dev/drbd1005",
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "921af4e0-ff6d-43d6-b56a-a3f8cd45678f",
+            "vlm_minor_nr": 1005,
+            "backing_disk": "/dev/drbdpool/OpenNebula-Image-195_00000",
+            "vlm_uuid": "66148af8-f6a4-4572-9ed2-f27e87e41f34",
+            "vlm_dfn_uuid": "04aa8545-ab4a-4a2c-ab50-cc99514a78de"
+          },
+          {
+            "meta_disk": "internal",
+            "device_path": "/dev/drbd1006",
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "921af4e0-ff6d-43d6-b56a-a3f8cd45678f",
+            "vlm_minor_nr": 1006,
+            "backing_disk": "/dev/drbdpool/OpenNebula-Image-196_00000",
+            "vlm_uuid": "3e9e3582-71c9-4813-b322-8ab005bda28b",
+            "vlm_dfn_uuid": "f016717e-834a-43b1-af47-a8fa30fed65e"
+          },
+          {
+            "meta_disk": "internal",
+            "device_path": "/dev/drbd1000",
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "921af4e0-ff6d-43d6-b56a-a3f8cd45678f",
+            "vlm_minor_nr": 1000,
+            "backing_disk": "/dev/drbdpool/OpenNebula-Image-198_00000",
+            "vlm_uuid": "c61c6832-aba3-46c9-b01f-4952380a955f",
+            "vlm_dfn_uuid": "f3bc0824-0eda-47f3-8068-7c33f3472d22"
+          },
+          {
+            "meta_disk": "internal",
+            "device_path": "/dev/drbd1003",
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "921af4e0-ff6d-43d6-b56a-a3f8cd45678f",
+            "vlm_minor_nr": 1003,
+            "backing_disk": "/dev/drbdpool/OpenNebula-Image-199_00000",
+            "vlm_uuid": "c29bbba5-5ab9-4a55-92ef-7403e4a4adee",
+            "vlm_dfn_uuid": "7fff48f4-1781-4bb1-8614-fd845a4a592d"
+          },
+          {
+            "meta_disk": "internal",
+            "device_path": "/dev/drbd1001",
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "921af4e0-ff6d-43d6-b56a-a3f8cd45678f",
+            "vlm_minor_nr": 1001,
+            "backing_disk": "/dev/drbdpool/OpenNebula-Image-207_00000",
+            "vlm_uuid": "05f00795-05c0-4521-b712-e04a1412d09d",
+            "vlm_dfn_uuid": "cb6c1a1e-81f0-4f4e-8d1d-dbfd553e6ef2"
+          },
+          {
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "921af4e0-ff6d-43d6-b56a-a3f8cd45678f",
+            "vlm_minor_nr": 1002,
+            "vlm_uuid": "92d50f0a-0cb5-4e41-af4e-253584db207f",
+            "vlm_props": [
+              {
+                "value": "OpenNebula-Image-207",
+                "key": "RestoreFromResource"
+              },
+              {
+                "value": "OpenNebula-Image-207-snap",
+                "key": "RestoreFromSnapshot"
+              }
+            ],
+            "vlm_dfn_uuid": "c66147da-ca2e-4ce2-a0ae-5bdd6d044196"
+          }
+        ],
+        "node_name": "boudicca",
+        "props": [
+          {
+            "value": "drbdpool",
+            "key": "StorDriver/LvmVg"
+          },
+          {
+            "value": "drbdthinpool",
+            "key": "StorDriver/ThinPool"
+          }
+        ],
+        "free_space": {
+          "free_capacity": 11315961,
+          "stor_pool_uuid": "921af4e0-ff6d-43d6-b56a-a3f8cd45678f",
+          "stor_pool_name": "thin",
+          "total_capacity": 14663680
+        }
+      },
+      {
+        "stor_pool_dfn_uuid": "3d6d66f2-d966-4aad-bdab-740db8341c4a",
+        "node_uuid": "172da4c8-250a-468f-bc0c-f4a4fd5d8d04",
+        "stor_pool_name": "thin",
+        "stor_pool_uuid": "254472cf-fad9-4d0b-a57b-f783c40ac179",
+        "static_traits": [
+          {
+            "value": "Thin",
+            "key": "Provisioning"
+          },
+          {
+            "value": "true",
+            "key": "SupportsSnapshots"
+          }
+        ],
+        "driver": "LvmThinDriver",
+        "node_name": "charlemagne",
+        "props": [
+          {
+            "value": "drbdpool",
+            "key": "StorDriver/LvmVg"
+          },
+          {
+            "value": "drbdthinpool",
+            "key": "StorDriver/ThinPool"
+          }
+        ],
+        "free_space": {
+          "free_capacity": 14663680,
+          "stor_pool_uuid": "254472cf-fad9-4d0b-a57b-f783c40ac179",
+          "stor_pool_name": "thin",
+          "total_capacity": 14663680
+        }
+      }
+    ]
+  }
+]
+"""
+
 
 def test_path():
     res = resource.Resource(name="bill")
@@ -1200,3 +1461,48 @@ def test_deployment_nodes():
 def test_get_node_interface():
     res = resource.Resource(name="bill")
     assert res._get_node_interface(INTERFACE_DATA, "vercingetorix") == "192.168.6.190"
+
+
+def test_space_reporting():
+    res = resource.Resource(name="test-resource-please-ignore", storage_pool="thin")
+    res._update_storage_info(STORAGE_POOL_DATA_0)
+    assert res._storage_pool_free_MiB == 37310266
+    assert res._storage_pool_used_MiB == 6680774
+    assert res._storage_pool_total_MiB == 43991040
+
+    # More redundancy means less usable space.
+    res = resource.Resource(
+        name="test-resource-please-ignore", storage_pool="thin", auto_place="4"
+    )
+    res._update_storage_info(STORAGE_POOL_DATA_0)
+    assert res._storage_pool_free_MiB == 9327566
+    assert res._storage_pool_used_MiB == 1670194
+    assert res._storage_pool_total_MiB == 10997760
+
+    # Node-based deployments can only use the space from those nodes.
+    res = resource.Resource(
+        name="test-resource-please-ignore", storage_pool="thin", nodes=["attila"]
+    )
+    res._update_storage_info(STORAGE_POOL_DATA_0)
+    assert res._storage_pool_free_MiB == 11330625
+    assert res._storage_pool_used_MiB == 3333055
+    assert res._storage_pool_total_MiB == 14663680
+
+    # Node-based deployments can only use the space from those nodes.
+    res = resource.Resource(
+        name="test-resource-please-ignore",
+        storage_pool="thin",
+        nodes=["attila", "boudicca"],
+    )
+    res._update_storage_info(STORAGE_POOL_DATA_0)
+    assert res._storage_pool_free_MiB == 22646586
+    assert res._storage_pool_used_MiB == 6680774
+    assert res._storage_pool_total_MiB == 29327360
+
+    with pytest.raises(KeyError):
+        res = resource.Resource(
+            name="test-resource-please-ignore",
+            storage_pool="thin",
+            nodes=["attila", "boudicca", "bogus.node"],
+        )
+        res._update_storage_info(STORAGE_POOL_DATA_0)

@@ -47,6 +47,9 @@ class Resource(object):
             self._auto_place = 1
         self._path = None
         self._sizeMiB = sizeMiB
+        self._storage_pool_free_MiB = None
+        self._storage_pool_used_MiB = None
+        self._storage_pool_total_MiB = None
 
         def __str__(self):
             return "resource name: {}, size in MiB: {}, storage_pool: {}, auto_place: {}, nodes: {}".format(
@@ -225,7 +228,72 @@ class Resource(object):
 
     @property
     def auto_place(self):
+        if self._auto_place is None:
+            return None
         return str(self._auto_place)
+
+    @property
+    def storage_pool_free_MiB(self):
+        if self._storage_pool_free_MiB == None:
+            self.update_storage_info()
+        return self._storage_pool_free_MiB
+
+    @property
+    def storage_pool_used_MiB(self):
+        if self._storage_pool_used_MiB == None:
+            self.update_storage_info()
+        return self._storage_pool_used_MiB
+
+    @property
+    def storage_pool_total_MiB(self):
+        if self._storage_pool_total_MiB == None:
+            self.update_storage_info()
+        return self._storage_pool_total_MiB
+
+    def update_storage_info(self):
+        self._update_storage_info(self._run_command("storage-pool", "list"))
+
+    def _update_storage_info(self, sp_info):
+        pool_data = json.loads(sp_info)[0]["stor_pools"]
+        self._storage_pool_total_MiB = 0
+        self._storage_pool_free_MiB = 0
+        self._storage_pool_used_MiB = 0
+
+        free_space_by_node = {}
+
+        for pool in list(
+            filter(lambda x: x["stor_pool_name"] == self.storage_pool, pool_data)
+        ):
+            free_space_by_node[pool["node_name"]] = pool["free_space"]
+
+        if self.nodes:
+            for node in self.nodes:
+                try:
+                    self._storage_pool_total_MiB += free_space_by_node[node].get(
+                        "total_capacity", 0
+                    )
+                    self._storage_pool_free_MiB += free_space_by_node[node].get(
+                        "free_capacity", 0
+                    )
+                except KeyError:
+                    util.error_message(
+                        "Node {} does not appear to contain storage pool {}".format(
+                            self.name, self.storage_pool
+                        )
+                    )
+                    raise
+        else:
+            for space_info in free_space_by_node.values():
+                self._storage_pool_total_MiB += space_info.get(
+                    "total_capacity", 0
+                ) // int(self.auto_place)
+                self._storage_pool_free_MiB += space_info.get(
+                    "free_capacity", 0
+                ) // int(self.auto_place)
+
+        self._storage_pool_used_MiB = (
+            self._storage_pool_total_MiB - self._storage_pool_free_MiB
+        )
 
     def _run_command(self, command, clean_on_failure=False):
         if not self._controllers:
