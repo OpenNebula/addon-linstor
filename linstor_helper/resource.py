@@ -188,14 +188,22 @@ class Resource(object):
     @path.setter
     def path(self, list_output):
         res_states = json.loads(list_output)[0]["resources"]
-        self._path = list(
-            filter(
-                lambda x: x["vlm_nr"] == 0,
-                list(map(lambda x: x["vlms"], filter(self._match_nodes, res_states)))[
-                    0
-                ],
+        try:
+            self._path = list(
+                filter(
+                    lambda x: x["vlm_nr"] == 0,
+                    list(
+                        map(lambda x: x["vlms"], filter(self._match_nodes, res_states))
+                    )[0],
+                )
+            )[0]["device_path"]
+        except KeyError:
+            util.error_message(
+                "Unable to locate device path for {}, please ensure the health of this reource".format(
+                    self.name
+                )
             )
-        )[0]["device_path"]
+            raise
 
     @property
     def nodes(self):

@@ -19,9 +19,11 @@ limitations under the License.
 
 import json
 
+import pytest
+
 from linstor_helper import resource
 
-NODE_DATA = """
+NODE_DATA_0 = """
 [
   {
     "resource_states": [
@@ -430,20 +432,767 @@ INTERFACE_DATA = """
 ]
 """
 
+NODE_DATA_1 = """
+[
+  {
+    "resource_states": [
+      {
+        "vlm_states": [
+          {
+            "disk_state": "UpToDate",
+            "vlm_nr": 0
+          }
+        ],
+        "in_use": false,
+        "rsc_name": "OpenNebula-Image-199",
+        "node_name": "boudicca"
+      },
+      {
+        "vlm_states": [
+          {
+            "disk_state": "UpToDate",
+            "vlm_nr": 0
+          }
+        ],
+        "in_use": false,
+        "rsc_name": "OpenNebula-Image-198",
+        "node_name": "boudicca"
+      },
+      {
+        "vlm_states": [
+          {
+            "disk_state": "UpToDate",
+            "vlm_nr": 0
+          }
+        ],
+        "in_use": false,
+        "rsc_name": "OpenNebula-Image-196",
+        "node_name": "boudicca"
+      },
+      {
+        "vlm_states": [
+          {
+            "disk_state": "UpToDate",
+            "vlm_nr": 0
+          }
+        ],
+        "in_use": false,
+        "rsc_name": "OpenNebula-Image-207",
+        "node_name": "boudicca"
+      },
+      {
+        "vlm_states": [
+          {
+            "disk_state": "UpToDate",
+            "vlm_nr": 0
+          }
+        ],
+        "in_use": false,
+        "rsc_name": "OpenNebula-Image-195",
+        "node_name": "boudicca"
+      },
+      {
+        "vlm_states": [
+          {
+            "disk_state": "Diskless",
+            "vlm_nr": 0
+          }
+        ],
+        "in_use": false,
+        "rsc_name": "OpenNebula-Image-199",
+        "node_name": "sam"
+      },
+      {
+        "vlm_states": [
+          {
+            "disk_state": "Diskless",
+            "vlm_nr": 0
+          }
+        ],
+        "in_use": false,
+        "rsc_name": "OpenNebula-Image-210-vm58-disk1",
+        "node_name": "sam"
+      },
+      {
+        "vlm_states": [
+          {
+            "disk_state": "UpToDate",
+            "vlm_nr": 0
+          }
+        ],
+        "in_use": false,
+        "rsc_name": "OpenNebula-Image-210",
+        "node_name": "charlemagne"
+      },
+      {
+        "vlm_states": [
+          {
+            "disk_state": "Diskless",
+            "vlm_nr": 0
+          }
+        ],
+        "in_use": false,
+        "rsc_name": "OpenNebula-Image-210-vm58-disk1",
+        "node_name": "charlemagne"
+      },
+      {
+        "vlm_states": [
+          {
+            "disk_state": "UpToDate",
+            "vlm_nr": 0
+          }
+        ],
+        "in_use": false,
+        "rsc_name": "OpenNebula-Image-210",
+        "node_name": "attila"
+      },
+      {
+        "vlm_states": [
+          {
+            "disk_state": "UpToDate",
+            "vlm_nr": 0
+          }
+        ],
+        "in_use": false,
+        "rsc_name": "OpenNebula-Image-199",
+        "node_name": "attila"
+      },
+      {
+        "vlm_states": [
+          {
+            "disk_state": "Diskless",
+            "vlm_nr": 0
+          }
+        ],
+        "in_use": false,
+        "rsc_name": "OpenNebula-Image-210-vm58-disk1",
+        "node_name": "attila"
+      },
+      {
+        "vlm_states": [
+          {
+            "disk_state": "UpToDate",
+            "vlm_nr": 0
+          }
+        ],
+        "in_use": false,
+        "rsc_name": "OpenNebula-Image-198",
+        "node_name": "attila"
+      },
+      {
+        "vlm_states": [
+          {
+            "disk_state": "UpToDate",
+            "vlm_nr": 0
+          }
+        ],
+        "in_use": false,
+        "rsc_name": "OpenNebula-Image-196",
+        "node_name": "attila"
+      },
+      {
+        "vlm_states": [
+          {
+            "disk_state": "UpToDate",
+            "vlm_nr": 0
+          }
+        ],
+        "in_use": false,
+        "rsc_name": "OpenNebula-Image-207",
+        "node_name": "attila"
+      },
+      {
+        "vlm_states": [
+          {
+            "disk_state": "UpToDate",
+            "vlm_nr": 0
+          }
+        ],
+        "in_use": false,
+        "rsc_name": "OpenNebula-Image-195",
+        "node_name": "attila"
+      }
+    ],
+    "resources": [
+      {
+        "vlms": [
+          {
+            "meta_disk": "internal",
+            "device_path": "/dev/drbd1005",
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "193bd06a-1267-4478-ac23-85f75290f14b",
+            "vlm_minor_nr": 1005,
+            "backing_disk": "/dev/drbdpool/OpenNebula-Image-195_00000",
+            "vlm_uuid": "5d6c0701-c251-409a-bf73-bac41155cd5d",
+            "vlm_dfn_uuid": "04aa8545-ab4a-4a2c-ab50-cc99514a78de"
+          }
+        ],
+        "node_uuid": "9198fcab-2ed6-4039-8385-2e25cfd2aa35",
+        "uuid": "9f9af81a-e4c5-4c02-a14d-cda6842c23f4",
+        "node_name": "attila",
+        "node_id": 0,
+        "props": [
+          {
+            "value": "thin",
+            "key": "AutoSelectedStorPoolName"
+          },
+          {
+            "value": "7",
+            "key": "PeerSlots"
+          },
+          {
+            "value": "thin",
+            "key": "StorPoolName"
+          }
+        ],
+        "rsc_dfn_uuid": "927a0e4e-c9b1-41b6-a98c-6b159869171c",
+        "name": "OpenNebula-Image-195"
+      },
+      {
+        "vlms": [
+          {
+            "meta_disk": "internal",
+            "device_path": "/dev/drbd1005",
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "921af4e0-ff6d-43d6-b56a-a3f8cd45678f",
+            "vlm_minor_nr": 1005,
+            "backing_disk": "/dev/drbdpool/OpenNebula-Image-195_00000",
+            "vlm_uuid": "66148af8-f6a4-4572-9ed2-f27e87e41f34",
+            "vlm_dfn_uuid": "04aa8545-ab4a-4a2c-ab50-cc99514a78de"
+          }
+        ],
+        "node_uuid": "10f01093-2516-4d30-bc8d-a7b1ab5e72b2",
+        "uuid": "eb34e076-ab64-4074-81e8-7df468230e1c",
+        "node_name": "boudicca",
+        "node_id": 1,
+        "props": [
+          {
+            "value": "thin",
+            "key": "AutoSelectedStorPoolName"
+          },
+          {
+            "value": "7",
+            "key": "PeerSlots"
+          },
+          {
+            "value": "thin",
+            "key": "StorPoolName"
+          }
+        ],
+        "rsc_dfn_uuid": "927a0e4e-c9b1-41b6-a98c-6b159869171c",
+        "name": "OpenNebula-Image-195"
+      },
+      {
+        "vlms": [
+          {
+            "meta_disk": "internal",
+            "device_path": "/dev/drbd1006",
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "193bd06a-1267-4478-ac23-85f75290f14b",
+            "vlm_minor_nr": 1006,
+            "backing_disk": "/dev/drbdpool/OpenNebula-Image-196_00000",
+            "vlm_uuid": "6cd16507-62bc-4d18-b6f2-3e7cf25fab8e",
+            "vlm_dfn_uuid": "f016717e-834a-43b1-af47-a8fa30fed65e"
+          }
+        ],
+        "node_uuid": "9198fcab-2ed6-4039-8385-2e25cfd2aa35",
+        "uuid": "80ba4ebe-90c9-4f47-8ae6-6dd16841418c",
+        "node_name": "attila",
+        "node_id": 0,
+        "props": [
+          {
+            "value": "thin",
+            "key": "AutoSelectedStorPoolName"
+          },
+          {
+            "value": "7",
+            "key": "PeerSlots"
+          },
+          {
+            "value": "thin",
+            "key": "StorPoolName"
+          }
+        ],
+        "rsc_dfn_uuid": "b9fc71ae-94f4-4034-9a35-0fc288a0b253",
+        "name": "OpenNebula-Image-196"
+      },
+      {
+        "vlms": [
+          {
+            "meta_disk": "internal",
+            "device_path": "/dev/drbd1006",
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "921af4e0-ff6d-43d6-b56a-a3f8cd45678f",
+            "vlm_minor_nr": 1006,
+            "backing_disk": "/dev/drbdpool/OpenNebula-Image-196_00000",
+            "vlm_uuid": "3e9e3582-71c9-4813-b322-8ab005bda28b",
+            "vlm_dfn_uuid": "f016717e-834a-43b1-af47-a8fa30fed65e"
+          }
+        ],
+        "node_uuid": "10f01093-2516-4d30-bc8d-a7b1ab5e72b2",
+        "uuid": "c7f6c359-c363-4334-b1eb-dffd5a093e3d",
+        "node_name": "boudicca",
+        "node_id": 1,
+        "props": [
+          {
+            "value": "thin",
+            "key": "AutoSelectedStorPoolName"
+          },
+          {
+            "value": "7",
+            "key": "PeerSlots"
+          },
+          {
+            "value": "thin",
+            "key": "StorPoolName"
+          }
+        ],
+        "rsc_dfn_uuid": "b9fc71ae-94f4-4034-9a35-0fc288a0b253",
+        "name": "OpenNebula-Image-196"
+      },
+      {
+        "vlms": [
+          {
+            "meta_disk": "internal",
+            "device_path": "/dev/drbd1000",
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "193bd06a-1267-4478-ac23-85f75290f14b",
+            "vlm_minor_nr": 1000,
+            "backing_disk": "/dev/drbdpool/OpenNebula-Image-198_00000",
+            "vlm_uuid": "a11c654d-519f-48a2-947f-5e200088b53b",
+            "vlm_dfn_uuid": "f3bc0824-0eda-47f3-8068-7c33f3472d22"
+          }
+        ],
+        "node_uuid": "9198fcab-2ed6-4039-8385-2e25cfd2aa35",
+        "uuid": "d4a0d5b0-9baf-4909-b533-da48a3697d76",
+        "node_name": "attila",
+        "node_id": 0,
+        "props": [
+          {
+            "value": "thin",
+            "key": "AutoSelectedStorPoolName"
+          },
+          {
+            "value": "7",
+            "key": "PeerSlots"
+          },
+          {
+            "value": "thin",
+            "key": "StorPoolName"
+          }
+        ],
+        "rsc_dfn_uuid": "32a7fc07-922e-48c5-8cf5-8e1723e5dd11",
+        "name": "OpenNebula-Image-198"
+      },
+      {
+        "vlms": [
+          {
+            "meta_disk": "internal",
+            "device_path": "/dev/drbd1000",
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "921af4e0-ff6d-43d6-b56a-a3f8cd45678f",
+            "vlm_minor_nr": 1000,
+            "backing_disk": "/dev/drbdpool/OpenNebula-Image-198_00000",
+            "vlm_uuid": "c61c6832-aba3-46c9-b01f-4952380a955f",
+            "vlm_dfn_uuid": "f3bc0824-0eda-47f3-8068-7c33f3472d22"
+          }
+        ],
+        "node_uuid": "10f01093-2516-4d30-bc8d-a7b1ab5e72b2",
+        "uuid": "91fe9f1e-a2a7-465f-b172-009879e56acf",
+        "node_name": "boudicca",
+        "node_id": 1,
+        "props": [
+          {
+            "value": "thin",
+            "key": "AutoSelectedStorPoolName"
+          },
+          {
+            "value": "7",
+            "key": "PeerSlots"
+          },
+          {
+            "value": "thin",
+            "key": "StorPoolName"
+          }
+        ],
+        "rsc_dfn_uuid": "32a7fc07-922e-48c5-8cf5-8e1723e5dd11",
+        "name": "OpenNebula-Image-198"
+      },
+      {
+        "vlms": [
+          {
+            "meta_disk": "internal",
+            "device_path": "/dev/drbd1003",
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "193bd06a-1267-4478-ac23-85f75290f14b",
+            "vlm_minor_nr": 1003,
+            "backing_disk": "/dev/drbdpool/OpenNebula-Image-199_00000",
+            "vlm_uuid": "0df0d836-da0d-409d-81e5-8ad9e015b9c9",
+            "vlm_dfn_uuid": "7fff48f4-1781-4bb1-8614-fd845a4a592d"
+          }
+        ],
+        "node_uuid": "9198fcab-2ed6-4039-8385-2e25cfd2aa35",
+        "uuid": "13bcaec3-dce4-492e-ae2d-83612b717ed7",
+        "node_name": "attila",
+        "node_id": 0,
+        "props": [
+          {
+            "value": "thin",
+            "key": "AutoSelectedStorPoolName"
+          },
+          {
+            "value": "7",
+            "key": "PeerSlots"
+          },
+          {
+            "value": "thin",
+            "key": "StorPoolName"
+          }
+        ],
+        "rsc_dfn_uuid": "5d2f1960-b96a-4451-9a3d-d70f2f315667",
+        "name": "OpenNebula-Image-199"
+      },
+      {
+        "vlms": [
+          {
+            "meta_disk": "internal",
+            "device_path": "/dev/drbd1003",
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "921af4e0-ff6d-43d6-b56a-a3f8cd45678f",
+            "vlm_minor_nr": 1003,
+            "backing_disk": "/dev/drbdpool/OpenNebula-Image-199_00000",
+            "vlm_uuid": "c29bbba5-5ab9-4a55-92ef-7403e4a4adee",
+            "vlm_dfn_uuid": "7fff48f4-1781-4bb1-8614-fd845a4a592d"
+          }
+        ],
+        "node_uuid": "10f01093-2516-4d30-bc8d-a7b1ab5e72b2",
+        "uuid": "17ea9287-ac24-4659-a63c-a8447af01083",
+        "node_name": "boudicca",
+        "node_id": 1,
+        "props": [
+          {
+            "value": "thin",
+            "key": "AutoSelectedStorPoolName"
+          },
+          {
+            "value": "7",
+            "key": "PeerSlots"
+          },
+          {
+            "value": "thin",
+            "key": "StorPoolName"
+          }
+        ],
+        "rsc_dfn_uuid": "5d2f1960-b96a-4451-9a3d-d70f2f315667",
+        "name": "OpenNebula-Image-199"
+      },
+      {
+        "rsc_flags": [
+          "DISKLESS"
+        ],
+        "vlms": [
+          {
+            "meta_disk": "internal",
+            "device_path": "/dev/drbd1003",
+            "vlm_nr": 0,
+            "stor_pool_name": "DfltDisklessStorPool",
+            "stor_pool_uuid": "01f14bb8-561c-452a-b100-fcb60f617381",
+            "vlm_minor_nr": 1003,
+            "backing_disk": "none",
+            "vlm_uuid": "45f0b05d-4b25-4240-a047-4c2919ba97cb",
+            "vlm_dfn_uuid": "7fff48f4-1781-4bb1-8614-fd845a4a592d"
+          }
+        ],
+        "node_uuid": "7594b663-08c2-4543-9a92-8679cfcade24",
+        "uuid": "ae0b2efb-9770-4ae7-bb24-2d4da0898a52",
+        "node_name": "sam",
+        "node_id": 2,
+        "props": [
+          {
+            "value": "7",
+            "key": "PeerSlots"
+          },
+          {
+            "value": "DfltDisklessStorPool",
+            "key": "StorPoolName"
+          }
+        ],
+        "rsc_dfn_uuid": "5d2f1960-b96a-4451-9a3d-d70f2f315667",
+        "name": "OpenNebula-Image-199"
+      },
+      {
+        "vlms": [
+          {
+            "meta_disk": "internal",
+            "device_path": "/dev/drbd1001",
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "193bd06a-1267-4478-ac23-85f75290f14b",
+            "vlm_minor_nr": 1001,
+            "backing_disk": "/dev/drbdpool/OpenNebula-Image-207_00000",
+            "vlm_uuid": "5a36de3e-fca2-4593-b706-cdc7a170ed2a",
+            "vlm_dfn_uuid": "cb6c1a1e-81f0-4f4e-8d1d-dbfd553e6ef2"
+          }
+        ],
+        "node_uuid": "9198fcab-2ed6-4039-8385-2e25cfd2aa35",
+        "uuid": "f95244da-39ff-4daa-9259-f0d03912c36e",
+        "node_name": "attila",
+        "node_id": 0,
+        "props": [
+          {
+            "value": "thin",
+            "key": "AutoSelectedStorPoolName"
+          },
+          {
+            "value": "7",
+            "key": "PeerSlots"
+          },
+          {
+            "value": "thin",
+            "key": "StorPoolName"
+          }
+        ],
+        "rsc_dfn_uuid": "90925993-54d8-458b-a028-ab66893a5f91",
+        "name": "OpenNebula-Image-207"
+      },
+      {
+        "vlms": [
+          {
+            "meta_disk": "internal",
+            "device_path": "/dev/drbd1001",
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "921af4e0-ff6d-43d6-b56a-a3f8cd45678f",
+            "vlm_minor_nr": 1001,
+            "backing_disk": "/dev/drbdpool/OpenNebula-Image-207_00000",
+            "vlm_uuid": "05f00795-05c0-4521-b712-e04a1412d09d",
+            "vlm_dfn_uuid": "cb6c1a1e-81f0-4f4e-8d1d-dbfd553e6ef2"
+          }
+        ],
+        "node_uuid": "10f01093-2516-4d30-bc8d-a7b1ab5e72b2",
+        "uuid": "4e41f53e-030e-4a88-84fe-fbfedf002568",
+        "node_name": "boudicca",
+        "node_id": 1,
+        "props": [
+          {
+            "value": "thin",
+            "key": "AutoSelectedStorPoolName"
+          },
+          {
+            "value": "7",
+            "key": "PeerSlots"
+          },
+          {
+            "value": "thin",
+            "key": "StorPoolName"
+          }
+        ],
+        "rsc_dfn_uuid": "90925993-54d8-458b-a028-ab66893a5f91",
+        "name": "OpenNebula-Image-207"
+      },
+      {
+        "vlms": [
+          {
+            "meta_disk": "internal",
+            "device_path": "/dev/drbd1002",
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "193bd06a-1267-4478-ac23-85f75290f14b",
+            "vlm_minor_nr": 1002,
+            "backing_disk": "/dev/drbdpool/OpenNebula-Image-210_00000",
+            "vlm_uuid": "3533f761-fb68-46ec-9b4b-2d60b3125369",
+            "vlm_dfn_uuid": "adbde4ef-004f-411b-b083-a44dfd627246"
+          }
+        ],
+        "node_uuid": "9198fcab-2ed6-4039-8385-2e25cfd2aa35",
+        "uuid": "be31a71f-09d6-4789-9190-b692ea0688a5",
+        "node_name": "attila",
+        "node_id": 1,
+        "props": [
+          {
+            "value": "thin",
+            "key": "AutoSelectedStorPoolName"
+          },
+          {
+            "value": "7",
+            "key": "PeerSlots"
+          },
+          {
+            "value": "thin",
+            "key": "StorPoolName"
+          }
+        ],
+        "rsc_dfn_uuid": "7bda375f-adf5-4fe1-bf3f-56f16eda3cc1",
+        "name": "OpenNebula-Image-210"
+      },
+      {
+        "vlms": [
+          {
+            "meta_disk": "internal",
+            "device_path": "/dev/drbd1002",
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "254472cf-fad9-4d0b-a57b-f783c40ac179",
+            "vlm_minor_nr": 1002,
+            "backing_disk": "/dev/drbdpool/OpenNebula-Image-210_00000",
+            "vlm_uuid": "a9242b62-aff8-4d68-866a-835ea0fd2254",
+            "vlm_dfn_uuid": "adbde4ef-004f-411b-b083-a44dfd627246"
+          }
+        ],
+        "node_uuid": "172da4c8-250a-468f-bc0c-f4a4fd5d8d04",
+        "uuid": "0a87601b-6ec7-498b-881b-90131645613e",
+        "node_name": "charlemagne",
+        "node_id": 0,
+        "props": [
+          {
+            "value": "thin",
+            "key": "AutoSelectedStorPoolName"
+          },
+          {
+            "value": "7",
+            "key": "PeerSlots"
+          },
+          {
+            "value": "thin",
+            "key": "StorPoolName"
+          }
+        ],
+        "rsc_dfn_uuid": "7bda375f-adf5-4fe1-bf3f-56f16eda3cc1",
+        "name": "OpenNebula-Image-210"
+      },
+      {
+        "vlms": [
+          {
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "193bd06a-1267-4478-ac23-85f75290f14b",
+            "vlm_minor_nr": 1004,
+            "vlm_uuid": "5cb2486c-c6a5-4c45-bb0f-890dd6e42c05",
+            "vlm_props": [
+              {
+                "value": "OpenNebula-Image-210",
+                "key": "RestoreFromResource"
+              },
+              {
+                "value": "OpenNebula-Image-210-snap",
+                "key": "RestoreFromSnapshot"
+              }
+            ],
+            "vlm_dfn_uuid": "59adbda5-19db-48d5-a702-173fb61b0634"
+          }
+        ],
+        "node_uuid": "9198fcab-2ed6-4039-8385-2e25cfd2aa35",
+        "uuid": "f2266b22-6e4c-4f75-bd6f-af6e7b5a87ab",
+        "node_name": "attila",
+        "node_id": 0,
+        "props": [
+          {
+            "value": "7",
+            "key": "PeerSlots"
+          }
+        ],
+        "rsc_dfn_uuid": "5c3eeb9f-89e3-4938-a269-3d3a944bdba9",
+        "name": "OpenNebula-Image-210-vm58-disk1"
+      },
+      {
+        "vlms": [
+          {
+            "vlm_nr": 0,
+            "stor_pool_name": "thin",
+            "stor_pool_uuid": "254472cf-fad9-4d0b-a57b-f783c40ac179",
+            "vlm_minor_nr": 1004,
+            "vlm_uuid": "336adbc0-98f9-422c-939a-6472bd11a8c4",
+            "vlm_props": [
+              {
+                "value": "OpenNebula-Image-210",
+                "key": "RestoreFromResource"
+              },
+              {
+                "value": "OpenNebula-Image-210-snap",
+                "key": "RestoreFromSnapshot"
+              }
+            ],
+            "vlm_dfn_uuid": "59adbda5-19db-48d5-a702-173fb61b0634"
+          }
+        ],
+        "node_uuid": "172da4c8-250a-468f-bc0c-f4a4fd5d8d04",
+        "uuid": "73016558-f2e9-4401-832a-d33b614470e7",
+        "node_name": "charlemagne",
+        "node_id": 1,
+        "props": [
+          {
+            "value": "7",
+            "key": "PeerSlots"
+          }
+        ],
+        "rsc_dfn_uuid": "5c3eeb9f-89e3-4938-a269-3d3a944bdba9",
+        "name": "OpenNebula-Image-210-vm58-disk1"
+      },
+      {
+        "rsc_flags": [
+          "DISKLESS"
+        ],
+        "vlms": [
+          {
+            "meta_disk": "internal",
+            "device_path": "/dev/drbd1004",
+            "vlm_nr": 0,
+            "stor_pool_name": "DfltDisklessStorPool",
+            "stor_pool_uuid": "01f14bb8-561c-452a-b100-fcb60f617381",
+            "vlm_minor_nr": 1004,
+            "backing_disk": "none",
+            "vlm_uuid": "fd722acf-4c50-470b-90fd-08c1c5d7f7e6",
+            "vlm_dfn_uuid": "59adbda5-19db-48d5-a702-173fb61b0634"
+          }
+        ],
+        "node_uuid": "7594b663-08c2-4543-9a92-8679cfcade24",
+        "uuid": "44ae4561-bbc3-4711-91f4-c7935d92d0c2",
+        "node_name": "sam",
+        "node_id": 2,
+        "props": [
+          {
+            "value": "7",
+            "key": "PeerSlots"
+          },
+          {
+            "value": "DfltDisklessStorPool",
+            "key": "StorPoolName"
+          }
+        ],
+        "rsc_dfn_uuid": "5c3eeb9f-89e3-4938-a269-3d3a944bdba9",
+        "name": "OpenNebula-Image-210-vm58-disk1"
+      }
+    ]
+  }
+]
+"""
+
 
 def test_path():
     res = resource.Resource(name="bill")
-    res.path = NODE_DATA
-    assert res.path == "/dev/drbd1000"
+    res.path = NODE_DATA_0
+    assert res._path == "/dev/drbd1000"
 
     res = resource.Resource(name="bill2000")
-    res.path = NODE_DATA
-    assert res.path == "/dev/drbd1003"
+    res.path = NODE_DATA_0
+    assert res._path == "/dev/drbd1003"
+
+    res = resource.Resource(name="OpenNebula-Image-210-vm58-disk1")
+    with pytest.raises(KeyError) as e_info:
+        res.path = NODE_DATA_1
 
 
 def test_deployment_nodes():
     res = resource.Resource(name="bill")
-    assert set(res._deployed_nodes(json.loads(NODE_DATA)[0]["resources"])) == set(
+    assert set(res._deployed_nodes(json.loads(NODE_DATA_0)[0]["resources"])) == set(
         ["charlemagne", "boudicca", "attila"]
     )
 
