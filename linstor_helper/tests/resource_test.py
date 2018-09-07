@@ -1466,38 +1466,40 @@ def test_get_node_interface():
 def test_space_reporting():
     res = resource.Resource(name="test-resource-please-ignore", storage_pool="thin")
     res._update_storage_info(STORAGE_POOL_DATA_0)
-    assert res._storage_pool_free_MiB == 37310266
-    assert res._storage_pool_used_MiB == 6680774
-    assert res._storage_pool_total_MiB == 43991040
+    assert res._storage_pool_free_MiB == 36435
+    assert res._storage_pool_used_MiB == 6525
+    assert res._storage_pool_total_MiB == 42960
 
     # More redundancy means less usable space.
     res = resource.Resource(
         name="test-resource-please-ignore", storage_pool="thin", auto_place="4"
     )
     res._update_storage_info(STORAGE_POOL_DATA_0)
-    assert res._storage_pool_free_MiB == 9327566
-    assert res._storage_pool_used_MiB == 1670194
-    assert res._storage_pool_total_MiB == 10997760
+    assert res._storage_pool_free_MiB == 9108
+    assert res._storage_pool_used_MiB == 1632
+    assert res._storage_pool_total_MiB == 10740
 
     # Node-based deployments can only use the space from those nodes.
     res = resource.Resource(
         name="test-resource-please-ignore", storage_pool="thin", nodes=["attila"]
     )
     res._update_storage_info(STORAGE_POOL_DATA_0)
-    assert res._storage_pool_free_MiB == 11330625
-    assert res._storage_pool_used_MiB == 3333055
-    assert res._storage_pool_total_MiB == 14663680
+    assert res._storage_pool_free_MiB == 11065
+    assert res._storage_pool_used_MiB == 3255
+    assert res._storage_pool_total_MiB == 14320
 
-    # Node-based deployments can only use the space from those nodes.
+    # Node-based deployments can only use the space from those nodes
+    # and must place them on every node, so only count the most
+    # space-restricted node.
     res = resource.Resource(
         name="test-resource-please-ignore",
         storage_pool="thin",
         nodes=["attila", "boudicca"],
     )
     res._update_storage_info(STORAGE_POOL_DATA_0)
-    assert res._storage_pool_free_MiB == 22646586
-    assert res._storage_pool_used_MiB == 6680774
-    assert res._storage_pool_total_MiB == 29327360
+    assert res._storage_pool_free_MiB == 11065
+    assert res._storage_pool_used_MiB == 3255
+    assert res._storage_pool_total_MiB == 14320
 
     with pytest.raises(KeyError):
         res = resource.Resource(

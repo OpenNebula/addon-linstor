@@ -267,14 +267,14 @@ class Resource(object):
             free_space_by_node[pool["node_name"]] = pool["free_space"]
 
         if self.nodes:
+            lowest_free_node = self.nodes[0]
             for node in self.nodes:
                 try:
-                    self._storage_pool_total_MiB += free_space_by_node[node].get(
-                        "total_capacity", 0
-                    )
-                    self._storage_pool_free_MiB += free_space_by_node[node].get(
-                        "free_capacity", 0
-                    )
+                    if (
+                        free_space_by_node[node]["total_capacity"]
+                        < free_space_by_node[node]["total_capacity"]
+                    ):
+                        lowest_free_node = node
                 except KeyError:
                     util.error_message(
                         "Node {} does not appear to contain storage pool {}".format(
@@ -282,14 +282,20 @@ class Resource(object):
                         )
                     )
                     raise
+            self._storage_pool_total_MiB += (
+                free_space_by_node[lowest_free_node].get("total_capacity", 0) // 1024
+            )
+            self._storage_pool_free_MiB += (
+                free_space_by_node[lowest_free_node].get("free_capacity", 0) // 1024
+            )
         else:
             for space_info in free_space_by_node.values():
-                self._storage_pool_total_MiB += space_info.get(
-                    "total_capacity", 0
-                ) // int(self.auto_place)
-                self._storage_pool_free_MiB += space_info.get(
-                    "free_capacity", 0
-                ) // int(self.auto_place)
+                self._storage_pool_total_MiB += (
+                    space_info.get("total_capacity", 0) // int(self.auto_place)
+                ) // 1024
+                self._storage_pool_free_MiB += (
+                    space_info.get("free_capacity", 0) // int(self.auto_place)
+                ) // 1024
 
         self._storage_pool_used_MiB = (
             self._storage_pool_total_MiB - self._storage_pool_free_MiB
