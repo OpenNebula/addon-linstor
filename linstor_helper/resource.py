@@ -130,7 +130,7 @@ class Resource(object):
         self._run_command(["resource-definition", "delete", self.name])
 
     def list(self):
-        return self._run_command(["resource", "list"])
+        return self._run_command(["-m", "resource", "list"])
 
     def deployed_nodes(self):
         return self._deployed_nodes(json.loads(self.list())[0]["resources"])
@@ -172,7 +172,7 @@ class Resource(object):
 
     def get_node_interface(self, node):
         return self._get_node_interface(
-            self._run_command(["node", "interface", "list", node]), node
+            self._run_command(["-m", "node", "interface", "list", node]), node
         )
 
     @staticmethod
@@ -251,7 +251,7 @@ class Resource(object):
         return self._storage_pool_total_MiB
 
     def update_storage_info(self):
-        self._update_storage_info(self._run_command(["storage-pool", "list"]))
+        self._update_storage_info(self._run_command(["-m", "storage-pool", "list"]))
 
     def _update_storage_info(self, sp_info):
         pool_data = json.loads(sp_info)[0]["stor_pools"]
@@ -302,10 +302,10 @@ class Resource(object):
         )
 
     def _run_command(self, command, clean_on_failure=False):
-        if not self._controllers:
-            final = ["linstor", "-m"] + command
-        else:
-            final = ["linstor", "-m", "--controllers", self._controllers] + command
+        client_opts = ["linstor", "--no-color"] + command
+        if self._controllers:
+            client_opts += ["--controllers", self._controllers]
+        final = client_opts + command
 
         util.log_info("running linstor {}".format(" ".join(command)))
 
