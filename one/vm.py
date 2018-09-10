@@ -1,31 +1,96 @@
 # -*- coding: utf-8 -*-
 """
-Linstor addon for OpenNebula
-Copyright © 2018 LINBIT USA, LLC
+OpenNebula Driver for Linstor
+Copyright 2018 LINBIT USA LLC
 
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
+  http://www.apache.org/licenses/LICENSE-2.0
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, see <http://www.gnu.org/licenses/>.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 """
+import xml.etree.ElementTree as ET
+
+from one import util
 
 
-class Create(object):
+class Vm(object):
 
     """Docstring for vm. """
 
-    def __init__(self, name):
-        self._name = name
+    def __init__(self, xml):
+        self._root = ET.fromstring(xml)
+        self._disks = {}
+        for disk in self._root.find("TEMPLATE").findall("DISK"):
+            self._disks[disk.find("DISK_ID").text] = disk
 
     @property
-    def name(self):
+    def ID(self):
         """Returns name"""
-        return self._name
+        try:
+            return self._root.find("ID").text
+        except AttributeError:
+            return ""
+
+    @property
+    def disk_IDs(self):
+        """Returns IDs of all attached disks."""
+        return list(self._disks)
+
+    def disk(self, disk_ID):
+        """Returns disk with the given ID"""
+        try:
+            return self._disks[disk_ID]
+        except KeyError:
+            util.error_message(
+                "couldn't find disk {} on vm {}".format(disk_ID, self.ID)
+            )
+            raise
+
+    def disk_image_ID(self, disk_ID):
+        """Returns disk_image_ID"""
+        try:
+            return self.disk(disk_ID).find("IMAGE_ID").text
+        except AttributeError:
+            return ""
+
+    def disk_type(self, disk_ID):
+        """Returns disk_type"""
+        try:
+            return self.disk(disk_ID).find("TYPE").text
+        except AttributeError:
+            return ""
+
+    def disk_save_as(self, disk_ID):
+        """Returns disk_save_as"""
+        try:
+            return self.disk(disk_ID).find("SAVE_AS").text
+        except AttributeError:
+            return ""
+
+    def disk_target(self, disk_ID):
+        """Returns disk_target"""
+        try:
+            return self.disk(disk_ID).find("TARGET").text
+        except AttributeError:
+            return ""
+
+    def disk_persistent(self, disk_ID):
+        """Returns disk_persistent"""
+        try:
+            return self.disk(disk_ID).find("PERSISTENT").text
+        except AttributeError:
+            return ""
+
+    def disk_source(self, disk_ID):
+        """Returns disk_source"""
+        try:
+            return self.disk(disk_ID).find("SOURCE").text
+        except AttributeError:
+            return ""

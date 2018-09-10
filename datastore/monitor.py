@@ -1,32 +1,55 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Linstor addon for OpenNebula
-Copyright © 2018 LINBIT USA, LLC
+OpenNebula Driver for Linstor
+Copyright 2018 LINBIT USA LLC
 
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
+  http://www.apache.org/licenses/LICENSE-2.0
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, see <http://www.gnu.org/licenses/>.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 """
+
 
 from __future__ import print_function
 
-import os
+import base64
 import sys
+
+from linstor_helper import resource
+from one import driver_action, util
+
+DRIVER_ACTION = sys.argv[1]
 
 
 def main():
-    """Test main function"""
-    print(os.path.dirname(os.path.abspath(__file__)), sys.argv)
+    util.log_info("Entering datastore monitor.")
+
+    driver = driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
+
+    res = resource.Resource(
+        name="MonitorProc",
+        auto_place=driver.datastore.auto_place,
+        nodes=driver.datastore.deployment_nodes,
+        storage_pool=driver.datastore.storage_pool,
+    )
+
+    print(
+        "USED_MB={}\nTOTAL_MB={}\nFREE_MB={}".format(
+            res.storage_pool_used_MiB,
+            res.storage_pool_total_MiB,
+            res.storage_pool_free_MiB,
+        )
+    )
+
+    util.log_info("Exiting datastore monitor.")
 
 
 if __name__ == "__main__":

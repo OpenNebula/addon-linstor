@@ -1,21 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Linstor addon for OpenNebula
-Copyright © 2018 LINBIT USA, LLC
+OpenNebula Driver for Linstor
+Copyright 2018 LINBIT USA LLC
 
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
+  http://www.apache.org/licenses/LICENSE-2.0
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, see <http://www.gnu.org/licenses/>.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 """
 
 from __future__ import print_function
@@ -23,10 +22,53 @@ from __future__ import print_function
 import os
 import sys
 
+from linstor_helper import resource
+from one import util
+
+SRC = sys.argv[1]
+DST = sys.argv[2]
+VM_ID = sys.argv[3]
+DS_ID = sys.argv[4]
+
 
 def main():
-    """Test main function"""
-    print(os.path.dirname(os.path.abspath(__file__)), sys.argv)
+    util.log_info("Entering tm clone")
+
+    src_path = util.arg_path(SRC).strip()
+    dst_host = util.arg_host(DST).strip()
+    dst_path = util.arg_path(DST).strip()
+    dst_dir = os.path.dirname(dst_path).strip()
+    disk_ID = dst_path.split(".")[-1].strip()
+
+    res = resource.Resource(name=src_path)
+    clone = resource.Resource("{}-vm{}-disk{}".format(res.name, VM_ID, disk_ID))
+
+    res.clone(clone.name)
+    clone.assign(dst_host)
+
+    link_command = " ; ".join(
+        [
+            "set -e",
+            "mkdir -p {}".format(dst_dir),
+            "ln -fs {} {}".format(clone.path, dst_path),
+        ]
+    )
+
+    util.ssh_exec_and_log(
+        " ".join(
+            [
+                '"{}"'.format(dst_host),
+                '"{}"'.format(link_command),
+                '"{}"'.format(
+                    "Error: Unable to link {} to {} on {}".format(
+                        clone.name, dst_path, dst_host
+                    )
+                ),
+            ]
+        )
+    )
+
+    util.log_info("Exiting tm clone")
 
 
 if __name__ == "__main__":

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 OpenNebula Driver for Linstor
@@ -18,17 +17,29 @@ limitations under the License.
 """
 
 
-import sys
+import xml.etree.ElementTree as ET
 
-from one import util
-
-
-def main():
-    util.log_info("Entering tm/snap_create")
-    util.log_info("Operation not supported!")
-    util.log_info("Entering tm/snap_create")
-    sys.exit(1)
+from one import datastore, image
 
 
-if __name__ == "__main__":
-    main()
+class DriverAction(object):
+
+    """Docstring for vm. """
+
+    def __init__(self, xml):
+        root = ET.fromstring(xml)
+
+        image_element = root.find("IMAGE")
+        if image_element is not None:
+            self._image = image.Image(ET.tostring(image_element))
+        self._datastore = datastore.Datastore(ET.tostring(root.find("DATASTORE")))
+
+    @property
+    def image(self):
+        """Returns image"""
+        return self._image
+
+    @property
+    def datastore(self):
+        """Returns datastore"""
+        return self._datastore

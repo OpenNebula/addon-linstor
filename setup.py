@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 """
-Linstor addon for OpenNebula
-Copyright © 2018 LINBIT USA, LLC
+OpenNebula Driver for Linstor
+Copyright 2018 LINBIT USA LLC
 
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
+  http://www.apache.org/licenses/LICENSE-2.0
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, see <http://www.gnu.org/licenses/>.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 """
+
 
 import os
 import pwd
@@ -26,6 +26,7 @@ from glob import glob
 from setuptools.command.install import install
 
 REMOTES_DIR = "/var/lib/one/remotes"
+DRIVER_NAME = "linstor"
 
 ONE_LOCATION = os.getenv("ONE_LOCATION")
 if ONE_LOCATION:
@@ -48,11 +49,11 @@ class OverrideInstall(install):
         install.run(self)
 
         usr = pwd.getpwnam(ONE_USER)
-        mode = 755
+        mode = 0o755
 
         for filepath in self.get_outputs():
             if REMOTES_DIR in filepath:
-                endpoint = filepath.strip(".py")
+                endpoint = filepath[:-3]
                 os.rename(filepath, endpoint)
                 os.chown(endpoint, usr.pw_uid, usr.pw_gid)
                 os.chmod(endpoint, mode)
@@ -62,11 +63,12 @@ setup(
     name="addon-linstor",
     version=version(),
     data_files=[
-        (os.path.join(REMOTES_DIR, "tm"), glob("tm/*")),
-        (os.path.join(REMOTES_DIR, "datastore"), glob("datastore/*")),
+        (os.path.join(REMOTES_DIR, "tm", DRIVER_NAME), glob("tm/*")),
+        (os.path.join(REMOTES_DIR, "datastore", DRIVER_NAME), glob("datastore/*")),
     ],
     license="GLP2",
     description="Linstor addon for OpenNebula",
+    packages=["one", "linstor_helper"],
     author="Hayley Swimelar",
     author_email="hayley@linbit.com",
     url="https://github.com/LINBIT/addon-linstor",
