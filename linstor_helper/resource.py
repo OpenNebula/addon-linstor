@@ -307,7 +307,7 @@ class Resource(object):
         else:
             final = ["linstor", "-m", "--controllers", self._controllers] + command
 
-        util.log_info("running linstor {}".format(command))
+        util.log_info("running linstor {}".format(" ".join(command)))
 
         try:
             return subprocess.check_output(
