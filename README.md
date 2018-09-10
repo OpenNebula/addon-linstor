@@ -8,14 +8,13 @@ OpenNebula.
 ## Development
 
 To contribute bug patches or new features, you can use the github Pull Request
-model. It is assumed that code and documentation are contributed under the
+feature. It is assumed that code and documentation are contributed under the
 Apache License 2.0.
 
 Before sumbitting pull requests, please run the `./format.sh` script found
 in the root of the project and test using `tox`.
 
 Support for this addon can be found at the
-[OpenNebula user forum](https://forum.opennebula.org/c/support) or the
 [DRBD-User](http://lists.linbit.com/listinfo/drbd-user) mailing list.
 
 ## Authors
@@ -50,7 +49,8 @@ Follow these steps on the Front-End node only.
 
 ### Clone the Repository and Run the Install Script.
 
-Run the following commands as either oneadmin or root:
+Run the following commands as either oneadmin or whichever user is filling the
+`ONE_USER` role (or have the `ONE_USER` environment defined):
 
 ```bash
 python setup.py install
@@ -100,8 +100,7 @@ After making these changes, restart the opennebula service.
 
 #### Overview of node Roles
 
-The Front-End node issues commands to the Storage and Host nodes via DRBD
-Manage.
+The Front-End node issues commands to the Storage and Host nodes via Linstor
 
 Storage nodes hold disk images of VMs locally.
 
@@ -215,7 +214,7 @@ bridge list still contains all of the storage nodes in the Linstor cluster.
 
 ```bash
 cat >ds.conf <<EOI
-NAME = drbdmanage_nodes
+NAME = linstor_nodes
 DS_MAD = linstor
 TM_MAD = linstor
 LINSTOR_DEPLOYMENT_NODES = "alice charlie"
@@ -239,7 +238,7 @@ process is not running locally on the Front-End:
 
 ```bash
 cat >ds.conf <<EOI
-NAME = drbdmanage_nodes
+NAME = linstor_nodes
 DS_MAD = linstor
 TM_MAD = linstor
 LINSTOR_DEPLOYMENT_NODES = "alice charlie"
