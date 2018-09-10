@@ -302,7 +302,7 @@ class Resource(object):
         )
 
     def _run_command(self, command, clean_on_failure=False):
-        client_opts = ["linstor", "--no-color"] + command
+        client_opts = ["linstor", "--no-color"]
         if self._controllers:
             client_opts += ["--controllers", self._controllers]
         final = client_opts + command
