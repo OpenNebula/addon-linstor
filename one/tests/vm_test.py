@@ -168,7 +168,7 @@ TEXT_XML_1 = """
     <HISTORY>
       <OID>0</OID>
       <SEQ>0</SEQ>
-      <HOSTNAME>sam.us.linbit</HOSTNAME>
+      <HOSTNAME>sam</HOSTNAME>
       <HID>1</HID>
       <CID>0</CID>
       <STIME>1533755221</STIME>
