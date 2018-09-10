@@ -74,7 +74,9 @@ def main():
 
     res.unassign(dst_host)
 
-    if not target_vm.disk_persistent(disk_ID):
+    if not (
+        target_vm.disk_persistent(disk_ID) or target_vm.disk_type(disk_ID) == "CDROM"
+    ):
         res.delete()
 
     util.log_info("Exiting tm delete")
