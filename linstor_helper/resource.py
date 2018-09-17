@@ -208,6 +208,28 @@ class Resource(object):
             )
             raise
 
+    def is_client(self, target_node):
+        return self._is_client(self.list(), target_node)
+
+    def _is_client(self, list_output, target_node):
+        res_states = json.loads(list_output)[0]["resources"]
+
+        deployment_state = list(
+            filter(
+                lambda x: x["node_name"] == target_node and x["name"] == self.name,
+                res_states,
+            )
+        )
+        try:
+            return "DISKLESS" in deployment_state[0].get("rsc_flags", [])
+        except IndexError:
+            util.error_message(
+                "Unable to find {} or {} in {}".format(
+                    self.name, target_node, res_states
+                )
+            )
+            raise
+
     @property
     def nodes(self):
         return self._nodes

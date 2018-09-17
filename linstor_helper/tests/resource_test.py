@@ -238,6 +238,9 @@ NODE_DATA_0 = """
         "name": "bill2000"
       },
       {
+        "rsc_flags": [
+            "DISKLESS"
+        ],
         "vlms": [
           {
             "meta_disk": "internal",
@@ -1508,3 +1511,26 @@ def test_space_reporting():
             nodes=["attila", "boudicca", "bogus.node"],
         )
         res._update_storage_info(STORAGE_POOL_DATA_0)
+
+
+def test_is_client():
+    res = resource.Resource(name="bill2000")
+    assert res._is_client(NODE_DATA_0, "boudicca") is True
+
+    res = resource.Resource(name="bill2000")
+    assert res._is_client(NODE_DATA_0, "attila") is False
+
+    res = resource.Resource(name="bill")
+    assert res._is_client(NODE_DATA_0, "boudicca") is False
+
+    res = resource.Resource(name="fake-resource")
+    with pytest.raises(IndexError):
+        assert res._is_client(NODE_DATA_0, "boudicca") is False
+
+    res = resource.Resource(name="bill2000")
+    with pytest.raises(IndexError):
+        assert res._is_client(NODE_DATA_0, "fake-node") is False
+
+    res = resource.Resource(name="fake-resource")
+    with pytest.raises(IndexError):
+        assert res._is_client(NODE_DATA_0, "fake-node") is False
