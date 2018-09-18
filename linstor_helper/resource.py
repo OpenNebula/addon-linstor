@@ -194,7 +194,7 @@ class Resource(object):
         try:
             self._path = list(
                 filter(
-                    lambda x: x["vlm_nr"] == 0,
+                    lambda x: x["vlm_nr"] == 0 and "device_path" in x,
                     list(
                         map(lambda x: x["vlms"], filter(self._match_nodes, res_states))
                     )[0],
