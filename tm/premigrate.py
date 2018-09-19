@@ -36,14 +36,37 @@ def main():
     util.log_info("Entering tm/premigrate")
 
     target_vm = vm.Vm(base64.b64decode(TEMPLATE))
+    dst_host = util.arg_host(DST_HOST).strip()
+    dst_dir = util.arg_path(DST_PATH).strip()
 
     for disk in target_vm.disk_IDs:
         res_name = target_vm.disk_source(disk)
-        if target_vm.disk_persistent(disk) != "YES":
-            res_name = "{}-vm{}-disk{}".format(res_name, VM_ID, disk)
+        #if target_vm.disk_persistent(disk) != "YES": # [phil] I do not understand this statement, removing it solves it for me!
+        #    res_name = "{}-vm{}-disk{}".format(res_name, VM_ID, disk)
         res = resource.Resource(name=res_name)
         res.assign(DST_HOST)
         res.enable_dual_primary()
+        dst_path = "{}/disk.{}".format(dst_dir, disk)
+
+        link_command = " ; ".join(
+            [
+                "set -e",
+                "mkdir -p {}".format(dst_dir),
+                "ln -fs {} {}".format(res.path, dst_path),
+            ]
+        )
+
+        util.ssh_exec_and_log(
+            " ".join(
+                [
+                    '"{}"'.format(dst_host),
+                    '"{}"'.format(link_command),
+                    '"Error: Unable to link {} to {} on {}"'.format(
+                        res.name, dst_path, dst_host
+                    ),
+                ]
+            )
+        )
 
     util.log_info("Exiting tm/premigrate")
 

@@ -50,6 +50,8 @@ def main():
 
         res.disable_dual_primary()
 
+    # [phil] TODO: remove symlink(s) and dir from the SRC machine
+
     util.log_info("Exiting tm/postmigrate")
 
 
