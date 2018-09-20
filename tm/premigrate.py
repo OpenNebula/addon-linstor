@@ -37,6 +37,7 @@ def main():
 
     target_vm = vm.Vm(base64.b64decode(TEMPLATE))
     dst_host = util.arg_host(DST_HOST).strip()
+    src_host = util.arg_host(SRC_HOST).strip()
     dst_dir = util.arg_path(DST_PATH).strip()
 
     for disk in target_vm.disk_IDs:
@@ -73,6 +74,30 @@ def main():
         args += ' "{}" '.format(arg)
 
     util.migrate_other(args)
+
+    # [phil] I guess this does not belong here, but I want working live
+    # migration with ssh system store.
+    # scp'ing context block device from the source to the destination machine
+    context_id = target_vm.context_ID
+    dst_path = "{}/disk.{}".format(dst_dir, context_id)
+    scp_command = " ".join(
+        [
+            "if test ! -e {}; then".format(dst_path),
+            "scp {}:{} {};".format(src_host, dst_path, dst_path),
+            "fi"
+        ]
+    )
+    util.ssh_exec_and_log(
+        " ".join(
+            [
+                '"{}"'.format(dst_host),
+                '"{}"'.format(scp_command),
+                '"Error: Unable to scp {} from {} to {}"'.format(
+                    dst_path, src_host, dst_host
+                ),
+            ]
+        )
+    )
 
     util.log_info("Exiting tm/premigrate")
 

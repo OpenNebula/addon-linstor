@@ -43,6 +43,10 @@ class Vm(object):
         """Returns IDs of all attached disks."""
         return list(self._disks)
 
+    @property
+    def context_ID(self):
+        return self._root.find("TEMPLATE").find("CONTEXT").find("DISK_ID").text
+
     def disk(self, disk_ID):
         """Returns disk with the given ID"""
         try:
