@@ -1450,7 +1450,7 @@ def test_path():
     assert res._path == "/dev/drbd1003"
 
     res = resource.Resource(name="OpenNebula-Image-210-vm58-disk1")
-    with pytest.raises(KeyError) as e_info:
+    with pytest.raises(IndexError):
         res.path = NODE_DATA_1
 
 
