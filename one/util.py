@@ -119,6 +119,10 @@ def arg_path(string_args):
     return _get_subp_out(_source(TM_COMMON, "arg_path", string_args))
 
 
+def migrate_other(string_args):
+    return _wait_for_subp(_source(TM_COMMON, "migrate_other", string_args))
+
+
 def show_vm(vm_ID):
     return _get_subp_out(shlex.split("onevm show -x {}".format(vm_ID)))
 
