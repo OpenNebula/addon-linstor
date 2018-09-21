@@ -41,8 +41,8 @@ def main():
 
     for disk in target_vm.disk_IDs:
         res_name = target_vm.disk_source(disk)
-        #if target_vm.disk_persistent(disk) != "YES": # [phil] I do not understand this statement, removing it solves it for me!
-        #    res_name = "{}-vm{}-disk{}".format(res_name, VM_ID, disk)
+        if target_vm.disk_persistent(disk) != "YES":
+            res_name = "{}-vm{}-disk{}".format(res_name, VM_ID, disk)
         res = resource.Resource(name=res_name)
         res.assign(DST_HOST)
         res.enable_dual_primary()
