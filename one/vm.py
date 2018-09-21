@@ -88,6 +88,13 @@ class Vm(object):
         except AttributeError:
             return ""
 
+    def disk_is_clone(self, disk_ID):
+        """Returns disk_persistent"""
+        try:
+            return self.disk(disk_ID).find("CLONE").text
+        except AttributeError:
+            return ""
+
     def disk_source(self, disk_ID):
         """Returns disk_source"""
         try:

@@ -123,7 +123,7 @@ TEXT_XML_1 = """
     </DISK>
     <DISK>
       <ALLOW_ORPHANS><![CDATA[NO]]></ALLOW_ORPHANS>
-      <CLONE><![CDATA[NO]]></CLONE>
+      <CLONE><![CDATA[YES]]></CLONE>
       <CLONE_TARGET><![CDATA[SYSTEM]]></CLONE_TARGET>
       <CLUSTER_ID><![CDATA[0]]></CLUSTER_ID>
       <DATASTORE><![CDATA[default]]></DATASTORE>
@@ -202,12 +202,14 @@ def test_create_vm():
     assert test_vm.disk_persistent("0") == "YES"
     assert test_vm.disk_save_as("0") == ""
     assert test_vm.disk_type("0") == "FILE"
+    assert test_vm.disk_is_clone("0") == "NO"
 
     assert test_vm.disk_image_ID("2") == "149"
     assert test_vm.disk_target("2") == "hdc"
     assert test_vm.disk_persistent("2") == "NO"
     assert test_vm.disk_save_as("2") == ""
     assert test_vm.disk_type("2") == "BLOCK"
+    assert test_vm.disk_is_clone("2") == "YES"
     assert (
         test_vm.disk_source("2")
         == "/var/lib/one//datastores/1/baee88c26cb6055334aaed153a7c8327"

@@ -41,7 +41,7 @@ def main():
 
     for disk in target_vm.disk_IDs:
         res_name = target_vm.disk_source(disk)
-        if target_vm.disk_persistent(disk) != "YES":
+        if target_vm.disk_is_clone(disk) == "YES":
             res_name = "{}-vm{}-disk{}".format(res_name, VM_ID, disk)
         res = resource.Resource(name=res_name)
         res.assign(DST_HOST)
