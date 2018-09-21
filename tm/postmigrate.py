@@ -50,6 +50,12 @@ def main():
 
         res.disable_dual_primary()
 
+    args = ""
+    for arg in sys.argv[1:]:
+        args += ' "{}" '.format(arg)
+
+    util.migrate_other(args)
+
     util.log_info("Exiting tm/postmigrate")
 
 
