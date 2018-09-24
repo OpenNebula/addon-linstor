@@ -30,6 +30,7 @@ DST_PATH = sys.argv[3]
 VM_ID = sys.argv[4]
 DS_ID = sys.argv[5]
 TEMPLATE = sys.argv[6]
+SYSTEM_DATASTORE_TM = sys.argv[7]
 
 
 def main():
@@ -38,6 +39,7 @@ def main():
     target_vm = vm.Vm(base64.b64decode(TEMPLATE))
     src_host = util.arg_host(SRC_HOST).strip()
     dst_dir = util.arg_path(DST_PATH).strip()
+    system_datastore_tm = SYSTEM_DATASTORE_TM.strip()
 
     for disk in target_vm.disk_IDs:
         res_name = target_vm.disk_source(disk)
@@ -63,29 +65,22 @@ def main():
     # be dangling. I think it is cleaner to remove it all if it is a
     # ssh system datastore. This also ceans up the context disk image and
     # other files that happened to be in that directory!
-    # (On shared system datastore one has to live with the dangling symlinks)
 
-    unlink_command = " ".join(
-        [
-            "if test -e {}/is_ssh_system_ds; then".format(dst_dir),
-            "set -e;",
-            "rm -rf {};".format(dst_dir),
-            "fi"
-        ]
-    )
-    util.ssh_exec_and_log(
-        " ".join(
-            [
-                '"{}"'.format(src_host),
-                '"{}"'.format(unlink_command),
-                '"{}"'.format(
-                    "Error: Unable to remove directory {} on {}".format(
-                        dst_dir, src_host
-                    )
-                ),
-            ]
+    if system_datastore_tm == "ssh":
+        unlink_command = " ".join(["set -e;", "rm -rf {};".format(dst_dir)])
+        util.ssh_exec_and_log(
+            " ".join(
+                [
+                    '"{}"'.format(src_host),
+                    '"{}"'.format(unlink_command),
+                    '"{}"'.format(
+                        "Error: Unable to remove directory {} on {}".format(
+                            dst_dir, src_host
+                        )
+                    ),
+                ]
+            )
         )
-    )
 
     util.log_info("Exiting tm/postmigrate")
 
