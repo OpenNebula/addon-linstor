@@ -84,6 +84,7 @@ def main():
         [
             "if test ! -e {}; then".format(dst_path),
             "scp {}:{} {};".format(src_host, dst_path, dst_path),
+            "ssh {} touch {}/is_ssh_system_ds;".format(src_host, dst_dir),
             "fi"
         ]
     )

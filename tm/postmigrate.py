@@ -36,6 +36,8 @@ def main():
     util.log_info("Entering tm/postmigrate")
 
     target_vm = vm.Vm(base64.b64decode(TEMPLATE))
+    src_host = util.arg_host(SRC_HOST).strip()
+    dst_dir = util.arg_path(DST_PATH).strip()
 
     for disk in target_vm.disk_IDs:
         res_name = target_vm.disk_source(disk)
@@ -55,6 +57,35 @@ def main():
         args += ' "{}" '.format(arg)
 
     util.migrate_other(args)
+
+    # [phil] when ssh on system DS we should clean up the symlinks. Since
+    # linstor/DRBD assignment might got unassigned some symlinks might
+    # be dangling. I think it is cleaner to remove it all if it is a
+    # ssh system datastore. This also ceans up the context disk image and
+    # other files that happened to be in that directory!
+    # (On shared system datastore one has to live with the dangling symlinks)
+
+    unlink_command = " ".join(
+        [
+            "if test -e {}/is_ssh_system_ds; then".format(dst_dir),
+            "set -e;",
+            "rm -rf {};".format(dst_dir),
+            "fi"
+        ]
+    )
+    util.ssh_exec_and_log(
+        " ".join(
+            [
+                '"{}"'.format(src_host),
+                '"{}"'.format(unlink_command),
+                '"{}"'.format(
+                    "Error: Unable to remove directory {} on {}".format(
+                        dst_dir, src_host
+                    )
+                ),
+            ]
+        )
+    )
 
     util.log_info("Exiting tm/postmigrate")
 
