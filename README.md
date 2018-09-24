@@ -26,7 +26,8 @@ Hayley Swimelar [<hayley@linbit.com>](hayley@linbit.com)
 * This addon is compatible with OpenNebula versions up to 5.6
 * It was tested with version 5.6
 * This version of README.md describes the installation process for ONE 5.6 environments
-* This is intended for use as an images datastore for use with a NFS shared system datastore
+* This is intended for use as an images datastore for use with either an NFS shared
+* system datastore or a SSH system datastore
 
 ## Requirements
 
@@ -37,11 +38,11 @@ Hayley Swimelar [<hayley@linbit.com>](hayley@linbit.com)
 * quickly attaches images to VMs
 * fast image clones
 * transfers images over the network in diskless mode
+* allows for live migration even if the ssh system datastore is used
 
 ## Limitations
 
 * snapshots of images are not available
-* this driver does not support the ssh system datastore
 
 ## Installation
 
@@ -128,7 +129,8 @@ Controllers is a handy way to test this.
 
 Host nodes must have Linstor satellite processes running on them and be members
 of the same Linstor cluster as the Front-End and Storage nodes, and may optionally
-have storage locally.
+have storage locally. If the `oneadmin` user is able to passwordlessly ssh between
+hosts then live migration may be used with the even with the ssh system datastore.
 
 #### Storage Node Configuration
 
