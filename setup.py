@@ -66,7 +66,7 @@ setup(
         (os.path.join(REMOTES_DIR, "tm", DRIVER_NAME), glob("tm/*")),
         (os.path.join(REMOTES_DIR, "datastore", DRIVER_NAME), glob("datastore/*")),
     ],
-    license="GLP2",
+    license="Apache-2.0",
     description="Linstor addon for OpenNebula",
     packages=["one", "linstor_helper"],
     author="Hayley Swimelar",
