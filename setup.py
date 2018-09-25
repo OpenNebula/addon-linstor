@@ -27,6 +27,7 @@ from setuptools.command.install import install
 
 REMOTES_DIR = "/var/lib/one/remotes"
 DRIVER_NAME = "linstor"
+VERSION_FILE = ".version"
 
 ONE_LOCATION = os.getenv("ONE_LOCATION")
 if ONE_LOCATION:
@@ -37,10 +38,18 @@ ONE_USER = os.getenv("ONE_USER", pwd.getpwuid(os.getuid()).pw_name)
 
 def version():
     """Returns project version based on git tags"""
-    process = subprocess.Popen(["git", "describe", "--tags"], stdout=subprocess.PIPE)
-    output, _ = process.communicate()
+    if os.path.isdir(".git"):
+        process = subprocess.Popen(["git", "describe", "--tags"], stdout=subprocess.PIPE)
+        output, _ = process.communicate()
+        if output:
+            with open(VERSION_FILE, "w") as f:
+                f.write(output)
+    elif os.path.isfile(VERSION_FILE):
+        with open(VERSION_FILE) as f:
+            output = f.readlines()[0]
     if not output:
         return "v0.0.0"
+    output = output.strip()
     return output
 
 
