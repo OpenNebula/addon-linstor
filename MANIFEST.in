@@ -1,3 +1,5 @@
 include .version
 include tm/*
 include datastore/*
+include README.md
+include LICENSE

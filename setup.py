@@ -63,4 +63,8 @@ setup(
     author="Hayley Swimelar",
     author_email="hayley@linbit.com",
     url="https://github.com/LINBIT/addon-linstor",
+    long_description=("A driver for OpenNebula to consume storage from LINSTOR. It supports"
+                      "volume creation, deletion, resizing, snapshotting."
+                      "Live-migration of VMs using linstor volumes, with ssh system datastore"
+                      "and shared system datastore.")
 )
