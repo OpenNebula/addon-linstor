@@ -23,10 +23,9 @@ import subprocess
 from distutils.core import setup
 from glob import glob
 
-from setuptools.command.install import install
-
 REMOTES_DIR = "/var/lib/one/remotes"
 DRIVER_NAME = "linstor"
+VERSION_FILE = ".version"
 
 ONE_LOCATION = os.getenv("ONE_LOCATION")
 if ONE_LOCATION:
@@ -37,26 +36,21 @@ ONE_USER = os.getenv("ONE_USER", pwd.getpwuid(os.getuid()).pw_name)
 
 def version():
     """Returns project version based on git tags"""
-    process = subprocess.Popen(["git", "describe", "--tags"], stdout=subprocess.PIPE)
-    output, _ = process.communicate()
+    if os.path.isdir(".git"):
+        process = subprocess.Popen(
+            ["git", "describe", "--tags"], stdout=subprocess.PIPE
+        )
+        output, _ = process.communicate()
+        if output:
+            with open(VERSION_FILE, "w") as f:
+                f.write(output)
+    elif os.path.isfile(VERSION_FILE):
+        with open(VERSION_FILE) as f:
+            output = f.readlines()[0]
     if not output:
         return "v0.0.0"
+    output = output.strip()
     return output
-
-
-class OverrideInstall(install):
-    def run(self):
-        install.run(self)
-
-        usr = pwd.getpwnam(ONE_USER)
-        mode = 0o755
-
-        for filepath in self.get_outputs():
-            if REMOTES_DIR in filepath:
-                endpoint = filepath[:-3]
-                os.rename(filepath, endpoint)
-                os.chown(endpoint, usr.pw_uid, usr.pw_gid)
-                os.chmod(endpoint, mode)
 
 
 setup(
@@ -66,11 +60,16 @@ setup(
         (os.path.join(REMOTES_DIR, "tm", DRIVER_NAME), glob("tm/*")),
         (os.path.join(REMOTES_DIR, "datastore", DRIVER_NAME), glob("datastore/*")),
     ],
-    license="GLP2",
+    license="Apache-2.0",
     description="Linstor addon for OpenNebula",
     packages=["one", "linstor_helper"],
     author="Hayley Swimelar",
     author_email="hayley@linbit.com",
     url="https://github.com/LINBIT/addon-linstor",
-    cmdclass={"install": OverrideInstall},
+    long_description=(
+        "A driver for OpenNebula to consume storage from LINSTOR. It supports"
+        "volume creation, deletion, resizing, snapshotting."
+        "Live-migration of VMs using linstor volumes, with ssh system datastore"
+        "and shared system datastore."
+    ),
 )

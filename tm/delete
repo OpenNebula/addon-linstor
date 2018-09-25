@@ -72,7 +72,8 @@ def main():
 
     res = resource.Resource(name=res_name)
 
-    res.unassign(dst_host)
+    if res.is_client(dst_host):
+        res.unassign(dst_host)
 
     if not (
         target_vm.disk_persistent(disk_ID) or target_vm.disk_type(disk_ID) == "CDROM"

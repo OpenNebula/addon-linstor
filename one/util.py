@@ -55,8 +55,9 @@ def log_info(msg):
     syslog.syslog(syslog.LOG_INFO, "INFO {}".format(msg))
 
 
-def _wait_for_subp(cmd):
-    log_info("running shell command: {}".format(" ".join(cmd)))
+def _wait_for_subp(cmd, log=True):
+    if log:
+        log_info("running shell command: {}".format(" ".join(cmd)))
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     _, err = proc.communicate()
 
@@ -117,6 +118,12 @@ def arg_host(string_args):
 
 def arg_path(string_args):
     return _get_subp_out(_source(TM_COMMON, "arg_path", string_args))
+
+
+def migrate_other(string_args):
+    # We're turning off logging here because this gets called with a huge
+    # base64 image dump and it's too noisy.
+    return _wait_for_subp(_source(TM_COMMON, "migrate_other", string_args), log=False)
 
 
 def show_vm(vm_ID):

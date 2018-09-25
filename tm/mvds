@@ -71,7 +71,8 @@ def main():
 
     res = resource.Resource(name=res_name)
 
-    res.unassign(src_host)
+    if res.is_client(src_host):
+        res.unassign(src_host)
 
     util.log_info("Exiting tm mvds")
 
