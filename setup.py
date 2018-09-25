@@ -37,7 +37,9 @@ ONE_USER = os.getenv("ONE_USER", pwd.getpwuid(os.getuid()).pw_name)
 def version():
     """Returns project version based on git tags"""
     if os.path.isdir(".git"):
-        process = subprocess.Popen(["git", "describe", "--tags"], stdout=subprocess.PIPE)
+        process = subprocess.Popen(
+            ["git", "describe", "--tags"], stdout=subprocess.PIPE
+        )
         output, _ = process.communicate()
         if output:
             with open(VERSION_FILE, "w") as f:
@@ -49,6 +51,7 @@ def version():
         return "v0.0.0"
     output = output.strip()
     return output
+
 
 setup(
     name="addon-linstor",
@@ -63,8 +66,10 @@ setup(
     author="Hayley Swimelar",
     author_email="hayley@linbit.com",
     url="https://github.com/LINBIT/addon-linstor",
-    long_description=("A driver for OpenNebula to consume storage from LINSTOR. It supports"
-                      "volume creation, deletion, resizing, snapshotting."
-                      "Live-migration of VMs using linstor volumes, with ssh system datastore"
-                      "and shared system datastore.")
+    long_description=(
+        "A driver for OpenNebula to consume storage from LINSTOR. It supports"
+        "volume creation, deletion, resizing, snapshotting."
+        "Live-migration of VMs using linstor volumes, with ssh system datastore"
+        "and shared system datastore."
+    ),
 )
