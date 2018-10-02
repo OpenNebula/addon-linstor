@@ -36,6 +36,7 @@ ONE_USER = os.getenv("ONE_USER", pwd.getpwuid(os.getuid()).pw_name)
 
 def version():
     """Returns project version based on git tags"""
+    output = None
     if os.path.isdir(".git"):
         process = subprocess.Popen(
             ["git", "describe", "--tags"], stdout=subprocess.PIPE
@@ -47,9 +48,12 @@ def version():
     elif os.path.isfile(VERSION_FILE):
         with open(VERSION_FILE) as f:
             output = f.readlines()[0]
+
     if not output:
-        return "v0.0.0"
+        output = "v0.0.0"
     output = output.strip()
+    if output.startswith('v'):
+        output = output[1:]
     return output
 
 
