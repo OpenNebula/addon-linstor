@@ -1,3 +1,9 @@
+addon-linstor (0.2.1-1) experimental; urgency=medium
+
+  * New upstream release
+
+ -- Roland Kammerer <roland.kammerer@linbit.com>  Wed, 03 Oct 2018 13:47:16 +0200
+
 addon-linstor (0.2.0-1) experimental; urgency=medium
 
   * New upstream release
