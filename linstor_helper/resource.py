@@ -141,7 +141,7 @@ class Resource(object):
         return self._run_command(["resource", "create", node, self.name, "--diskless"])
 
     def unassign(self, node):
-        return self._run_command(["resource", "delete", node, self.name, "--quiet"])
+        return self._run_command(["resource", "delete", node, self.name])
 
     def enable_dual_primary(self):
         self._run_command(
