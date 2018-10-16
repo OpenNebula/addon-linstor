@@ -43,6 +43,22 @@ class Image(object):
             return ""
 
     @property
+    def source(self):
+        """Returns source"""
+        try:
+            return self._root.find("SOURCE").text
+        except AttributeError:
+            return '""'
+
+    @property
+    def target_snap(self):
+        """Returns target_snap"""
+        try:
+            return self._root.find("TARGET_SNAPSHOT").text
+        except AttributeError:
+            return '""'
+
+    @property
     def datastore_ID(self):
         """Returns name"""
         try:

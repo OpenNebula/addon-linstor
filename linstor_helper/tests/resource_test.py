@@ -1439,6 +1439,127 @@ STORAGE_POOL_DATA_0 = """
 ]
 """
 
+SNAP_DATA_0 = """
+[
+  {
+    "snapshot_dfns": [
+      {
+        "snapshot_dfn_flags": [
+          "SUCCESSFUL"
+        ],
+        "uuid": "dc2a2f98-c501-4cfa-9463-89b66a4f0b75",
+        "rsc_name": "OpenNebula-Image-224",
+        "snapshots": [
+          {
+            "node_name": "attila"
+          },
+          {
+            "node_name": "charlemagne"
+          }
+        ],
+        "snapshot_name": "OpenNebula-Snap-1",
+        "snapshot_vlm_dfns": [
+          {
+            "vlm_nr": 0,
+            "vlm_size": 927744
+          }
+        ],
+        "rsc_dfn_uuid": "dc2a2f98-c501-4cfa-9463-89b66a4f0b75"
+      },
+      {
+        "snapshot_dfn_flags": [
+          "SUCCESSFUL"
+        ],
+        "uuid": "a121b54f-80b2-498c-9d0b-b40f427bc9ed",
+        "rsc_name": "OpenNebula-Image-224",
+        "snapshots": [
+          {
+            "node_name": "attila"
+          },
+          {
+            "node_name": "charlemagne"
+          }
+        ],
+        "snapshot_name": "OpenNebula-Snap-3",
+        "snapshot_vlm_dfns": [
+          {
+            "vlm_nr": 0,
+            "vlm_size": 927744
+          }
+        ],
+        "rsc_dfn_uuid": "a121b54f-80b2-498c-9d0b-b40f427bc9ed"
+      },
+      {
+        "snapshot_dfn_flags": [
+          "SUCCESSFUL"
+        ],
+        "uuid": "b289c5d7-d9f5-4e02-8d2b-fd750385e5e6",
+        "rsc_name": "OpenNebula-Image-224",
+        "snapshots": [
+          {
+            "node_name": "attila"
+          },
+          {
+            "node_name": "charlemagne"
+          }
+        ],
+        "snapshot_name": "OpenNebula-Snap-4",
+        "snapshot_vlm_dfns": [
+          {
+            "vlm_nr": 0,
+            "vlm_size": 927744
+          }
+        ],
+        "rsc_dfn_uuid": "b289c5d7-d9f5-4e02-8d2b-fd750385e5e6"
+      },
+      {
+        "snapshot_dfn_flags": [
+          "SUCCESSFUL"
+        ],
+        "uuid": "5feb3eab-f79e-4729-9fd9-8c7d64b9bd98",
+        "rsc_name": "OpenNebula-Image-224",
+        "snapshots": [
+          {
+            "node_name": "attila"
+          }
+        ],
+        "snapshot_name": "potato",
+        "snapshot_vlm_dfns": [
+          {
+            "vlm_nr": 0,
+            "vlm_size": 927744
+          }
+        ],
+        "rsc_dfn_uuid": "5feb3eab-f79e-4729-9fd9-8c7d64b9bd98"
+      },
+      {
+        "snapshot_dfn_flags": [
+          "SUCCESSFUL"
+        ],
+        "uuid": "61fcbd61-30e7-4543-a475-48f70d172ceb",
+        "rsc_name": "OpenNebula-Image-229",
+        "snapshots": [
+          {
+            "node_name": "attila"
+          },
+          {
+            "node_name": "charlemagne"
+          }
+        ],
+        "snapshot_name": "potato",
+        "snapshot_vlm_dfns": [
+          {
+            "vlm_nr": 0,
+            "vlm_size": 1048576
+          }
+        ],
+        "rsc_dfn_uuid": "61fcbd61-30e7-4543-a475-48f70d172ceb"
+      }
+    ]
+  }
+]
+"""
+
 
 def test_path():
     res = resource.Resource(name="bill")
@@ -1534,3 +1655,18 @@ def test_is_client():
     res = resource.Resource(name="fake-resource")
     with pytest.raises(IndexError):
         assert res._is_client(NODE_DATA_0, "fake-node") is False
+
+
+def test_snapshots():
+    snap_list = json.loads(SNAP_DATA_0)[0]["snapshot_dfns"]
+
+    res = resource.Resource(name="OpenNebula-Image-229")
+    assert set(res._snapshots(snap_list)) == set(["potato"])
+
+    res = resource.Resource(name="OpenNebula-Image-224")
+    assert set(res._snapshots(snap_list)) == set(
+        ["OpenNebula-Snap-1", "OpenNebula-Snap-3", "OpenNebula-Snap-4", "potato"]
+    )
+
+    res = resource.Resource(name="no-snapshots")
+    assert set(res._snapshots(snap_list)) == set([])

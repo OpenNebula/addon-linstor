@@ -52,7 +52,7 @@ def version():
     if not output:
         output = "v0.0.0"
     output = output.strip()
-    if output.startswith('v'):
+    if output.startswith("v"):
         output = output[1:]
     return output
 
