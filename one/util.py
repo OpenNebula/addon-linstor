@@ -83,6 +83,10 @@ def ssh_exec_and_log(string_args):
     return _wait_for_subp(_source(SCRIPTS_COMMON, "ssh_exec_and_log", string_args))
 
 
+def ssh_monitor_and_log(string_args):
+    return _get_subp_out(_source(SCRIPTS_COMMON, "ssh_monitor_and_log", string_args))
+
+
 def exec_and_log(cmd, message):
     rc = _wait_for_subp(["bash", "-c", cmd])
 
