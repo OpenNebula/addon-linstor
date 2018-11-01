@@ -18,16 +18,127 @@ limitations under the License.
 """
 
 
+from __future__ import print_function
+
+import base64
+import os
 import sys
 
-from one import util
+from linstor_helper import resource
+from one import driver_action, util
+
+DRIVER_ACTION = sys.argv[1]
+APP_ID = sys.argv[2]
 
 
 def main():
     util.log_info("Entering datastore/export")
-    util.log_info("Operation not supported!")
-    util.log_info("Entering datastore/export")
-    sys.exit(1)
+
+    driver = driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
+    res = resource.Resource(name=driver.image.source)
+    hosts = res.deployed_nodes()
+    dst_host = res.get_node_interface(hosts[0])
+
+    output_file = os.path.join(
+        driver.datastore.staging_dirs, "{}-{}".format(res.name, APP_ID)
+    )
+
+    util.ssh_monitor_and_log(
+        " ".join(
+            [
+                dst_host,
+                " ".join(
+                    [
+                        "dd",
+                        "if={}".format(res.path),
+                        "of={}".format(output_file),
+                        "bs=4M",
+                    ]
+                ),
+                "could not dd image",
+            ]
+        )
+    )
+
+    img_format = util.ssh_monitor_and_log(
+        " ".join(
+            [
+                dst_host,
+                " ".join(
+                    [
+                        "qemu-img",
+                        "info",
+                        output_file,
+                        "|",
+                        "grep",
+                        "file format",
+                        "|",
+                        "cut",
+                        "-d",
+                        "' '",
+                        "-f3",
+                    ]
+                ),
+                "could not export file format",
+            ]
+        )
+    )
+
+    if not driver.image.size:
+        img_size = util.ssh_monitor_and_log(
+            " ".join(
+                [
+                    dst_host,
+                    " ".join(["du", "-LM", output_file, "|", "cut", "-f1"]),
+                    "could not determine the size of the exported file",
+                ]
+            )
+        )
+    else:
+        img_size = driver.image.size
+
+    img_checksum = util.ssh_monitor_and_log(
+        " ".join(
+            [
+                dst_host,
+                " ".join(
+                    [
+                        "openssl",
+                        "dgst",
+                        "-md5",
+                        output_file,
+                        "|",
+                        "cut",
+                        "-d",
+                        "' '",
+                        "-f2",
+                    ]
+                ),
+                "could not determine checksum",
+            ]
+        )
+    )
+
+    if not img_checksum:
+        util.error_message("could not generate MD5SUM of the exported file")
+        sys.exit(1)
+
+    print(
+        """<IMPORT_INFO>
+    <IMPORT_SOURCE><![CDATA[{}]]></IMPORT_SOURCE>
+    <MD5><![CDATA[{}]]></MD5>
+    <SIZE><![CDATA[{}]]></SIZE>
+    <FORMAT><![CDATA[{}]]></FORMAT>
+    <DISPOSE><![CDATA[NO]]</DISPOSE>
+    </IMPORT_INFO>""".format(
+            "ssh://{}:{}".format(dst_host, output_file),
+            img_checksum,
+            img_size,
+            img_format,
+        )
+    )
+
+    util.log_info("Exiting datastore/export")
 
 
 if __name__ == "__main__":

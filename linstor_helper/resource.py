@@ -21,6 +21,7 @@ from __future__ import print_function
 
 import json
 import subprocess
+import time
 
 from one import util
 
@@ -94,10 +95,33 @@ class Resource(object):
 
         return
 
-    def clone(self, clone_name):
-        snap_name = self.name + "-snap"
-        self._run_command(["resource-definition", "create", clone_name])
+    def snap_create(self, snap_name):
         self._run_command(["snapshot", "create", self.name, snap_name])
+
+    def snap_delete(self, snap_name):
+        self._run_command(["snapshot", "delete", self.name, snap_name])
+
+    def clone(self, clone_name):
+        snap_name = "for-" + clone_name
+        self.snap_create(snap_name)
+        self._res_from_snap(snap_name, clone_name)
+        self.snap_delete(snap_name)
+
+    def snap_flatten(self, snap_name):
+        tmp_res_name = self.name + "-flatten"
+
+        # Create a tmp resource created from snapshot data and delete
+        # the original.
+        tmp = self._res_from_snap(snap_name, tmp_res_name)
+        self.delete()
+
+        # Clone the tmp data into a new resource using the previous
+        # resource's name and delete the tmp resource.
+        tmp.clone(self.name)
+        tmp.delete()
+
+    def _res_from_snap(self, snap_name, res_name):
+        self._run_command(["resource-definition", "create", res_name])
         self._run_command(
             [
                 "snapshot",
@@ -108,7 +132,7 @@ class Resource(object):
                 "--from-snapshot",
                 snap_name,
                 "--to-resource",
-                clone_name,
+                res_name,
             ]
         )
         self._run_command(
@@ -121,12 +145,33 @@ class Resource(object):
                 "--from-snapshot",
                 snap_name,
                 "--to-resource",
-                clone_name,
+                res_name,
             ]
         )
-        self._run_command(["snapshot", "delete", self.name, snap_name])
+
+        return Resource(name=res_name)
 
     def delete(self):
+        # Resource definitions cannot be removed if they contain snapshots.
+        for snap in self.snapshots():
+            self.snap_delete(snap)
+
+        # Looks like deleting snapshots is actually async, poll to give it
+        # time to clear.
+        for _ in range(10):
+            snaps = self.snapshots()
+            if snaps != []:
+                util.log_info(
+                    "snapshots still remainting on {}: {}".format(self.name, snaps)
+                )
+                time.sleep(1)
+            else:
+                break
+        else:
+            raise RuntimeError(
+                "Failed to remove snapshots from image after 10 tries. Unable to delete"
+            )
+
         self._run_command(["resource-definition", "delete", self.name])
 
     def list(self):
@@ -141,7 +186,7 @@ class Resource(object):
         return self._run_command(["resource", "create", node, self.name, "--diskless"])
 
     def unassign(self, node):
-        return self._run_command(["resource", "delete", node, self.name, "--quiet"])
+        return self._run_command(["resource", "delete", node, self.name])
 
     def enable_dual_primary(self):
         self._run_command(
@@ -163,6 +208,21 @@ class Resource(object):
                 "--allow-two-primaries",
                 "no",
             ]
+        )
+
+    def snapshots(self):
+        return self._snapshots(
+            json.loads(self._run_command(["-m", "snapshot", "list"]))[0][
+                "snapshot_dfns"
+            ]
+        )
+
+    def _snapshots(self, snap_list):
+        return list(
+            map(
+                lambda x: x["snapshot_name"],
+                filter(lambda x: x["rsc_name"] == self.name, snap_list),
+            )
         )
 
     def _deployed_nodes(self, res_states):

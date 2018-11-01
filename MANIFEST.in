@@ -1,5 +1,7 @@
 include .version
 include tm/*
 include datastore/*
+include MANIFEST.in
 include README.md
 include LICENSE
+include Makefile

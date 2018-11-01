@@ -86,7 +86,7 @@ Add new TM_MAD_CONF and DS_MAD_CONF sections:
 
 ```
 TM_MAD_CONF = [
-    name = "linstor", ln_target = "NONE", clone_target = "SELF", shared = "yes"
+    name = "linstor", ln_target = "NONE", clone_target = "SELF", shared = "yes", ALLOW_ORPHANS="yes"
 ]
 ```
 ```

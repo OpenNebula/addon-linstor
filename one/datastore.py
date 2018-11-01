@@ -39,6 +39,7 @@ class Datastore(object):
         self._storage_pool = root.find("TEMPLATE").find("LINSTOR_STORAGE_POOL")
         self._restricted_dirs = root.find("TEMPLATE").find("RESTRICTED_DIRS")
         self._safe_dirs = root.find("TEMPLATE").find("SAFE_DIRS")
+        self._staging_dirs = root.find("TEMPLATE").find("STAGING_DIR")
 
     @property
     def ID(self):
@@ -122,3 +123,11 @@ class Datastore(object):
             return self._safe_dirs.text
         except AttributeError:
             return None
+
+    @property
+    def staging_dirs(self):
+        """Returns staging_dirs or /var/tmp"""
+        try:
+            return self._safe_dirs.text
+        except AttributeError:
+            return "/var/tmp"

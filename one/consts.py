@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 OpenNebula Driver for Linstor
@@ -17,27 +16,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-
-from __future__ import print_function
-
-import sys
-
-from linstor_helper import resource
-from one import util
-
-DRIVER_ACTION = sys.argv[1]
-IMAGE_ID = sys.argv[2]
-
-
-def main():
-    util.log_info("Entering datastore rm.")
-
-    res = resource.Resource(name="{}-{}".format(IMAGE_PREFIX, IMAGE_ID))
-
-    res.delete()
-
-    util.log_info("Exiting datastore rm.")
-
-
-if __name__ == "__main__":
-    main()
+IMAGE_PREFIX = "OpenNebula-Image"
+SNAP_PREFIX = "OpenNebula-Snap"
