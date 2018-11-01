@@ -22,6 +22,7 @@ from __future__ import print_function
 import json
 import subprocess
 import time
+from contextlib import contextmanager
 
 from one import util
 
@@ -58,53 +59,50 @@ class Resource(object):
             )
 
     def deploy(self):
-        self._run_command(
-            ["resource-definition", "create", self.name], clean_on_failure=True
-        )
-        self._run_command(
-            ["volume-definition", "create", self.name, self.sizeMiB + "MiB"],
-            clean_on_failure=True,
-        )
-
-        if self.nodes:
+        with self._autoclean(Autocleaner(res_name=self.name)):
+            self._run_command(["resource-definition", "create", self.name])
             self._run_command(
-                [
-                    "resource",
-                    "create",
-                    " ".join(self.nodes),
-                    self.name,
-                    "-s",
-                    self.storage_pool,
-                ],
-                clean_on_failure=True,
+                ["volume-definition", "create", self.name, self.sizeMiB + "MiB"]
             )
 
-        if self.auto_place:
-            self._run_command(
-                [
-                    "resource",
-                    "create",
-                    self.name,
-                    "--auto-place",
-                    self.auto_place,
-                    "-s",
-                    self._storage_pool,
-                ],
-                clean_on_failure=True,
-            )
+            if self.nodes:
+                self._run_command(
+                    [
+                        "resource",
+                        "create",
+                        " ".join(self.nodes),
+                        self.name,
+                        "-s",
+                        self.storage_pool,
+                    ]
+                )
 
-        return
+            if self.auto_place:
+                self._run_command(
+                    [
+                        "resource",
+                        "create",
+                        self.name,
+                        "--auto-place",
+                        self.auto_place,
+                        "-s",
+                        self._storage_pool,
+                    ]
+                )
 
     def snap_create(self, snap_name):
-        self._run_command(["snapshot", "create", self.name, snap_name])
+        with self._autoclean(Autocleaner(res_name=self.name, snap_name=snap_name)):
+            self._run_command(["snapshot", "create", self.name, snap_name])
 
     def snap_delete(self, snap_name):
         self._run_command(["snapshot", "delete", self.name, snap_name])
 
     def clone(self, clone_name):
         snap_name = "for-" + clone_name
-        self.snap_create(snap_name)
-        self._res_from_snap(snap_name, clone_name)
+        with self._autoclean(Autocleaner(res_name=self.name, snap_name=snap_name)):
+            self.snap_create(snap_name)
+            with self._autoclean(Autocleaner(res_name=clone_name)):
+                self._res_from_snap(snap_name, clone_name)
         self.snap_delete(snap_name)
 
     def snap_flatten(self, snap_name):
@@ -112,7 +110,8 @@ class Resource(object):
 
         # Create a tmp resource created from snapshot data and delete
         # the original.
-        tmp = self._res_from_snap(snap_name, tmp_res_name)
+        with self._autoclean(Autocleaner(res_name=tmp_res_name)):
+            tmp = self._res_from_snap(snap_name, tmp_res_name)
         self.delete()
 
         # Clone the tmp data into a new resource using the previous
@@ -383,7 +382,7 @@ class Resource(object):
             self._storage_pool_total_MiB - self._storage_pool_free_MiB
         )
 
-    def _run_command(self, command, clean_on_failure=False):
+    def _run_command(self, command):
         client_opts = ["linstor", "--no-color"]
         if self._controllers:
             client_opts += ["--controllers", self._controllers]
@@ -401,3 +400,30 @@ class Resource(object):
 
     def _match_nodes(self, res_states):
         return self._name == res_states["name"]
+
+    @contextmanager
+    def _autoclean(self, cleaner):
+
+        try:
+            yield
+        except subprocess.CalledProcessError:
+            cleaner.clean()
+
+            raise
+
+
+class Autocleaner(object):
+    def __init__(self, res_name=None, snap_name=None):
+        self._res_name = res_name
+        self._snap_name = snap_name
+
+    def clean(self):
+        # Create a new resource to protect current instance in the case of
+        # failed clones with healthy parent resources.
+
+        failed_res = Resource(name=self._res_name)
+
+        if self._snap_name:
+            failed_res.snap_delete(self._snap_name)
+        else:
+            failed_res.delete()
