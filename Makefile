@@ -1,13 +1,18 @@
 PYTHON = python2
-UP2DATE = $(shell grep --silent `$(PYTHON) ./setup.py --version` debian/changelog &> /dev/null ; echo $$?)
+VERSION = $(shell $(PYTHON) ./setup.py --version)
+UP2DATE = $(shell grep -q $(VERSION) debian/changelog ; echo $$?)
+
+.PHONY: help
+help:
+	$(info "You probably want to execute the 'debrelease' target")
 
 .PHONY: up2date
 ifneq ($(UP2DATE),0)
 up2date:
-  $(error "Update your Version strings/Changelogs")
+	$(error "Update your Version strings/Changelogs")
 else
 up2date:
-  $(info "Version strings/Changelogs up to date")
+	$(info "Version strings/Changelogs up to date")
 endif
 
 release:
