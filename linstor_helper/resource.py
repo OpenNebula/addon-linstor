@@ -259,7 +259,7 @@ class Resource(object):
                     )[0],
                 )
             )[0]["device_path"]
-        except KeyError:
+        except (KeyError, IndexError):
             util.error_message(
                 "Unable to locate device path for {}, please ensure the health of this reource".format(
                     self.name
