@@ -39,7 +39,7 @@ def version():
     output = None
     if os.path.isdir(".git"):
         process = subprocess.Popen(
-            ["git", "describe", "--tags"], stdout=subprocess.PIPE
+            ["git", "describe", "--tags", "--abbrev=0"], stdout=subprocess.PIPE
         )
         output, _ = process.communicate()
         if output:
