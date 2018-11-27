@@ -177,7 +177,7 @@ class Resource(object):
         return self._run_command(["-m", "resource", "list"])
 
     def deployed_nodes(self):
-        return self._deployed_nodes(json.loads(self.list())[0]["resources"])
+        return self._deployed_nodes(json.loads(self.list())[0].get("resources", {}))
 
     def assign(self, node):
         if node in self.deployed_nodes():
@@ -211,9 +211,9 @@ class Resource(object):
 
     def snapshots(self):
         return self._snapshots(
-            json.loads(self._run_command(["-m", "snapshot", "list"]))[0][
-                "snapshot_dfns"
-            ]
+            json.loads(self._run_command(["-m", "snapshot", "list"]))[0].get(
+                "snapshot_dfns", {}
+            )
         )
 
     def _snapshots(self, snap_list):
@@ -236,7 +236,7 @@ class Resource(object):
 
     @staticmethod
     def _get_node_interface(interface_list, node):
-        interface_data = json.loads(interface_list)[0]["nodes"]
+        interface_data = json.loads(interface_list)[0].get("nodes", {})
         return list(filter(lambda x: x["name"] == node, interface_data))[0][
             "net_interfaces"
         ][0]["address"]
@@ -249,7 +249,7 @@ class Resource(object):
 
     @path.setter
     def path(self, list_output):
-        res_states = json.loads(list_output)[0]["resources"]
+        res_states = json.loads(list_output)[0].get("resources", {})
         try:
             self._path = list(
                 filter(
@@ -271,7 +271,7 @@ class Resource(object):
         return self._is_client(self.list(), target_node)
 
     def _is_client(self, list_output, target_node):
-        res_states = json.loads(list_output)[0]["resources"]
+        res_states = json.loads(list_output)[0].get("resources", {})
 
         deployment_state = list(
             filter(
@@ -335,7 +335,7 @@ class Resource(object):
         self._update_storage_info(self._run_command(["-m", "storage-pool", "list"]))
 
     def _update_storage_info(self, sp_info):
-        pool_data = json.loads(sp_info)[0]["stor_pools"]
+        pool_data = json.loads(sp_info)[0].get("stor_pools", {})
         self._storage_pool_total_MiB = 0
         self._storage_pool_free_MiB = 0
         self._storage_pool_used_MiB = 0

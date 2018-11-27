@@ -1560,6 +1560,12 @@ SNAP_DATA_0 = """
 ]
 """
 
+NULL_SNAP = """
+[
+  {}
+]
+"""
+
 
 def test_path():
     res = resource.Resource(name="bill")
@@ -1658,7 +1664,7 @@ def test_is_client():
 
 
 def test_snapshots():
-    snap_list = json.loads(SNAP_DATA_0)[0]["snapshot_dfns"]
+    snap_list = json.loads(SNAP_DATA_0)[0].get("snapshot_dfns", {})
 
     res = resource.Resource(name="OpenNebula-Image-229")
     assert set(res._snapshots(snap_list)) == set(["potato"])
@@ -1667,6 +1673,11 @@ def test_snapshots():
     assert set(res._snapshots(snap_list)) == set(
         ["OpenNebula-Snap-1", "OpenNebula-Snap-3", "OpenNebula-Snap-4", "potato"]
     )
+
+    res = resource.Resource(name="no-snapshots")
+    assert set(res._snapshots(snap_list)) == set([])
+
+    snap_list = json.loads(NULL_SNAP)[0].get("snapshot_dfns", {})
 
     res = resource.Resource(name="no-snapshots")
     assert set(res._snapshots(snap_list)) == set([])
