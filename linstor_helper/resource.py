@@ -53,10 +53,10 @@ class Resource(object):
         self._storage_pool_used_MiB = None
         self._storage_pool_total_MiB = None
 
-        def __str__(self):
-            return "resource name: {}, size in MiB: {}, storage_pool: {}, auto_place: {}, nodes: {}".format(
-                self.name, self.sizeMiB, self.storage_pool, self.auto_place, self.nodes
-            )
+    def __str__(self):
+        return "resource name: {}, size in MiB: {}, storage_pool: {}, auto_place: {}, nodes: {}".format(
+            self.name, self.sizeMiB, self.storage_pool, self.auto_place, self.nodes
+        )
 
     def deploy(self):
         with self._autoclean(Autocleaner(res_name=self.name)):
