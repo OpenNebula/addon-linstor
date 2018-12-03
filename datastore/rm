@@ -23,16 +23,17 @@ from __future__ import print_function
 import sys
 
 from linstor_helper import resource
-from one import util
+from one import consts, util
 
 DRIVER_ACTION = sys.argv[1]
 IMAGE_ID = sys.argv[2]
 
 
 def main():
-    util.log_info("Entering datastore rm.")
+    rscname = "{}-{}".format(consts.IMAGE_PREFIX, IMAGE_ID)
+    util.log_info("Entering datastore rm, deleting resource '{n}'".format(n=rscname))
 
-    res = resource.Resource(name="{}-{}".format(IMAGE_PREFIX, IMAGE_ID))
+    res = resource.Resource(name=rscname)
 
     res.delete()
 
@@ -40,4 +41,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as err:
+        util.error_message(str(err))
+        raise
