@@ -37,6 +37,7 @@ class Datastore(object):
         self._auto_place = root.find("TEMPLATE").find("LINSTOR_AUTO_PLACE")
         self._deployment_nodes = root.find("TEMPLATE").find("LINSTOR_DEPLOYMENT_NODES")
         self._storage_pool = root.find("TEMPLATE").find("LINSTOR_STORAGE_POOL")
+        self._linstor_controllers = root.find("TEMPLATE").find("LINSTOR_CONTROLLERS")
         self._restricted_dirs = root.find("TEMPLATE").find("RESTRICTED_DIRS")
         self._safe_dirs = root.find("TEMPLATE").find("SAFE_DIRS")
         self._staging_dirs = root.find("TEMPLATE").find("STAGING_DIR")
@@ -107,6 +108,19 @@ class Datastore(object):
             return self._storage_pool.text
         except AttributeError:
             return None
+
+    @property
+    def linstor_controllers(self):
+        """
+        Returns string of defined linstor controllers
+
+        :return: string with coma separated linstor hosts: 'host:2343,otherhost:3858' or 'localhost' if not set
+        :rtype: str
+        """
+        try:
+            return self._linstor_controllers.text
+        except AttributeError:
+            return "linstor://localhost"
 
     @property
     def restricted_dirs(self):

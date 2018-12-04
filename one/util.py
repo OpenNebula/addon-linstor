@@ -134,6 +134,10 @@ def show_vm(vm_ID):
     return _get_subp_out(shlex.split("onevm show -x {}".format(vm_ID)))
 
 
+def show_ds(ds_id):
+    return _get_subp_out(["onedatastore", "show", "--xml", str(ds_id)])
+
+
 def fs_size(string_args):
     return _get_subp_out(
         _source(LIBFS, 'UTILS_PATH="{}" fs_size'.format(UTILS_DIR), string_args)
