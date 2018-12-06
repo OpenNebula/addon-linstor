@@ -27,8 +27,21 @@ from contextlib import contextmanager
 from one import util
 
 
-class Resource(object):
+class CloneMode(object):
+    SNAPSHOT = 1
+    COPY = 2
 
+    __STR_MAP = {
+        "snapshot": SNAPSHOT,
+        "copy": COPY
+    }
+
+    @classmethod
+    def from_str(cls, clone_mode):
+        return cls.__STR_MAP.get(clone_mode)
+
+
+class Resource(object):
     """Interface for interacting with Linstor"""
 
     def __init__(
@@ -97,13 +110,59 @@ class Resource(object):
     def snap_delete(self, snap_name):
         self._run_command(["snapshot", "delete", self.name, snap_name])
 
-    def clone(self, clone_name):
-        snap_name = "for-" + clone_name
-        with self._autoclean(Autocleaner(res_name=self.name, snap_name=snap_name)):
-            self.snap_create(snap_name)
-            with self._autoclean(Autocleaner(res_name=clone_name)):
-                self._res_from_snap(snap_name, clone_name)
-        self.snap_delete(snap_name)
+    def clone(self, clone_name, mode=CloneMode.SNAPSHOT):
+        return_code = 0
+        if mode == CloneMode.SNAPSHOT:
+            snap_name = "for-" + clone_name
+            with self._autoclean(Autocleaner(res_name=self.name, snap_name=snap_name)):
+                self.snap_create(snap_name)
+                with self._autoclean(Autocleaner(res_name=clone_name)):
+                    self._res_from_snap(snap_name, clone_name)
+                    time.sleep(1)  # wait a second for deletion, here is a potential race condition
+            self.snap_delete(snap_name)
+        elif mode == CloneMode.COPY:
+            clone_res = Resource(
+                name=clone_name,
+                controllers=self._controllers,
+                nodes=self.nodes,
+                auto_place=self._auto_place,
+                sizeMiB=self._sizeMiB,
+                storage_pool=self.storage_pool
+            )
+            clone_res.deploy()
+            nodes = self.deployed_nodes()
+            cloned_nodes = clone_res.deployed_nodes()
+            copy_node = nodes[0]
+            was_already_assigned = copy_node in cloned_nodes
+            clone_res.assign(copy_node)
+
+            from_dev_path = self.path
+            to_dev_path = clone_res.path
+            block_count = int(self._sizeMiB) * 1024 / 64 + 1
+
+            conv_opts = ["sync"]
+            if self.is_thin(self.storage_pool):
+                conv_opts.append("sparse")
+
+            dd_cmd = '"dd if={_if} of={_of} bs=64K count={c} conv={conv}"'.format(
+                _if=from_dev_path,
+                _of=to_dev_path,
+                c=block_count,
+                conv=",".join(conv_opts)
+            )
+            # dd on the node
+            return_code = util.ssh_exec_and_log(
+                " ".join([
+                    '"{}"'.format(copy_node),
+                    dd_cmd,
+                    '"error copying image data from {_if} to {_of}"'.format(_if=from_dev_path, _of=to_dev_path)
+                ])
+            )
+
+            if not was_already_assigned:
+                clone_res.unassign(copy_node)
+
+        return return_code == 0
 
     def snap_flatten(self, snap_name):
         tmp_res_name = self.name + "-flatten"
@@ -159,9 +218,9 @@ class Resource(object):
         # time to clear.
         for _ in range(10):
             snaps = self.snapshots()
-            if snaps != []:
+            if snaps:
                 util.log_info(
-                    "snapshots still remainting on {}: {}".format(self.name, snaps)
+                    "snapshots still remaining on {}: {}".format(self.name, snaps)
                 )
                 time.sleep(1)
             else:
@@ -289,6 +348,11 @@ class Resource(object):
             )
             raise
 
+    def is_thin(self, stor_pool_name):
+        sp_list_out = self._run_command(["-m", "storage-pool", "list", "-s", stor_pool_name])
+        storpools = json.loads(sp_list_out)[0]["stor_pools"]
+        return storpools[0]["driver"] in ["LvmThinDriver", "ZfsThinDriver"]
+
     @property
     def nodes(self):
         return self._nodes
@@ -306,6 +370,21 @@ class Resource(object):
         if int(self._sizeMiB) < 4:
             return "4"
         return str(self._sizeMiB)
+
+    def update_size(self):
+        """
+        Update the resource size by querying linstor
+        :return: True if update was successful, else False
+        :rtype: bool
+        """
+        list_data = json.loads(self._run_command(["-m", "volume-definition", "list"]))[0]
+        rsc_dfns = list_data.get('rsc_dfns', [])
+        rsc_dfn = [x for x in rsc_dfns if x['rsc_name'].lower() == self._name.lower()]
+        if rsc_dfn:
+            if 'vlm_dfns' in rsc_dfn[0]:
+                self._sizeMiB = rsc_dfn[0]['vlm_dfns'][0]['vlm_size'] / 1024
+                return True
+        return False
 
     @property
     def auto_place(self):

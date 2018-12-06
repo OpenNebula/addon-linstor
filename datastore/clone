@@ -35,16 +35,23 @@ def main():
     driver = driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
 
     res = resource.Resource(
-        name="{}-{}".format(consts.IMAGE_PREFIX, driver.image.cloning_ID)
+        name="{}-{}".format(consts.IMAGE_PREFIX, driver.image.cloning_ID),
+        sizeMiB=driver.image.size,
+        auto_place=driver.datastore.auto_place,
+        nodes=driver.datastore.deployment_nodes,
+        storage_pool=driver.datastore.storage_pool
     )
 
     clone = "{}-{}".format(consts.IMAGE_PREFIX, IMAGE_ID)
 
-    res.clone(clone)
+    success = res.clone(clone, mode=resource.CloneMode.from_str(driver.datastore.linstor_clone_mode))
 
-    util.log_info("Exiting datastore clone.")
+    util.log_info("Exiting datastore clone with " + "success." if success else "error.")
 
-    print(clone)
+    if success:
+        print(clone)
+    else:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
