@@ -21,6 +21,7 @@ limitations under the License.
 from __future__ import print_function
 
 import sys
+import traceback
 from linstor import Resource, SizeCalc
 from one import util, vm
 from one.datastore import Datastore
@@ -52,6 +53,6 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as err:
-        util.error_message(str(err))
+        util.error_message(traceback.format_exc())
         print("ERROR: " + str(err))
         raise
