@@ -24,6 +24,7 @@ class Datastore(object):
     """Docstring for Datastore. """
 
     def __init__(self, xml):
+        self.xmlstr = xml  # type: str
         root = ET.fromstring(xml)
         self._ID = root.find("ID").text
         self._name = root.find("NAME").text
@@ -38,9 +39,13 @@ class Datastore(object):
         self._deployment_nodes = root.find("TEMPLATE").find("LINSTOR_DEPLOYMENT_NODES")
         self._storage_pool = root.find("TEMPLATE").find("LINSTOR_STORAGE_POOL")
         self._linstor_controllers = root.find("TEMPLATE").find("LINSTOR_CONTROLLERS")
+        self._linstor_clone_mode = root.find("TEMPLATE").find("LINSTOR_CLONE_MODE")
         self._restricted_dirs = root.find("TEMPLATE").find("RESTRICTED_DIRS")
         self._safe_dirs = root.find("TEMPLATE").find("SAFE_DIRS")
         self._staging_dirs = root.find("TEMPLATE").find("STAGING_DIR")
+
+    def __str__(self):
+        return self.xmlstr
 
     @property
     def ID(self):
@@ -121,6 +126,21 @@ class Datastore(object):
             return self._linstor_controllers.text
         except AttributeError:
             return "linstor://localhost"
+
+    @property
+    def linstor_clone_mode(self):
+        """
+        Returns the set linstor clone method
+        :return: Set clone mode, if not set default "snapshot" is returned
+        :rtype: str
+        """
+        try:
+            clone_method = self._linstor_clone_mode.text
+            if clone_method.lower() == "copy":
+                return "copy"
+            return "snapshot"
+        except AttributeError:
+            return "snapshot"
 
     @property
     def restricted_dirs(self):

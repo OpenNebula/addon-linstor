@@ -27,12 +27,16 @@ class DriverAction(object):
     """Docstring for vm. """
 
     def __init__(self, xml):
+        self.xmlstr = xml  # type: str
         root = ET.fromstring(xml)
 
         image_element = root.find("IMAGE")
         if image_element is not None:
             self._image = image.Image(ET.tostring(image_element))
         self._datastore = datastore.Datastore(ET.tostring(root.find("DATASTORE")))
+
+    def __str__(self):
+        return self.xmlstr
 
     @property
     def image(self):

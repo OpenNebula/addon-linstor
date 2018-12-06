@@ -24,7 +24,11 @@ class Image(object):
     """Docstring for vm. """
 
     def __init__(self, xml):
+        self.xmlstr = xml  # type: str
         self._root = ET.fromstring(xml)
+
+    def __str__(self):
+        return self.xmlstr
 
     @property
     def ID(self):
