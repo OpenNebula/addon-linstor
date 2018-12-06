@@ -315,19 +315,19 @@ class Resource(object):
 
     @property
     def storage_pool_free_MiB(self):
-        if self._storage_pool_free_MiB == None:
+        if self._storage_pool_free_MiB is None:
             self.update_storage_info()
         return self._storage_pool_free_MiB
 
     @property
     def storage_pool_used_MiB(self):
-        if self._storage_pool_used_MiB == None:
+        if self._storage_pool_used_MiB is None:
             self.update_storage_info()
         return self._storage_pool_used_MiB
 
     @property
     def storage_pool_total_MiB(self):
-        if self._storage_pool_total_MiB == None:
+        if self._storage_pool_total_MiB is None:
             self.update_storage_info()
         return self._storage_pool_total_MiB
 
