@@ -20,7 +20,7 @@ limitations under the License.
 import os
 import pwd
 import subprocess
-from distutils.core import setup
+from setuptools import setup
 from glob import glob
 
 REMOTES_DIR = "/var/lib/one/remotes"
@@ -43,6 +43,7 @@ def version():
         )
         output, _ = process.communicate()
         if output:
+            output = output.decode()
             with open(VERSION_FILE, "w") as f:
                 f.write(output)
     elif os.path.isfile(VERSION_FILE):
@@ -67,7 +68,10 @@ setup(
     license="Apache-2.0",
     description="Linstor addon for OpenNebula",
     packages=["one", "linstor_helper"],
-    author="Hayley Swimelar",
+    install_requires=[
+        "python-linstor>=0.7.0"
+    ],
+    author="Hayley Swimelar, Rene Peinthor <rene.peinthor@linbit.com>",
     author_email="hayley@linbit.com",
     url="https://github.com/LINBIT/addon-linstor",
     long_description=(
