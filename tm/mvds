@@ -47,7 +47,7 @@ def main():
                 '"{}"'.format(src_host),
                 '"{}"'.format(unlink_command),
                 '"{}"'.format(
-                    "Error: Unable to remove symbloic link {} on {}".format(
+                    "Error: Unable to remove symbolic link {} on {}".format(
                         src_path, src_host
                     )
                 ),
