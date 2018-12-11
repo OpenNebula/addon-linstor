@@ -21,6 +21,7 @@ from __future__ import print_function
 
 import base64
 import sys
+import traceback
 
 from linstor_helper import resource
 from one import consts, driver_action, util
@@ -55,4 +56,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as err:
+        util.error_message(traceback.format_exc())
+        print("ERROR: " + str(err))
+        raise
