@@ -16,5 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-IMAGE_PREFIX = "OpenNebula-Image"
-SNAP_PREFIX = "OpenNebula-Snap"
+PREFIX = "OpenNebula"
+IMAGE_PREFIX = PREFIX + "-Image"
+SNAP_PREFIX = PREFIX + "-Snap"
+CONTEXT_PREFIX = PREFIX + "-vm-context"

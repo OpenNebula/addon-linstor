@@ -23,7 +23,8 @@ import sys
 import traceback
 
 from linstor_helper import resource
-from one import util, vm
+from one import util, vm, consts
+from one.datastore import Datastore
 
 SRC_HOST = sys.argv[1]
 DST_HOST = sys.argv[2]
@@ -34,12 +35,14 @@ TEMPLATE = sys.argv[6]
 
 
 def main():
-    util.log_info("Entering tm/premigrate")
+    util.log_info("Entering tm/premigrate from {s} to {t} in {tp}".format(s=SRC_HOST, t=DST_HOST, tp=DST_PATH))
 
     target_vm = vm.Vm(base64.b64decode(TEMPLATE))
     dst_host = util.arg_host(DST_HOST).strip()
     src_host = util.arg_host(SRC_HOST).strip()
     dst_dir = util.arg_path(DST_PATH).strip()
+
+    datastore = Datastore(util.show_ds(DS_ID))
 
     for disk in target_vm.disk_IDs:
         res_name = target_vm.disk_source(disk)
@@ -76,29 +79,55 @@ def main():
 
     util.migrate_other(args)
 
-    # [phil] I guess this does not belong here, but I want working live
-    # migration with ssh system store.
-    # scp'ing context block device from the source to the destination machine
     context_id = target_vm.context_ID
-    dst_path = "{}/disk.{}".format(dst_dir, context_id)
-    scp_command = " ".join(
-        [
-            "if test ! -e {}; then".format(dst_path),
-            "scp {}:{} {};".format(src_host, dst_path, dst_path),
-            "fi",
-        ]
-    )
-    util.ssh_exec_and_log(
-        " ".join(
+    context_path = "{}/disk.{}".format(dst_dir, context_id)
+    if datastore.tm_mad != "linstor":
+        # [phil] I guess this does not belong here, but I want working live
+        # migration with ssh system store.
+        # scp'ing context block device from the source to the destination machine
+        scp_command = " ".join(
             [
-                '"{}"'.format(dst_host),
-                '"{}"'.format(scp_command),
-                '"Error: Unable to scp {} from {} to {}"'.format(
-                    dst_path, src_host, dst_host
-                ),
+                "if test ! -e {}; then".format(context_path),
+                "scp {}:{} {};".format(src_host, context_path, context_path),
+                "fi",
             ]
         )
-    )
+        util.ssh_exec_and_log(
+            " ".join(
+                [
+                    '"{}"'.format(dst_host),
+                    '"{}"'.format(scp_command),
+                    '"Error: Unable to scp {} from {} to {}"'.format(
+                        context_path, src_host, dst_host
+                    ),
+                ]
+            )
+        )
+    else:
+        res_name = "{}-vm{}-disk{}".format(consts.CONTEXT_PREFIX, VM_ID, context_id)
+        res = resource.Resource(name=res_name)
+        res.assign(DST_HOST)
+        res.enable_dual_primary()
+
+        link_command = " ; ".join(
+            [
+                "set -e",
+                "mkdir -p {}".format(dst_dir),
+                "ln -fs {} {}".format(res.path, context_path),
+            ]
+        )
+
+        util.ssh_exec_and_log(
+            " ".join(
+                [
+                    '"{}"'.format(dst_host),
+                    '"{}"'.format(link_command),
+                    '"Error: Unable to link {} to {} on {}"'.format(
+                        res.name, context_path, dst_host
+                    ),
+                ]
+            )
+        )
 
     util.log_info("Exiting tm/premigrate")
 

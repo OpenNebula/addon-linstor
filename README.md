@@ -257,6 +257,24 @@ EOI
 onedatastore create ds.conf
 ```
 
+### linstor as system datastore
+
+Linstor driver can also be used as a system/context datastore,
+configuration is pretty similar to normal datastores, with a few changes:
+
+```bash
+cat >system_ds.conf <<EOI
+NAME = linstor_system_auto_place
+TM_MAD = linstor
+TYPE = SYSTEM_DS
+LINSTOR_AUTO_PLACE = 2
+LINSTOR_STORAGE_POOL = "onepool_system"
+BRIDGE_LIST = "alice bob charlie"
+EOI
+
+onedatastore create system_ds.conf
+```
+
 ## Usage
 
 This driver will use Linstor to create new images and transfer them to

@@ -100,6 +100,10 @@ def mkfs_command(string_args):
     return _wait_for_subp(_source(SCRIPTS_COMMON, "mkfs_command", string_args))
 
 
+def mkiso_command(string_args):
+    return _wait_for_subp(_source(SCRIPTS_COMMON, "$MKISOFS", string_args))
+
+
 def ssh_make_path(string_args):
     return _wait_for_subp(_source(SCRIPTS_COMMON, "ssh_make_path", string_args))
 
