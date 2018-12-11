@@ -25,6 +25,7 @@ import traceback
 
 from linstor_helper import resource
 from one import consts, driver_action, util
+from one.image import Image
 
 DRIVER_ACTION = sys.argv[1]
 IMAGE_ID = sys.argv[2]
@@ -34,6 +35,13 @@ def main():
     util.log_info("Entering datastore clone")
 
     driver = driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
+
+    # determine cloning mode
+    # use copy if the datastores differ, because snapshot mode would use the same storage pool
+    cloning_image = Image(util.show_image(driver.image.cloning_ID))
+
+    cloning_mode = resource.CloneMode.from_str(driver.datastore.linstor_clone_mode) \
+        if cloning_image.datastore_ID == driver.datastore.ID else resource.CloneMode.COPY
 
     res = resource.Resource(
         name="{}-{}".format(consts.IMAGE_PREFIX, driver.image.cloning_ID),
@@ -45,7 +53,7 @@ def main():
 
     clone = "{}-{}".format(consts.IMAGE_PREFIX, IMAGE_ID)
 
-    success = res.clone(clone, mode=resource.CloneMode.from_str(driver.datastore.linstor_clone_mode))
+    success = res.clone(clone, mode=cloning_mode)
 
     util.log_info("Exiting datastore clone with " + "success." if success else "error.")
 

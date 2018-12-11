@@ -134,6 +134,10 @@ def show_vm(vm_ID):
     return _get_subp_out(shlex.split("onevm show -x {}".format(vm_ID)))
 
 
+def show_image(image_id):
+    return _get_subp_out(["oneimage", "show", "--xml", str(image_id)])
+
+
 def show_ds(ds_id):
     return _get_subp_out(["onedatastore", "show", "--xml", str(ds_id)])
 
