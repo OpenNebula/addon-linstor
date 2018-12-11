@@ -3,3 +3,9 @@
 *.pyc
 .pytest_cache/*
 .idea/*
+
+build/
+dist/
+addon_linstor.egg-info/
+MANIFEST
+.version
