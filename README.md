@@ -236,7 +236,7 @@ Additional attributes that you may add to a datastore's
 template:
 
 
-##### linstor_controllers
+##### `LINSTOR_CONTROLLERS`
 
 linstor_controllers can be used to pass a comma separated list of controller
 ips and ports to the Linstor client in the case where a Linstor controller
@@ -251,6 +251,39 @@ TYPE = IMAGE_DS
 DISK_TYPE = BLOCK
 LINSTOR_DEPLOYMENT_NODES = "alice charlie"
 LINSTOR_CONTROLLERS = "192.168.1.10:8080,192.168.1.11:6000"
+BRIDGE_LIST = "alice bob charlie"
+EOI
+
+onedatastore create ds.conf
+```
+
+##### `LINSTOR_CLONE_MODE`
+
+Linstor supports 2 different clone modes and are set via the `LINSTOR_CLONE_MODE` variable:
+
+###### snapshot
+
+The default mode is `snapshot` it uses a linstor snapshot and restores a new resource
+from this snapshot, which is then a clone of the image.
+This mode is usually faster than using the `copy` mode as snapshots are cheap copies.
+
+###### copy
+
+The second mode is `copy` it creates a new resource with the same size as the original and
+copies the data with `dd` to the new resource.
+This mode will be slower than `snapshot`, but is more robust as it doesn't rely on any snapshot
+mechanism, it is also used if you are cloning an image into a different linstor datastore.
+
+```bash
+cat >ds.conf <<EOI
+NAME = linstor_auto_place
+DS_MAD = linstor
+TM_MAD = linstor
+TYPE = IMAGE_DS
+DISK_TYPE = BLOCK
+LINSTOR_AUTO_PLACE = 2
+LINSTOR_CLONE_MODE = "copy"
+LINSTOR_STORAGE_POOL = "thin"
 BRIDGE_LIST = "alice bob charlie"
 EOI
 
