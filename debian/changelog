@@ -1,3 +1,32 @@
+addon-linstor (0.2.6-1) experimental; urgency=medium
+
+  [ Rene Peinthor ]
+  * fix wrong __str__ indentation
+  * rm: fix unknown IMAGE_PREFIX and improve error reporting
+  * get LINSTOR_CONTROLLERS from datastore
+  * add resize functionality
+  * cpds,resize: add traceback info
+  * store the original data xml for action/datastore/image
+  * None should be compared with 'is'
+  * add a new clone mode 'copy'
+  * improve error logging for python exceptions
+  * clone: use clone mode "copy" if cloning to a different datastore
+  * mvds: fix typo
+  * readme: add missing datastore configuration fields
+  * system_ds: add support for using linstor as system datastore
+  * gitignore: add .idea/ directory
+  * gitignore: add build files
+  * setup: add python-linstor dependency
+  * Revert "move debian packaging stuff off master"
+
+  [ Hayley Swimelar ]
+  * add up2date dep to debrelease
+
+  [ Roland Kammerer ]
+  * Makefile: fix indenting, make a bit more idiomatic
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Tue, 11 Dec 2018 12:38:46 +0100
+
 addon-linstor (0.2.5-1) experimental; urgency=medium
 
   * Fix issue preventing resources from being deleted on clusters without
