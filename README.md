@@ -200,6 +200,8 @@ cat >ds.conf <<EOI
 NAME = linstor_auto_place
 DS_MAD = linstor
 TM_MAD = linstor
+TYPE = IMAGE_DS
+DISK_TYPE = BLOCK
 LINSTOR_AUTO_PLACE = 2
 LINSTOR_STORAGE_POOL = "thin"
 BRIDGE_LIST = "alice bob charlie"
@@ -219,6 +221,8 @@ cat >ds.conf <<EOI
 NAME = linstor_nodes
 DS_MAD = linstor
 TM_MAD = linstor
+TYPE = IMAGE_DS
+DISK_TYPE = BLOCK
 LINSTOR_DEPLOYMENT_NODES = "alice charlie"
 BRIDGE_LIST = "alice bob charlie"
 EOI
@@ -243,6 +247,8 @@ cat >ds.conf <<EOI
 NAME = linstor_nodes
 DS_MAD = linstor
 TM_MAD = linstor
+TYPE = IMAGE_DS
+DISK_TYPE = BLOCK
 LINSTOR_DEPLOYMENT_NODES = "alice charlie"
 LINSTOR_CONTROLLERS = "192.168.1.10:8080,192.168.1.11:6000"
 BRIDGE_LIST = "alice bob charlie"
