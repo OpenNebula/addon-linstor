@@ -94,7 +94,7 @@ class Datastore(object):
     def auto_place(self):
         """Returns auto_place"""
         try:
-            return self._auto_place.text
+            return int(self._auto_place.text)
         except AttributeError:
             return None
 
