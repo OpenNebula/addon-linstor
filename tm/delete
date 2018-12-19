@@ -19,12 +19,13 @@ limitations under the License.
 
 from __future__ import print_function
 
-import os
 import sys
 import traceback
 
-from linstor_helper import resource
 from one import util, vm, consts
+from one.datastore import Datastore
+from linstor_helper import delete
+from linstor import Resource, LinstorError
 
 DST = sys.argv[1]
 VM_ID = sys.argv[2]
@@ -32,7 +33,9 @@ DS_ID = sys.argv[3]
 
 
 def main():
-    util.log_info("Entering tm delete")
+    util.log_info("Entering tm delete, dst='{dst}'".format(dst=DST))
+
+    datastore = Datastore(util.show_ds(DS_ID))
 
     dst_host = util.arg_host(DST).strip()
     dst_path = util.arg_path(DST).strip()
@@ -84,17 +87,19 @@ def main():
         else:
             util.log_info("{} is a persistent OS or DATABLOCK image".format(res_name))
 
-    res = resource.Resource(name=res_name)
+    res = Resource(name=res_name, uri=datastore.linstor_controllers)
 
-    if res.is_client(dst_host):
-        res.unassign(dst_host)
+    res.deactivate(dst_host)
 
     if disk_id is None:
-        res.delete()
+        try:
+            delete(res)
+        except LinstorError as le:
+            util.log_info(str(le))
     elif not (
         target_vm.disk_persistent(disk_id) or target_vm.disk_type(disk_id) == "CDROM"
     ):
-        res.delete()
+        delete(res)
 
     util.log_info("Exiting tm delete")
 

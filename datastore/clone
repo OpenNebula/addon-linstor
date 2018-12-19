@@ -23,7 +23,8 @@ import base64
 import sys
 import traceback
 
-from linstor_helper import resource
+from linstor_helper import clone, CloneMode
+from linstor import Resource
 from one import consts, driver_action, util
 from one.image import Image
 
@@ -40,25 +41,26 @@ def main():
     # use copy if the datastores differ, because snapshot mode would use the same storage pool
     cloning_image = Image(util.show_image(driver.image.cloning_ID))
 
-    cloning_mode = resource.CloneMode.from_str(driver.datastore.linstor_clone_mode) \
-        if cloning_image.datastore_ID == driver.datastore.ID else resource.CloneMode.COPY
+    cloning_mode = CloneMode.from_str(driver.datastore.linstor_clone_mode) \
+        if cloning_image.datastore_ID == driver.datastore.ID else CloneMode.COPY
 
-    res = resource.Resource(
+    res = Resource(
         name="{}-{}".format(consts.IMAGE_PREFIX, driver.image.cloning_ID),
-        sizeMiB=driver.image.size,
-        auto_place=driver.datastore.auto_place,
-        nodes=driver.datastore.deployment_nodes,
-        storage_pool=driver.datastore.storage_pool
+        uri=driver.datastore.linstor_controllers
     )
+    res.placement.storage_pool = driver.datastore.storage_pool
 
-    clone = "{}-{}".format(consts.IMAGE_PREFIX, IMAGE_ID)
+    clone_name = "{}-{}".format(consts.IMAGE_PREFIX, IMAGE_ID)
 
-    success = res.clone(clone, mode=cloning_mode)
+    util.log_info("Cloning into new resource '{r}' with clone mode '{cm}'".format(
+        r=clone_name, cm=CloneMode.to_str(cloning_mode))
+    )
+    success = clone(res, clone_name, driver.datastore.deployment_nodes, driver.datastore.auto_place, cloning_mode)
 
     util.log_info("Exiting datastore clone with " + "success." if success else "error.")
 
     if success:
-        print(clone)
+        print(clone_name)
     else:
         sys.exit(1)
 

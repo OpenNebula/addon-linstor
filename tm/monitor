@@ -24,8 +24,9 @@ import base64
 import sys
 import traceback
 
+import linstor
 from one import driver_action, util
-from linstor_helper import resource
+from linstor_helper import calculate_space
 
 DRIVER_ACTION = sys.argv[1]
 
@@ -35,20 +36,21 @@ def main():
 
     driver = driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
 
-    res = resource.Resource(
-        name="MonitorProc",
-        auto_place=driver.datastore.auto_place,
-        nodes=driver.datastore.deployment_nodes,
-        storage_pool=driver.datastore.storage_pool,
-    )
-
-    print(
-        "USED_MB={}\nTOTAL_MB={}\nFREE_MB={}".format(
-            res.storage_pool_used_MiB,
-            res.storage_pool_total_MiB,
-            res.storage_pool_free_MiB,
+    with linstor.MultiLinstor(linstor.MultiLinstor.controller_uri_list(driver.datastore.linstor_controllers)) as lin:
+        stor_pool_used, stor_pool_total, stor_pool_free = calculate_space(
+            lin,
+            driver.datastore.storage_pool,
+            driver.datastore.deployment_nodes,
+            driver.datastore.auto_place
         )
-    )
+
+        print(
+            "USED_MB={}\nTOTAL_MB={}\nFREE_MB={}".format(
+                stor_pool_used,
+                stor_pool_total,
+                stor_pool_free,
+            )
+        )
 
     util.log_info("Leaving tm monitor.")
 

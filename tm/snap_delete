@@ -15,20 +15,45 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+Can be triggered by using a OS image type using the qcow2 driver.
 """
 
-
 import sys
+import traceback
 
-from one import util
+from linstor import Resource
+from one import util, consts, vm
+from one.datastore import Datastore
+
+SRC = sys.argv[1]
+SNAP_ID = sys.argv[2]
+VM_ID = sys.argv[3]
+DS_ID = sys.argv[4]
 
 
 def main():
     util.log_info("Entering tm/snap_delete")
-    util.log_info("Operation not supported!")
-    util.log_info("Entering tm/snap_delete")
-    sys.exit(1)
+
+    disk_ID = SRC.split(".")[-1].strip()
+    snap_ID = util.arg_host(SNAP_ID).strip()
+
+    datastore = Datastore(util.show_ds(DS_ID))
+
+    target_vm = vm.Vm(util.show_vm(VM_ID))
+
+    res_name = target_vm.disk_source(disk_ID)
+
+    res = Resource(name=res_name, uri=datastore.linstor_controllers)
+    res.snapshot_delete("{}-{}".format(consts.SNAP_PREFIX, snap_ID))
+
+    util.log_info("Exiting tm/snap_delete")
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as err:
+        util.error_message(traceback.format_exc())
+        print("ERROR: " + str(err))
+        raise

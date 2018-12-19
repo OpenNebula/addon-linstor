@@ -23,8 +23,9 @@ from __future__ import print_function
 import base64
 import os
 import sys
+import traceback
 
-from linstor_helper import resource
+from linstor import Resource, MultiLinstor
 from one import driver_action, util
 
 DRIVER_ACTION = sys.argv[1]
@@ -35,9 +36,12 @@ def main():
     util.log_info("Entering datastore/export")
 
     driver = driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
-    res = resource.Resource(name=driver.image.source)
-    hosts = res.deployed_nodes()
-    dst_host = res.get_node_interface(hosts[0])
+    res = Resource(name=driver.image.source, uri=driver.datastore.linstor_controllers)
+    hosts = res.diskful_nodes()
+
+    with MultiLinstor(MultiLinstor.controller_uri_list(driver.datastore.linstor_controllers)) as lin:
+        nodelist = lin.node_list_raise()
+        dst_host = nodelist.node(hosts[0]).net_interfaces[0].address
 
     output_file = os.path.join(
         driver.datastore.staging_dirs, "{}-{}".format(res.name, APP_ID)
@@ -50,7 +54,7 @@ def main():
                 " ".join(
                     [
                         "dd",
-                        "if={}".format(res.path),
+                        "if={}".format(res.volumes[0].device_path),
                         "of={}".format(output_file),
                         "bs=4M",
                     ]
@@ -142,4 +146,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as err:
+        util.error_message(traceback.format_exc())
+        print("ERROR: " + str(err))
+        raise

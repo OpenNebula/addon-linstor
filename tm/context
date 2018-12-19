@@ -26,13 +26,20 @@ import shutil
 import subprocess
 from one import util, consts
 from one.datastore import Datastore
-from linstor.resource import Resource, Volume
-from linstor import LinstorError
+from linstor_helper import delete
+from linstor import LinstorError, Resource, Volume
 
 FILES = sys.argv[1:-3]
 DST = sys.argv[-3]
 VM_ID = sys.argv[-2]
 DS_ID = sys.argv[-1]
+
+
+def ensure_dir(directory):
+    try:
+        os.mkdir(directory)
+    except OSError:
+        pass
 
 
 def main():
@@ -47,10 +54,11 @@ def main():
     util.log_info("Entering context on {h} for files {f}.".format(h=DST, f=FILES))
 
     iso_dir = os.path.join(datastore.base_path, ".isofiles", str(VM_ID))
-    try:
-        os.mkdir(iso_dir)
-    except OSError:
-        pass
+
+    ensure_dir(datastore.base_path)
+    ensure_dir(os.path.join(datastore.base_path, ".isofiles"))
+    ensure_dir(iso_dir)
+
     iso_file = os.path.join(iso_dir, str(VM_ID) + ".iso")
 
     for file in FILES:
@@ -76,7 +84,7 @@ def main():
         resource.placement.storage_pool = datastore.storage_pool
         resource.volumes[0] = Volume('{s}MiB'.format(s=iso_size_mb))
         try:
-            resource.delete()
+            delete(resource)
         except LinstorError as e:
             pass
 
@@ -86,6 +94,8 @@ def main():
         else:
             for n in datastore.deployment_nodes:
                 resource.diskful(n)
+
+        resource.activate(dst_host)
 
         device_path = resource.volumes[0].device_path if resource.volumes[0].device_path \
             else "/dev/drbd{minor}".format(minor=resource.volumes[0].minor)

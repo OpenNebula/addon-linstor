@@ -22,7 +22,8 @@ from __future__ import print_function
 import sys
 import traceback
 
-from linstor_helper import resource
+from linstor_helper import clone, CloneMode
+from linstor import Resource
 from one import util, vm
 from one.datastore import Datastore
 
@@ -44,16 +45,14 @@ def main():
     # if target_vm.disk_persistent(disk_ID) != "YES":
     #     res_name = "{}-vm{}-disk{}".format(res_name, VM_ID, disk_ID)
 
-    res = resource.Resource(
-        name=res_name,
-        auto_place=datastore.auto_place,
-        nodes=datastore.deployment_nodes,
-        storage_pool=datastore.storage_pool
-
+    res = Resource(res_name, datastore.linstor_controllers)
+    success = clone(
+        res,
+        DST,
+        datastore.deployment_nodes,
+        datastore.auto_place,
+        CloneMode.from_str(datastore.linstor_clone_mode)
     )
-    res.update_size()
-
-    success = res.clone(DST, mode=resource.CloneMode.from_str(datastore.linstor_clone_mode))
 
     util.log_info("Exiting tm cpds with " + "success." if success else "error.")
 

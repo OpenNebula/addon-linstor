@@ -23,7 +23,8 @@ from __future__ import print_function
 import base64
 import sys
 
-from linstor_helper import resource
+import linstor
+from linstor_helper import calculate_space
 from one import driver_action, util
 
 DRIVER_ACTION = sys.argv[1]
@@ -34,23 +35,30 @@ def main():
 
     driver = driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
 
-    res = resource.Resource(
-        name="MonitorProc",
-        auto_place=driver.datastore.auto_place,
-        nodes=driver.datastore.deployment_nodes,
-        storage_pool=driver.datastore.storage_pool,
-    )
-
-    print(
-        "USED_MB={}\nTOTAL_MB={}\nFREE_MB={}".format(
-            res.storage_pool_used_MiB,
-            res.storage_pool_total_MiB,
-            res.storage_pool_free_MiB,
+    with linstor.MultiLinstor(linstor.MultiLinstor.controller_uri_list(driver.datastore.linstor_controllers)) as lin:
+        stor_pool_used, stor_pool_total, stor_pool_free = calculate_space(
+            lin,
+            driver.datastore.storage_pool,
+            driver.datastore.deployment_nodes,
+            driver.datastore.auto_place
         )
-    )
 
-    util.log_info("Exiting datastore monitor.")
+        print(
+            "USED_MB={}\nTOTAL_MB={}\nFREE_MB={}".format(
+                stor_pool_used,
+                stor_pool_total,
+                stor_pool_free,
+            )
+        )
+
+    util.log_info("Exiting datastore monitor[{u}/{t}/{f}].".format(
+        u=stor_pool_used, t=stor_pool_total, f=stor_pool_free)
+    )
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as err:
+        util.error_message(str(err))
+        raise

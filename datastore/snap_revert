@@ -19,16 +19,31 @@ limitations under the License.
 
 
 import sys
+import traceback
+import base64
 
-from one import util
+from linstor import Resource
+from one import consts, driver_action, util
+
+DRIVER_ACTION = sys.argv[1]
+IMAGE_ID = sys.argv[2]
 
 
 def main():
     util.log_info("Entering datastore/snap_revert")
-    util.log_info("Operation not supported!")
-    util.log_info("Entering datastore/snap_revert")
-    sys.exit(1)
+    driver = driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
+    snapshot_name = "{}-{}".format(consts.SNAP_PREFIX, driver.image.target_snap)
+
+    res = Resource(name=driver.image.source, uri=driver.datastore.linstor_controllers)
+    res.snapshot_rollback(snapshot_name)
+
+    util.log_info("Exiting datastore/snap_revert")
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as err:
+        util.error_message(traceback.format_exc())
+        print("ERROR: " + str(err))
+        raise

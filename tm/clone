@@ -22,8 +22,10 @@ from __future__ import print_function
 import os
 import sys
 
-from linstor_helper import resource
+from linstor_helper import clone, CloneMode
+from linstor import Resource
 from one import util
+from one.datastore import Datastore
 
 SRC = sys.argv[1]
 DST = sys.argv[2]
@@ -40,17 +42,28 @@ def main():
     dst_dir = os.path.dirname(dst_path).strip()
     disk_ID = dst_path.split(".")[-1].strip()
 
-    res = resource.Resource(name=src_path)
-    clone = resource.Resource("{}-vm{}-disk{}".format(res.name, VM_ID, disk_ID))
+    datastore = Datastore(util.show_ds(DS_ID))
 
-    res.clone(clone.name)
-    clone.assign(dst_host)
+    res = Resource(name=src_path, uri=datastore.linstor_controllers)
+    clone_name = "{}-vm{}-disk{}".format(res.name, VM_ID, disk_ID)
+    clone(
+        res,
+        clone_name,
+        datastore.deployment_nodes,
+        datastore.auto_place,
+        CloneMode.from_str(datastore.linstor_clone_mode)
+    )
+    res_clone = Resource(clone_name, uri=datastore.linstor_controllers)
 
+    res_clone.activate(dst_host)
+
+    device_path = res_clone.volumes[0].device_path if res_clone.volumes[0].device_path \
+        else "/dev/drbd{minor}".format(minor=res_clone.volumes[0].minor)
     link_command = " ; ".join(
         [
             "set -e",
             "mkdir -p {}".format(dst_dir),
-            "ln -fs {} {}".format(clone.path, dst_path),
+            "ln -fs {} {}".format(device_path, dst_path),
         ]
     )
 
@@ -61,7 +74,7 @@ def main():
                 '"{}"'.format(link_command),
                 '"{}"'.format(
                     "Error: Unable to link {} to {} on {}".format(
-                        clone.name, dst_path, dst_host
+                        res_clone.name, dst_path, dst_host
                     )
                 ),
             ]

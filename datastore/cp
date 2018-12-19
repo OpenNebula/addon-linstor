@@ -21,8 +21,10 @@ from __future__ import print_function
 
 import base64
 import sys
+import traceback
 
-from linstor_helper import resource
+from linstor_helper import deploy
+from linstor import Resource, Volume
 from one import consts, driver_action, util
 
 DRIVER_ACTION = sys.argv[1]
@@ -34,15 +36,12 @@ def main():
 
     driver = driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
 
-    res = resource.Resource(
-        name="{}-{}".format(consts.IMAGE_PREFIX, IMAGE_ID),
-        sizeMiB=driver.image.size,
-        auto_place=driver.datastore.auto_place,
-        nodes=driver.datastore.deployment_nodes,
-        storage_pool=driver.datastore.storage_pool,
-    )
+    res = Resource("{}-{}".format(consts.IMAGE_PREFIX, IMAGE_ID), uri=driver.datastore.linstor_controllers)
+    res.placement.storage_pool = driver.datastore.storage_pool
+    res.volumes[0] = Volume(driver.image.size + "MiB")
 
-    res.deploy()
+    util.log_info("Deploying resource '{r}'".format(r=res.name))
+    deploy(res, driver.datastore.deployment_nodes, driver.datastore.auto_place)
 
     util.set_up_datastore(
         " ".join(
@@ -90,21 +89,23 @@ def main():
             "Copying local image {} to the image repository".format(driver.image.path)
         )
 
-    hosts = res.deployed_nodes()
+    hosts = res.diskful_nodes()
 
+    device_path = res.volumes[0].device_path if res.volumes[0].device_path \
+        else "/dev/drbd{minor}".format(minor=res.volumes[0].minor)
     rc = util.exec_and_log(
         " ".join(
             [
                 copy_command,
                 "|",
                 "ssh",
-                res.get_node_interface(hosts[0]),
+                hosts[0],
                 "dd",
-                "of={}".format(res.path),
+                "of={}".format(device_path),
                 "bs=2M",
             ]
         ),
-        '"{}"'.format("Error registering {} on {}".format(res.name, hosts[0])),
+        '"{}"'.format("Error copying data to {} on {}".format(res.name, hosts[0])),
     )
 
     if int(rc) != 0:
@@ -117,4 +118,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as err:
+        util.error_message(traceback.format_exc())
+        print("ERROR: " + str(err))
+        raise

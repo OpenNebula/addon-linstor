@@ -22,8 +22,9 @@ from __future__ import print_function
 import sys
 import traceback
 
-from linstor_helper import resource
+from linstor import Resource
 from one import util, vm
+from one.datastore import Datastore
 
 SRC = sys.argv[1]
 DST = sys.argv[2]
@@ -38,6 +39,8 @@ def main():
     src_path = util.arg_path(SRC).strip()
 
     disk_ID = SRC.split(".")[-1].strip()
+
+    datastore = Datastore(util.show_ds(DS_ID))
 
     unlink_command = " ; ".join(["set -e", "rm -f {}".format(src_path)])
 
@@ -70,10 +73,9 @@ def main():
     else:
         util.log_info("{} is a persistent OS or DATABLOCK image".format(res_name))
 
-    res = resource.Resource(name=res_name)
+    res = Resource(name=res_name, uri=datastore.linstor_controllers)
 
-    if res.is_client(src_host):
-        res.unassign(src_host)
+    res.deactivate(src_host)
 
     util.log_info("Exiting tm mvds")
 

@@ -21,9 +21,11 @@ from __future__ import print_function
 
 import os
 import sys
+import traceback
 
-from linstor_helper import resource
 from one import util
+from one.datastore import Datastore
+from linstor.resource import Resource
 
 SRC = sys.argv[1]
 DST = sys.argv[2]
@@ -40,14 +42,16 @@ def main():
     dst_path = util.arg_path(DST).strip()
     dst_dir = os.path.dirname(dst_path).strip()
 
-    res = resource.Resource(name=src_path)
-    res.assign(dst_host)
+    datastore = Datastore(util.show_ds(DS_ID))
+
+    res = Resource(name=src_path, uri=datastore.linstor_controllers)
+    res.activate(dst_host)
 
     link_command = " ; ".join(
         [
             "set -e",
             "mkdir -p {}".format(dst_dir),
-            "ln -fs {} {}".format(res.path, dst_path),
+            "ln -fs {} {}".format(res.volumes[0].device_path, dst_path),
         ]
     )
 
@@ -67,4 +71,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as err:
+        util.error_message(traceback.format_exc())
+        print("ERROR: " + str(err))
+        raise

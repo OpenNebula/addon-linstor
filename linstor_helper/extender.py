@@ -1,6 +1,6 @@
 import time
 
-from linstor import Resource, Volume
+from linstor import Resource, Volume, MultiLinstor
 from one import util
 
 
@@ -38,7 +38,7 @@ def deploy(resource, deployment_nodes, auto_place_count):
     """
     Deploys resource depending on deployment nodes or auto_place setting.
 
-    :param linstor.Resource resource:
+    :param Resource resource:
     :param str deployment_nodes:
     :param int auto_place_count:
     :return:
@@ -53,6 +53,24 @@ def deploy(resource, deployment_nodes, auto_place_count):
         raise RuntimeError("No deploy mode selected. nodes: {n}, auto_place: {a}".format(
             n=deployment_nodes, a=auto_place_count)
         )
+
+
+def delete(resource):
+    """
+    Deletes a resource with all it's snapshots
+
+    :param Resource resource:
+    :return: True
+    """
+    with MultiLinstor(resource.client.uri_list) as lin:
+        snapshots = lin.snapshot_dfn_list()[0]
+        for snap in [x for x in snapshots.proto_msg.snapshot_dfns if x.rsc_name == resource.name]:
+            util.log_info("Deleting snapshot '{r}/{s}'".format(r=resource.name, s=snap.snapshot_name))
+            lin.snapshot_delete(rsc_name=resource.name, snapshot_name=snap.snapshot_name)
+
+    util.log_info("Deleting resource '{r}'".format(r=resource.name))
+    resource.delete()
+    return True
 
 
 class CloneMode(object):

@@ -19,9 +19,11 @@ limitations under the License.
 
 
 import sys
+import traceback
 
-from linstor_helper import resource
+from linstor import Resource
 from one import consts, util, vm
+from one.datastore import Datastore
 
 SRC = sys.argv[1]
 SNAP_ID = sys.argv[2]
@@ -35,18 +37,25 @@ def main():
     disk_ID = SRC.split(".")[-1].strip()
     snap_ID = util.arg_host(SNAP_ID).strip()
 
+    datastore = Datastore(util.show_ds(DS_ID))
+
     target_vm = vm.Vm(util.show_vm(VM_ID))
 
     res_name = target_vm.disk_source(disk_ID)
     if target_vm.disk_persistent(disk_ID) != "YES":
         res_name = "{}-vm{}-disk{}".format(res_name, VM_ID, disk_ID)
 
-    res = resource.Resource(name=res_name)
+    res = Resource(name=res_name, uri=datastore.linstor_controllers)
 
-    res.snap_create("{}-{}".format(consts.SNAP_PREFIX, snap_ID))
+    res.snapshot_create("{}-{}".format(consts.SNAP_PREFIX, snap_ID))
 
     util.log_info("Exiting tm/snap_create")
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as err:
+        util.error_message(traceback.format_exc())
+        print("ERROR: " + str(err))
+        raise

@@ -21,9 +21,11 @@ from __future__ import print_function
 
 import os
 import sys
+import traceback
 
-from linstor_helper import resource
-from one import util, vm
+from linstor import Resource
+from one import util, vm, consts
+from one.datastore import Datastore
 
 SRC = sys.argv[1]
 DST = sys.argv[2]
@@ -32,7 +34,7 @@ DS_ID = sys.argv[4]
 
 
 def main():
-    util.log_info("Entering tm mv")
+    util.log_info("Entering tm mv, from='{s}' to='{dst}'".format(s=SRC, dst=DST))
 
     if SRC == DST:
         util.log_info(
@@ -42,67 +44,91 @@ def main():
 
     src_host = util.arg_host(SRC).strip()
     src_path = util.arg_path(SRC).strip()
-
-    disk_ID = SRC.split(".")[-1].strip()
+    src_dir = os.path.dirname(src_path)
 
     dst_host = util.arg_host(DST).strip()
     dst_path = util.arg_path(DST).strip()
     dst_dir = os.path.dirname(dst_path).strip()
 
-    # Make a new path for the dst_host, remove the src_host's path.
-    util.ssh_make_path(" ".join([dst_host, dst_dir]))
-    util.ssh_exec_and_log(
-        " ".join(
-            [
-                '"{}"'.format(src_host),
-                '"rm -rf {}"'.format(src_path),
-                '"{}"'.format("Error removing {} on {}".format(src_path, src_host)),
-            ]
-        )
-    )
+    datastore = Datastore(util.show_ds(DS_ID))
 
     target_vm = vm.Vm(util.show_vm(VM_ID))
 
-    res_name = target_vm.disk_source(disk_ID)
+    disk_ID = SRC.split(".")[-1].strip() if "disk." in SRC else None
 
-    util.log_info("Moving {}".format(target_vm.disk_target(disk_ID)))
+    if disk_ID is None:
+        # context image
+        disk_ID = target_vm.context_ID
+        res_name = "{}-vm{}-disk{}".format(consts.CONTEXT_PREFIX, VM_ID, disk_ID)
 
-    if not target_vm.disk_persistent(disk_ID):
-        if target_vm.disk_type(disk_ID) == "CDROM":
-            util.log_info("{} is a non-persistent CDROM image".format(res_name))
-        else:
-            res_name = "{}-vm{}-disk{}".format(res_name, VM_ID, disk_ID)
-            util.log_info(
-                "{} is a non-persistent OS or DATABLOCK image".format(res_name)
+        res = Resource(name=res_name, uri=datastore.linstor_controllers)
+        util.log_info("Active context resource '{r}' on destination host: {h}".format(r=res_name, h=dst_host))
+        res.activate(dst_host)
+        util.log_info("Deactivate context resource '{r}' on source host: {h}".format(r=res_name, h=src_host))
+        res.deactivate(src_host)
+
+        # Remove current destination directory, as ssh mv does
+        util.ssh_exec_and_log(
+            " ".join(
+                [
+                    '"{}"'.format(dst_host),
+                    '"rm -Rf {}"'.format(dst_path)
+                ]
             )
-    else:
-        util.log_info("{} is a persistent OS or DATABLOCK image".format(res_name))
-
-    res = resource.Resource(name=res_name)
-
-    res.assign(dst_host)
-
-    if res.is_client(src_host):
-        res.unassign(src_host)
-
-    link_command = " ; ".join(["set -e", "ln -fs {} {}".format(res.path, dst_path)])
-
-    util.ssh_exec_and_log(
-        " ".join(
-            [
-                '"{}"'.format(dst_host),
-                '"{}"'.format(link_command),
-                '"{}"'.format(
-                    "Error: Unable to link {} to {} on {}".format(
-                        res_name, dst_path, dst_host
-                    )
-                ),
-            ]
         )
-    )
+
+        util.ssh_make_path(" ".join([dst_host, dst_dir]))
+
+        tar_copy_cmd = " && ".join([
+            "set -e -o pipefail",
+            "tar -C {src_dir} --sparse -cf - {src_vm_dir} | ssh {dst_host} 'tar -C {dst_dir} --sparse -xf -'".format(
+                src_dir=src_dir,
+                src_vm_dir=os.path.basename(src_path),
+                dst_host=dst_host,
+                dst_dir=dst_dir
+            ),
+            "rm -Rf {src_path}".format(src_path=src_path)
+        ])
+
+        util.ssh_exec_and_log(
+            " ".join([
+                '"{}"'.format(src_host),
+                '"{}"'.format(tar_copy_cmd),
+                '"Unable to tar copy to new host"'
+                ]
+            )
+        )
+    else:
+        # normal drbd image
+        res_name = target_vm.disk_source(disk_ID)
+
+        if not target_vm.disk_persistent(disk_ID):
+            if target_vm.disk_type(disk_ID) == "CDROM":
+                util.log_info("{} is a non-persistent CDROM image".format(res_name))
+            else:
+                res_name = "{}-vm{}-disk{}".format(res_name, VM_ID, disk_ID)
+                util.log_info(
+                    "{} is a non-persistent OS or DATABLOCK image".format(res_name)
+                )
+        else:
+            util.log_info("{} is a persistent OS or DATABLOCK image".format(res_name))
+
+        res = Resource(name=res_name, uri=datastore.linstor_controllers)
+        util.log_info("Active resource '{r}' on destination host: {h}".format(r=res_name, h=dst_host))
+        res.activate(dst_host)
+        util.log_info("Deactivate resource '{r}' on source host: {h}".format(r=res_name, h=src_host))
+        res.deactivate(src_host)
+
+    # do not remove links on the old host, as the system driver will just tar the old vm directory
+    # and copy it to the new host
 
     util.log_info("Exiting tm mv")
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as err:
+        util.error_message(traceback.format_exc())
+        print("ERROR: " + str(err))
+        raise

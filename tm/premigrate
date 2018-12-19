@@ -22,7 +22,7 @@ import base64
 import sys
 import traceback
 
-from linstor_helper import resource
+from linstor import Resource
 from one import util, vm, consts
 from one.datastore import Datastore
 
@@ -48,16 +48,16 @@ def main():
         res_name = target_vm.disk_source(disk)
         if target_vm.disk_is_clone(disk) == "YES":
             res_name = "{}-vm{}-disk{}".format(res_name, VM_ID, disk)
-        res = resource.Resource(name=res_name)
-        res.assign(DST_HOST)
-        res.enable_dual_primary()
+        res = Resource(name=res_name, uri=datastore.linstor_controllers)
+        res.activate(DST_HOST)
+        res.allow_two_primaries = True
         dst_path = "{}/disk.{}".format(dst_dir, disk)
 
         link_command = " ; ".join(
             [
                 "set -e",
                 "mkdir -p {}".format(dst_dir),
-                "ln -fs {} {}".format(res.path, dst_path),
+                "ln -fs {} {}".format(res.volumes[0].device_path, dst_path),
             ]
         )
 
@@ -105,15 +105,15 @@ def main():
         )
     else:
         res_name = "{}-vm{}-disk{}".format(consts.CONTEXT_PREFIX, VM_ID, context_id)
-        res = resource.Resource(name=res_name)
-        res.assign(DST_HOST)
-        res.enable_dual_primary()
+        res = Resource(name=res_name, uri=datastore.linstor_controllers)
+        res.activate(DST_HOST)
+        res.allow_two_primaries = True
 
         link_command = " ; ".join(
             [
                 "set -e",
                 "mkdir -p {}".format(dst_dir),
-                "ln -fs {} {}".format(res.path, context_path),
+                "ln -fs {} {}".format(res.volumes[0].device_path, context_path),
             ]
         )
 

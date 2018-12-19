@@ -1,1 +1,1 @@
-from .extender import calculate_space, deploy, clone, CloneMode
+from .extender import calculate_space, deploy, delete, clone, CloneMode
