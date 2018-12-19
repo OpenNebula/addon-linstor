@@ -40,10 +40,20 @@ class DriverAction(object):
 
     @property
     def image(self):
-        """Returns image"""
+        """
+        Returns image object.
+
+        :return: used image
+        :rtype: image.Image
+        """
         return self._image
 
     @property
     def datastore(self):
-        """Returns datastore"""
+        """
+        Returns datastore
+
+        :return: used datastore
+        :rtype: datastore.Datastore
+        """
         return self._datastore
