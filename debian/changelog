@@ -1,3 +1,16 @@
+addon-linstor (0.9.0-1) experimental; urgency=medium
+
+  [ Rene Peinthor ]
+  * readme: add LINSTOR_CLONE_MODE
+  * NOTES: add dev notes on how to trigger actions
+  * linstor_helper: copy/implement calculate_space, deploy, clone
+  * one/datastore: auto_place is an int
+  * one/driver_action: add type annotations
+  * reimplement all driver actions to use python-linstor api
+  * remove now unused resource module
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Thu, 20 Dec 2018 10:02:49 +0100
+
 addon-linstor (0.2.6-1) experimental; urgency=medium
 
   [ Rene Peinthor ]
