@@ -319,7 +319,7 @@ template.
 
 Apache 2.0
 
-##DRBD9 and Linstor User's Guide
+## DRBD9 and Linstor User's Guide
 
 If you have any questions about setting up, tuning, or administrating DRBD9 or
 Linstor, be sure to check out the information provided in the
