@@ -1,3 +1,14 @@
+linstor-opennebula (0.9.1-1) experimental; urgency=medium
+
+  [ Rene Peinthor ]
+  * README: fix formatting
+  * README: add linstor to system datastore configuration
+
+  [ Roland Kammerer ]
+  * rename to linstor-opennebula
+
+ -- Roland Kammerer <roland.kammerer@linbit.com>  Fri, 04 Jan 2019 11:27:06 +0100
+
 addon-linstor (0.9.0-1) experimental; urgency=medium
 
   [ Rene Peinthor ]
