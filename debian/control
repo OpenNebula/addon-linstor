@@ -1,4 +1,4 @@
-Source: addon-linstor
+Source: linstor-opennebula
 Maintainer: LINBIT HA Solutions GmbH <drbd-dev@lists.linbit.com>
 Uploaders: Roland Kammerer <roland.kammerer@linbit.com>
 Section: python
@@ -8,7 +8,10 @@ Build-Depends: debhelper (>= 9),
                dh-python
 Standards-Version: 3.9.6
 
-Package: addon-linstor
+Package: linstor-opennebula
+Provides: addon-linstor
+Conflicts: addon-linstor
+Replaces: addon-linstor
 Architecture: all
 Depends: drbd-utils,
          linstor-client,

@@ -59,7 +59,7 @@ def version():
 
 
 setup(
-    name="addon-linstor",
+    name="linstor-opennebula",
     version=version(),
     data_files=[
         (os.path.join(REMOTES_DIR, "tm", DRIVER_NAME), glob("tm/*")),
