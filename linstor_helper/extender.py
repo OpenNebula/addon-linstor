@@ -105,6 +105,7 @@ def clone(resource, clone_name, place_nodes, auto_place_count, mode=CloneMode.SN
     :return:
     """
     return_code = 0
+    util.log_info("Cloning from resource '{src}' to '{tgt}'.".format(src=resource.name, tgt=clone_name))
     if mode == CloneMode.SNAPSHOT:
         snap_name = "for-" + clone_name
         resource.snapshot_create(snap_name)
