@@ -1,3 +1,11 @@
+linstor-opennebula (0.9.2-1) experimental; urgency=medium
+
+  [ Rene Peinthor ]
+  * tm/snap*: fix snapshot delete and revert with non peristent images
+  * tm/cpds: use correct resource for non persistent images
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Wed, 23 Jan 2019 11:33:56 +0100
+
 linstor-opennebula (0.9.1-1) experimental; urgency=medium
 
   [ Rene Peinthor ]
