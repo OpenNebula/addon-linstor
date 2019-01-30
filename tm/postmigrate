@@ -44,15 +44,16 @@ def main():
     datastore = Datastore(util.show_ds(DS_ID))
 
     for disk in target_vm.disk_IDs:
-        res_name = target_vm.disk_source(disk)
+        if target_vm.tm_mad(disk) == "linstor":
+            res_name = target_vm.disk_source(disk)
 
-        if target_vm.disk_is_clone(disk) == "YES":
-            res_name = "{}-vm{}-disk{}".format(res_name, VM_ID, disk)
+            if target_vm.disk_is_clone(disk) == "YES":
+                res_name = "{}-vm{}-disk{}".format(res_name, VM_ID, disk)
 
-        res = Resource(name=res_name, uri=datastore.linstor_controllers)
+            res = Resource(name=res_name, uri=datastore.linstor_controllers)
 
-        res.deactivate(src_host)
-        res.allow_two_primaries = False
+            res.deactivate(src_host)
+            res.allow_two_primaries = False
 
     if datastore.tm_mad == "linstor":
         # deactivate context image too

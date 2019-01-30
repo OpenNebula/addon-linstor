@@ -45,33 +45,34 @@ def main():
     datastore = Datastore(util.show_ds(DS_ID))
 
     for disk in target_vm.disk_IDs:
-        res_name = target_vm.disk_source(disk)
-        if target_vm.disk_is_clone(disk) == "YES":
-            res_name = "{}-vm{}-disk{}".format(res_name, VM_ID, disk)
-        res = Resource(name=res_name, uri=datastore.linstor_controllers)
-        res.activate(DST_HOST)
-        res.allow_two_primaries = True
-        dst_path = "{}/disk.{}".format(dst_dir, disk)
+        if target_vm.tm_mad(disk) == "linstor":
+            res_name = target_vm.disk_source(disk)
+            if target_vm.disk_is_clone(disk) == "YES":
+                res_name = "{}-vm{}-disk{}".format(res_name, VM_ID, disk)
+            res = Resource(name=res_name, uri=datastore.linstor_controllers)
+            res.activate(DST_HOST)
+            res.allow_two_primaries = True
+            dst_path = "{}/disk.{}".format(dst_dir, disk)
 
-        link_command = " ; ".join(
-            [
-                "set -e",
-                "mkdir -p {}".format(dst_dir),
-                "ln -fs {} {}".format(res.volumes[0].device_path, dst_path),
-            ]
-        )
-
-        util.ssh_exec_and_log(
-            " ".join(
+            link_command = " ; ".join(
                 [
-                    '"{}"'.format(dst_host),
-                    '"{}"'.format(link_command),
-                    '"Error: Unable to link {} to {} on {}"'.format(
-                        res.name, dst_path, dst_host
-                    ),
+                    "set -e",
+                    "mkdir -p {}".format(dst_dir),
+                    "ln -fs {} {}".format(res.volumes[0].device_path, dst_path),
                 ]
             )
-        )
+
+            util.ssh_exec_and_log(
+                " ".join(
+                    [
+                        '"{}"'.format(dst_host),
+                        '"{}"'.format(link_command),
+                        '"Error: Unable to link {} to {} on {}"'.format(
+                            res.name, dst_path, dst_host
+                        ),
+                    ]
+                )
+            )
 
     args = ""
     for arg in sys.argv[1:]:

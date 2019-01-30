@@ -105,3 +105,10 @@ class Vm(object):
             return self.disk(disk_ID).find("SOURCE").text
         except AttributeError:
             return ""
+
+    def tm_mad(self, disk_ID):
+        """Returns the tm driver identifier"""
+        try:
+            return self.disk(disk_ID).find("TM_MAD").text
+        except AttributeError:
+            return None
