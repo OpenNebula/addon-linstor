@@ -1,7 +1,8 @@
 import time
 
 from linstor import Resource, Volume, MultiLinstor
-from one import util
+from one import util, consts
+from one.vm import Vm
 
 
 def calculate_space(lin, storage_pool_name, nodes, auto_place):
@@ -153,3 +154,33 @@ def clone(resource, clone_name, place_nodes, auto_place_count, mode=CloneMode.SN
         clone_res.deactivate(copy_node)
 
     return return_code == 0
+
+
+def get_rsc_name(target_vm, disk_id):
+    """
+    Tries to detect the correct resource name.
+
+    :param Vm target_vm: Vm object
+    :param int disk_id: Id of the disk vm
+    :return: The linstor resource name
+    :rtype: str
+    """
+    res_name = None
+    disk_source = target_vm.disk_source(disk_id)
+    if not disk_source:  # volatile
+        res_name = consts.VOLATILE_PREFIX + "-vm{}-disk{}".format(target_vm.ID, disk_id)
+    else:
+        res_name = target_vm.disk_source(disk_id)
+
+        if not target_vm.disk_persistent(disk_id):
+            if target_vm.disk_type(disk_id) == "CDROM":
+                util.log_info("{} is a non-persistent CDROM image".format(res_name))
+            else:
+                res_name = "{}-vm{}-disk{}".format(res_name, target_vm.ID, disk_id)
+                util.log_info(
+                    "{} is a non-persistent OS or DATABLOCK image".format(res_name)
+                )
+        else:
+            util.log_info("{} is a persistent OS or DATABLOCK image".format(res_name))
+
+    return res_name

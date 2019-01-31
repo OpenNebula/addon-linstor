@@ -25,6 +25,7 @@ import traceback
 from linstor import Resource, SizeCalc
 from one import util, vm
 from one.datastore import Datastore
+from linstor_helper import get_rsc_name
 
 
 SRC = sys.argv[1]
@@ -39,7 +40,7 @@ def main():
     target_vm = vm.Vm(util.show_vm(VM_ID))
     datastore = Datastore(util.show_ds(DATASTORE_ID))
 
-    res_name = target_vm.disk_source(disk_id)
+    res_name = get_rsc_name(target_vm, disk_id)
 
     util.log_info("Entering resize: Set '{r}' to size '{s}'.".format(r=res_name, s=SIZE))
 

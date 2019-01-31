@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+SRC_HOST=$1
+DST_HOST=$2
+DST_PATH=$3
+VM_ID=$4
+DS_ID=$5
+TEMPLATE=$6
+
+# reverse postmigrate call, should cleanup the failed host
+
+`dirname $0`/postmigrate ${DST_HOST} ${SRC_HOST} ${DST_PATH} ${VM_ID} ${DS_ID} ${TEMPLATE}

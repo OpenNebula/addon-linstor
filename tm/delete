@@ -24,7 +24,7 @@ import traceback
 
 from one import util, vm, consts
 from one.datastore import Datastore
-from linstor_helper import delete
+from linstor_helper import delete, get_rsc_name
 from linstor import Resource, LinstorError
 
 DST = sys.argv[1]
@@ -74,18 +74,7 @@ def main():
     )
 
     if disk_id is not None:
-        res_name = target_vm.disk_source(disk_id)
-
-        if not target_vm.disk_persistent(disk_id):
-            if target_vm.disk_type(disk_id) == "CDROM":
-                util.log_info("{} is a non-persistent CDROM image".format(res_name))
-            else:
-                res_name = "{}-vm{}-disk{}".format(res_name, VM_ID, disk_id)
-                util.log_info(
-                    "{} is a non-persistent OS or DATABLOCK image".format(res_name)
-                )
-        else:
-            util.log_info("{} is a persistent OS or DATABLOCK image".format(res_name))
+        res_name = get_rsc_name(target_vm, disk_id)
 
     res = Resource(name=res_name, uri=datastore.linstor_controllers)
 

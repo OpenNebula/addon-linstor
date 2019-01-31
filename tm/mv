@@ -26,6 +26,7 @@ import traceback
 from linstor import Resource
 from one import util, vm, consts
 from one.datastore import Datastore
+from linstor_helper import get_rsc_name
 
 SRC = sys.argv[1]
 DST = sys.argv[2]
@@ -100,18 +101,7 @@ def main():
         )
     else:
         # normal drbd image
-        res_name = target_vm.disk_source(disk_ID)
-
-        if not target_vm.disk_persistent(disk_ID):
-            if target_vm.disk_type(disk_ID) == "CDROM":
-                util.log_info("{} is a non-persistent CDROM image".format(res_name))
-            else:
-                res_name = "{}-vm{}-disk{}".format(res_name, VM_ID, disk_ID)
-                util.log_info(
-                    "{} is a non-persistent OS or DATABLOCK image".format(res_name)
-                )
-        else:
-            util.log_info("{} is a persistent OS or DATABLOCK image".format(res_name))
+        res_name = get_rsc_name(target_vm, disk_ID)
 
         res = Resource(name=res_name, uri=datastore.linstor_controllers)
         util.log_info("Active resource '{r}' on destination host: {h}".format(r=res_name, h=dst_host))

@@ -110,6 +110,10 @@ Live migrate VM
 
 Live migrate VM
 
+### failmigrate
+
+Called if a KVM migrate command failed, used for cleanup premigrate stuff
+
 ### resize
 
 Instances -> VM -> (Running) VM -> Storage -> Actions -> resize
@@ -129,3 +133,11 @@ Instances -> VM -> Powered off VM -> Storage -> Actions -> delete snapshot
 ### snap_revert
 
 Instances -> VM -> Powered off VM -> Storage -> Actions -> revert to snapshot
+
+### mkswap
+
+Add a volatile disk to an VM and instantiate
+
+### mkimage
+
+Add a volatile non swap disk to an VM and instantiate
