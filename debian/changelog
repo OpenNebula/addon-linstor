@@ -1,3 +1,12 @@
+linstor-opennebula (0.9.3-1) experimental; urgency=medium
+
+  [ Rene Peinthor ]
+  * live-migrate: only try to migrate linstor resources
+  * support volatile disks in linstor system ds
+  * README.md: add volatile disk live-migration note
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Fri, 01 Feb 2019 09:32:46 +0100
+
 linstor-opennebula (0.9.2-1) experimental; urgency=medium
 
   [ Rene Peinthor ]
