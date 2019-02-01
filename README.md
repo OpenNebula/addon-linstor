@@ -308,6 +308,9 @@ EOI
 onedatastore create system_ds.conf
 ```
 
+If you want live migration with volatile disks you need to enable the `--unsafe` option for KVM, see:
+[opennebula-doc](https://docs.opennebula.org/5.6/deployment/open_cloud_host_setup/kvm_driver.html#live-migration-for-other-cache-settings)
+
 ## Usage
 
 This driver will use Linstor to create new images and transfer them to
