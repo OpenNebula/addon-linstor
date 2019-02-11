@@ -11,7 +11,7 @@ To contribute bug patches or new features, you can use the github Pull Request
 feature. It is assumed that code and documentation are contributed under the
 Apache License 2.0.
 
-Before sumbitting pull requests, please run the `./format.sh` script found
+Before submitting pull requests, please run the `./format.sh` script found
 in the root of the project and test using `tox`.
 
 Support for this addon can be found at the
@@ -20,6 +20,7 @@ Support for this addon can be found at the
 ## Authors
 
 Hayley Swimelar [<hayley@linbit.com>](hayley@linbit.com)
+Rene Peinthor [<rene.peinthor@linbit.com>](rene.peinthor@linbit.com)
 
 ## Compatibility
 
@@ -39,10 +40,6 @@ Hayley Swimelar [<hayley@linbit.com>](hayley@linbit.com)
 * fast image clones
 * transfers images over the network in diskless mode
 * allows for live migration even if the ssh system datastore is used
-
-## Limitations
-
-* snapshots of images are not available
 
 ## Installation
 
@@ -139,8 +136,8 @@ oneadmin user must be able to passwordlessly access storage nodes. Refer to
 the OpenNebula install guide for your distribution on how to manually
 configure the oneadmin user account.
 
-The Storage nodes must use storage pools created with a driver that's capabile
-if making snapshots such as the thin LVM plugin.
+The Storage nodes must use storage pools created with a driver that's capable
+of making snapshots, such as the thin LVM plugin.
 
 In this example preparation of thinly-provisioned storage using LVM for Linstor,
 you must create a volume group and thinLV using LVM on each storage node.
@@ -292,7 +289,7 @@ onedatastore create ds.conf
 
 ### linstor as system datastore
 
-Linstor driver can also be used as a system/context datastore,
+Linstor driver can also be used as a system datastore,
 configuration is pretty similar to normal datastores, with a few changes:
 
 ```bash
