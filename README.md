@@ -19,8 +19,8 @@ Support for this addon can be found at the
 
 ## Authors
 
-Hayley Swimelar [<hayley@linbit.com>](hayley@linbit.com)
-Rene Peinthor [<rene.peinthor@linbit.com>](rene.peinthor@linbit.com)
+* Hayley Swimelar [<hayley@linbit.com>](hayley@linbit.com)
+* Rene Peinthor [<rene.peinthor@linbit.com>](rene.peinthor@linbit.com)
 
 ## Compatibility
 
