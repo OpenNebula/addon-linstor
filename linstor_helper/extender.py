@@ -151,6 +151,8 @@ def clone(resource, clone_name, place_nodes, auto_place_count, mode=CloneMode.SN
             ])
         )
 
+        time.sleep(0.5)  # wait a bit so the device is closed for deletion
+
         clone_res.deactivate(copy_node)
 
     return return_code == 0
