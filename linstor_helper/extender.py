@@ -95,15 +95,34 @@ class CloneMode(object):
         return None
 
 
+def get_in_use_node(resource):
+    """
+    Returns the node that currently has the resource primary.
+
+    :param Resource resource: resource object to check for in use(primary).
+    :return: node name of the primary node, or None if all secondary
+    :rtype: bool
+    """
+    with MultiLinstor(resource.client.uri_list) as lin:
+        lst = lin.resource_list(filter_by_resources=[resource.name])
+        if lst:
+            nodes = [x for x in lst[0].proto_msg.resource_states if x.in_use]
+            if nodes:
+                return nodes[0].node_name
+    return None
+
+
 def clone(resource, clone_name, place_nodes, auto_place_count, mode=CloneMode.SNAPSHOT):
     """
+    Clones a resource to a new resource.
 
-    :param Resource resource:
-    :param str clone_name:
-    :param place_nodes:
+    :param Resource resource: resource object to clone
+    :param str clone_name: name of the new resource
+    :param str place_nodes: deployment nodes string, e.g. "alpha bravo charly"
     :param int auto_place_count:
     :param int mode:
-    :return:
+    :return: True if clone was successful
+    :rtype: bool
     """
     return_code = 0
     util.log_info("Cloning from resource '{src}' to '{tgt}'.".format(src=resource.name, tgt=clone_name))
@@ -121,8 +140,12 @@ def clone(resource, clone_name, place_nodes, auto_place_count, mode=CloneMode.SN
         clone_res.placement.storage_pool = resource.volumes[0].storage_pool_name
         clone_res.volumes[0] = Volume(str(resource.volumes[0].size))
         deploy(clone_res, place_nodes, auto_place_count)
-        nodes = resource.diskful_nodes()
-        copy_node = nodes[0]
+
+        # use copy source on the current primary node or on one with a disk, if all secondary
+        copy_node = get_in_use_node(resource)
+        if copy_node is None:
+            nodes = resource.diskful_nodes()
+            copy_node = nodes[0]
         clone_res.activate(copy_node)
 
         from_dev_path = resource.volumes[0].device_path if resource.volumes[0].device_path \
