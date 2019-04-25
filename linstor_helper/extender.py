@@ -174,6 +174,8 @@ def clone(resource, clone_name, place_nodes, auto_place_count, mode=CloneMode.SN
             ])
         )
 
+        time.sleep(0.5)  # wait a bit until we are sure dd closed the block device
+
         clone_res.deactivate(copy_node)
 
     return return_code == 0
