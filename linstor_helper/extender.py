@@ -65,7 +65,7 @@ def delete(resource):
     """
     with MultiLinstor(resource.client.uri_list) as lin:
         snapshots = lin.snapshot_dfn_list()[0]
-        for snap in [x for x in snapshots.proto_msg.snapshot_dfns if x.rsc_name == resource.name]:
+        for snap in [x for x in snapshots.snapshots if x.rsc_name == resource.name]:
             util.log_info("Deleting snapshot '{r}/{s}'".format(r=resource.name, s=snap.snapshot_name))
             lin.snapshot_delete(rsc_name=resource.name, snapshot_name=snap.snapshot_name)
 
@@ -106,7 +106,7 @@ def get_in_use_node(resource):
     with MultiLinstor(resource.client.uri_list) as lin:
         lst = lin.resource_list(filter_by_resources=[resource.name])
         if lst:
-            nodes = [x for x in lst[0].proto_msg.resource_states if x.in_use]
+            nodes = [x for x in lst[0].resource_states if x.in_use]
             if nodes:
                 return nodes[0].node_name
     return None
