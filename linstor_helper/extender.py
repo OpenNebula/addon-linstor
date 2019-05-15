@@ -17,7 +17,7 @@ def calculate_space(lin, storage_pool_name, nodes, auto_place):
     """
 
     storage_pools = lin.storage_pool_list_raise(filter_by_stor_pools=[storage_pool_name])
-    free_space_by_node = {x.node_name: x.free_space for x in storage_pools.storage_pools}
+    free_space_by_node = {x.node_name: x.free_space for x in storage_pools.storage_pools if x.free_space}
     storage_pool_total_MiB = 0
     storage_pool_free_MiB = 0
     if nodes:
