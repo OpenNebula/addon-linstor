@@ -27,6 +27,7 @@ import sys
 from linstor import Resource, Volume, SizeCalc
 from linstor_helper import deploy
 from one import consts, driver_action, util
+from linstor_helper import get_device_path
 
 DRIVER_ACTION = sys.argv[1]
 IMAGE_ID = sys.argv[2]
@@ -71,7 +72,7 @@ def main():
 
     EOF""".format(
         driver.image.FS_type,
-        res.volumes[0].device_path,
+        get_device_path(res),
         SizeCalc.convert(res.volumes[0].size, SizeCalc.UNIT_B, SizeCalc.UNIT_MiB)
     )
 

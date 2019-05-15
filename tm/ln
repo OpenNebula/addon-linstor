@@ -26,6 +26,7 @@ import traceback
 from one import util
 from one.datastore import Datastore
 from linstor.resource import Resource
+from linstor_helper import get_device_path
 
 SRC = sys.argv[1]
 DST = sys.argv[2]
@@ -51,7 +52,7 @@ def main():
         [
             "set -e",
             "mkdir -p {}".format(dst_dir),
-            "ln -fs {} {}".format(res.volumes[0].device_path, dst_path),
+            "ln -fs {} {}".format(get_device_path(res), dst_path),
         ]
     )
 

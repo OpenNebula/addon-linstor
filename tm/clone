@@ -22,7 +22,7 @@ from __future__ import print_function
 import os
 import sys
 
-from linstor_helper import clone, CloneMode
+from linstor_helper import clone, CloneMode, get_device_path
 from linstor import Resource
 from one import util
 from one.datastore import Datastore
@@ -57,13 +57,11 @@ def main():
 
     res_clone.activate(dst_host)
 
-    device_path = res_clone.volumes[0].device_path if res_clone.volumes[0].device_path \
-        else "/dev/drbd{minor}".format(minor=res_clone.volumes[0].minor)
     link_command = " ; ".join(
         [
             "set -e",
             "mkdir -p {}".format(dst_dir),
-            "ln -fs {} {}".format(device_path, dst_path),
+            "ln -fs {} {}".format(get_device_path(res_clone), dst_path),
         ]
     )
 

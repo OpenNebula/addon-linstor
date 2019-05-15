@@ -23,7 +23,7 @@ import base64
 import sys
 import traceback
 
-from linstor_helper import deploy
+from linstor_helper import deploy, get_device_path
 from linstor import Resource, Volume
 from one import consts, driver_action, util
 
@@ -91,8 +91,6 @@ def main():
 
     hosts = res.diskful_nodes()
 
-    device_path = res.volumes[0].device_path if res.volumes[0].device_path \
-        else "/dev/drbd{minor}".format(minor=res.volumes[0].minor)
     rc = util.exec_and_log(
         " ".join(
             [
@@ -101,7 +99,7 @@ def main():
                 "ssh",
                 hosts[0],
                 "dd",
-                "of={}".format(device_path),
+                "of={}".format(get_device_path(res)),
                 "bs=2M",
             ]
         ),

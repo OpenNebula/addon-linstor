@@ -148,10 +148,8 @@ def clone(resource, clone_name, place_nodes, auto_place_count, mode=CloneMode.SN
             copy_node = nodes[0]
         clone_res.activate(copy_node)
 
-        from_dev_path = resource.volumes[0].device_path if resource.volumes[0].device_path \
-            else "/dev/drbd{minor}".format(minor=resource.volumes[0].minor)
-        to_dev_path = clone_res.volumes[0].device_path if clone_res.volumes[0].device_path \
-            else "/dev/drbd{minor}".format(minor=clone_res.volumes[0].minor)
+        from_dev_path = get_device_path(resource)
+        to_dev_path = get_device_path(clone_res)
 
         block_count = int(resource.volumes[0].size) // 1024 / 64 + 1
 
@@ -209,3 +207,25 @@ def get_rsc_name(target_vm, disk_id):
             util.log_info("{} is a persistent OS or DATABLOCK image".format(res_name))
 
     return res_name
+
+
+def get_device_path(res):
+    """
+    Tries to get the correct device path for the resource.
+    Usually device_path should be available from res.volumes[0].device_path,
+    but old bugs/timing issues may render them empty, so this helps to acquire a valid device_path.
+
+    :param Resource res: resource object to get the device path from
+    :return: device path of the first volume
+    :rtype: str
+    :raises: RuntimeError if it isn't possible to get a device path
+    """
+    device_path = res.volumes[0].device_path
+
+    if not device_path and res.volumes[0].minor is not None:
+        device_path = "/dev/drbd{minor}".format(minor=res.volumes[0].minor)
+
+    if not device_path:
+        raise RuntimeError("Could not get volume device path for resource '{res}'".format(res=res.name))
+
+    return device_path

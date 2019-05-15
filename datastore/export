@@ -27,6 +27,7 @@ import traceback
 
 from linstor import Resource, MultiLinstor
 from one import driver_action, util
+from linstor_helper import get_device_path
 
 DRIVER_ACTION = sys.argv[1]
 APP_ID = sys.argv[2]
@@ -54,7 +55,7 @@ def main():
                 " ".join(
                     [
                         "dd",
-                        "if={}".format(res.volumes[0].device_path),
+                        "if={}".format(get_device_path(res)),
                         "of={}".format(output_file),
                         "bs=4M",
                     ]
