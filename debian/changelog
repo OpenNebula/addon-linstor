@@ -1,3 +1,20 @@
+linstor-opennebula (0.9.4-1) experimental; urgency=medium
+
+  [ Rene Peinthor ]
+  * REAMDE.md: updates and fix typos
+  * fix resource still in use after clone
+  * clone: Fix clone mode copy if source is currently primary.
+  * Revert "fix resource still in use after clone"
+  * wait a bit until we are sure dd closed the block device
+  * extener: do not use forbidden proto_msg api
+  * fix monitor if node is down
+  * better handle missing device_paths
+  * require python linstor 0.9.4 >=
+  * explicitly specify python2
+  * fix linebreak
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Tue, 21 May 2019 08:41:25 +0200
+
 linstor-opennebula (0.9.3-1) experimental; urgency=medium
 
   [ Rene Peinthor ]

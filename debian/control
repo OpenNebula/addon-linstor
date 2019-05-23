@@ -15,7 +15,7 @@ Replaces: addon-linstor
 Architecture: all
 Depends: drbd-utils,
          linstor-client,
-         python-linstor (>=0.7.3),
+         python-linstor (>=0.9.4),
          ${misc:Depends},
          ${python:Depends}
 Description: Linstor addon for OpenNebula
