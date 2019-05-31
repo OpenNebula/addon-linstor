@@ -1,6 +1,6 @@
 import time
 
-from linstor import Resource, Volume, MultiLinstor
+from linstor import Resource, Volume, MultiLinstor, LinstorError
 from one import util, consts
 from one.vm import Vm
 
@@ -69,8 +69,13 @@ def delete(resource):
             util.log_info("Deleting snapshot '{r}/{s}'".format(r=resource.name, s=snap.snapshot_name))
             lin.snapshot_delete(rsc_name=resource.name, snapshot_name=snap.snapshot_name)
 
-    util.log_info("Deleting resource '{r}'".format(r=resource.name))
-    resource.delete()
+        # there is a regression in python-linstor 0.9.5, were it isn't possible to try to delete
+        # non existing resources (exception with None value)
+        # so deleting it with the low level api still works, also opennebula doesn't need the external name feature
+        util.log_info("Deleting resource '{r}'".format(r=resource.name))
+        rs = lin.resource_dfn_delete(name=resource.name)
+        if not rs[0].is_success():
+            raise LinstorError('Could not delete resource {}: {}'.format(resource.name, rs[0]))
     return True
 
 
