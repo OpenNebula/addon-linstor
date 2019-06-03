@@ -83,7 +83,9 @@ Add new TM_MAD_CONF and DS_MAD_CONF sections:
 
 ```
 TM_MAD_CONF = [
-    name = "linstor", ln_target = "NONE", clone_target = "SELF", shared = "yes", ALLOW_ORPHANS="yes"
+    NAME = "linstor", LN_TARGET = "NONE", CLONE_TARGET = "SELF", SHARED = "yes", ALLOW_ORPHANS="yes",
+    TM_MAD_SYSTEM = "ssh,shared", LN_TARGET_SSH = "NONE", CLONE_TARGET_SSH = "SELF", DISK_TYPE_SSH = "BLOCK",
+    LN_TARGET_SHARED = "NONE", CLONE_TARGET_SHARED = "SELF", DISK_TYPE_SHARED = "BLOCK"
 ]
 ```
 ```
