@@ -58,15 +58,18 @@ def main():
     disk_ID = SRC.split(".")[-1].strip() if "disk." in SRC else None
 
     if disk_ID is None:
-        # context image
-        disk_ID = target_vm.context_ID
-        res_name = "{}-vm{}-disk{}".format(consts.CONTEXT_PREFIX, VM_ID, disk_ID)
+        if target_vm.has_context:
+            # context image
+            disk_ID = target_vm.context_ID
+            res_name = "{}-vm{}-disk{}".format(consts.CONTEXT_PREFIX, VM_ID, disk_ID)
 
-        res = Resource(name=res_name, uri=datastore.linstor_controllers)
-        util.log_info("Active context resource '{r}' on destination host: {h}".format(r=res_name, h=dst_host))
-        res.activate(dst_host)
-        util.log_info("Deactivate context resource '{r}' on source host: {h}".format(r=res_name, h=src_host))
-        res.deactivate(src_host)
+            res = Resource(name=res_name, uri=datastore.linstor_controllers)
+            util.log_info("Active context resource '{r}' on destination host: {h}".format(r=res_name, h=dst_host))
+            res.activate(dst_host)
+            util.log_info("Deactivate context resource '{r}' on source host: {h}".format(r=res_name, h=src_host))
+            res.deactivate(src_host)
+        else:
+            util.log_info("No CONTEXT section in VM({vm}) XML info".format(vm=VM_ID))
 
         # Remove current destination directory, as ssh mv does
         util.ssh_exec_and_log(
@@ -82,7 +85,8 @@ def main():
 
         tar_copy_cmd = " && ".join([
             "set -e -o pipefail",
-            "tar -C {src_dir} --sparse -cf - {src_vm_dir} | ssh {dst_host} 'tar -C {dst_dir} --sparse -xf -'".format(
+            "tar -C {src_dir} --sparse -cf - {src_vm_dir} | ssh {dst_host} 'tar -C {dst_dir} --sparse -xf -'"
+            .format(
                 src_dir=src_dir,
                 src_vm_dir=os.path.basename(src_path),
                 dst_host=dst_host,

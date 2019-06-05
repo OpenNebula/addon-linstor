@@ -45,7 +45,7 @@ def main():
     tmp_res = res.restore_from_snapshot(snapshot_name, tmp_res_name)
 
     try:
-        delete(res)
+        delete(driver.image.source, driver.datastore.linstor_controllers)
         util.log_info("Restore flattened resource '{r}' from temporary resource '{rt}'".format(
             r=res.name, rt=tmp_res.name)
         )

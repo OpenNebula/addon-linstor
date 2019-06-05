@@ -80,13 +80,15 @@ def main():
         iso_size_mb = int(iso_size / 1024 / 1024) + 1
 
         res_name = consts.CONTEXT_PREFIX + "-vm{vm_id}-disk{disk_id}".format(vm_id=VM_ID, disk_id=disk_id)
+
+        try:
+            delete(res_name, datastore.linstor_controllers)
+        except LinstorError as e:
+            pass
+
         resource = Resource(res_name, datastore.linstor_controllers)
         resource.placement.storage_pool = datastore.storage_pool
         resource.volumes[0] = Volume('{s}MiB'.format(s=iso_size_mb))
-        try:
-            delete(resource)
-        except LinstorError as e:
-            pass
 
         if datastore.auto_place:
             resource.placement.redundancy = int(datastore.auto_place)
@@ -97,11 +99,13 @@ def main():
 
         resource.activate(dst_host)
 
-        util.exec_and_log(
+        if util.exec_and_log(
             'cat {iso} | ssh {n} dd of={dev_path} status=none'.format(
                 iso=iso_file, n=dst_host, dev_path=get_device_path(resource)),
             "Error copying iso to drbd"
-        )
+        ) != 0:
+            raise RuntimeError("ERROR: Error copying iso to drbd device {dev_path} on node {n}".format(
+                dev_path=get_device_path(resource), n=dst_host))
 
         # link drbd device
         link_command = " ; ".join(

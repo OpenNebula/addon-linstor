@@ -44,6 +44,10 @@ class Vm(object):
         return list(self._disks)
 
     @property
+    def has_context(self):
+        return self._root.find("TEMPLATE").find("CONTEXT") is not None
+
+    @property
     def context_ID(self):
         return self._root.find("TEMPLATE").find("CONTEXT").find("DISK_ID").text
 

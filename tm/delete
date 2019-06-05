@@ -67,28 +67,39 @@ def main():
 
     target_vm = vm.Vm(util.show_vm(VM_ID))
 
-    res_name = "{pre}-vm{vm_id}-disk{disk_id}".format(
-        pre=consts.CONTEXT_PREFIX,
-        vm_id=VM_ID,
-        disk_id=target_vm.context_ID
-    )
+    if target_vm.has_context:
+        res_name = "{pre}-vm{vm_id}-disk{disk_id}".format(
+            pre=consts.CONTEXT_PREFIX,
+            vm_id=VM_ID,
+            disk_id=target_vm.context_ID
+        )
+
+        res = Resource(name=res_name, uri=datastore.linstor_controllers)
+        res.deactivate(dst_host)
+
+        if not (
+            target_vm.disk_persistent(disk_id) or target_vm.disk_type(disk_id) == "CDROM"
+        ):
+            try:
+                delete(res_name, datastore.linstor_controllers)
+            except LinstorError as le:
+                util.log_info(str(le))
+    else:
+        util.log_info("No CONTEXT section in VM({vm}) XML info".format(vm=VM_ID))
 
     if disk_id is not None:
         res_name = get_rsc_name(target_vm, disk_id)
 
-    res = Resource(name=res_name, uri=datastore.linstor_controllers)
+        res = Resource(name=res_name, uri=datastore.linstor_controllers)
+        res.deactivate(dst_host)
 
-    res.deactivate(dst_host)
-
-    if disk_id is None:
-        try:
-            delete(res)
-        except LinstorError as le:
-            util.log_info(str(le))
-    elif not (
-        target_vm.disk_persistent(disk_id) or target_vm.disk_type(disk_id) == "CDROM"
-    ):
-        delete(res)
+        if not (
+            target_vm.disk_persistent(disk_id) or target_vm.disk_type(disk_id) == "CDROM"
+        ):
+            try:
+                delete(res_name, datastore.linstor_controllers)
+            except LinstorError as le:
+                util.log_info(str(le))
 
     util.log_info("Exiting tm delete")
 

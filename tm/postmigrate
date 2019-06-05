@@ -53,12 +53,15 @@ def main():
             res.allow_two_primaries = False
 
     if datastore.tm_mad == "linstor":
-        # deactivate context image too
-        context_id = target_vm.context_ID
-        res_name = "{}-vm{}-disk{}".format(consts.CONTEXT_PREFIX, VM_ID, context_id)
-        res = Resource(name=res_name, uri=datastore.linstor_controllers)
-        res.deactivate(src_host)
-        res.allow_two_primaries = False
+        if target_vm.has_context:
+            # deactivate context image too
+            context_id = target_vm.context_ID
+            res_name = "{}-vm{}-disk{}".format(consts.CONTEXT_PREFIX, VM_ID, context_id)
+            res = Resource(name=res_name, uri=datastore.linstor_controllers)
+            res.deactivate(src_host)
+            res.allow_two_primaries = False
+        else:
+            util.log_info("No CONTEXT section in VM({vm}) XML info".format(vm=VM_ID))
 
     args = ""
     for arg in sys.argv[1:]:

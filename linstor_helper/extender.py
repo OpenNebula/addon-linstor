@@ -56,26 +56,27 @@ def deploy(resource, deployment_nodes, auto_place_count):
         )
 
 
-def delete(resource):
+def delete(resource_name, uri_list):
     """
     Deletes a resource with all it's snapshots
 
-    :param Resource resource:
+    :param str resource_name: name of the resource
+    :param str uris: linstor uris string
     :return: True
     """
-    with MultiLinstor(resource.client.uri_list) as lin:
+    with MultiLinstor(MultiLinstor.controller_uri_list(uri_list)) as lin:
         snapshots = lin.snapshot_dfn_list()[0]
-        for snap in [x for x in snapshots.snapshots if x.rsc_name == resource.name]:
-            util.log_info("Deleting snapshot '{r}/{s}'".format(r=resource.name, s=snap.snapshot_name))
-            lin.snapshot_delete(rsc_name=resource.name, snapshot_name=snap.snapshot_name)
+        for snap in [x for x in snapshots.snapshots if x.rsc_name == resource_name]:
+            util.log_info("Deleting snapshot '{r}/{s}'".format(r=resource_name, s=snap.snapshot_name))
+            lin.snapshot_delete(rsc_name=resource_name, snapshot_name=snap.snapshot_name)
 
         # there is a regression in python-linstor 0.9.5, were it isn't possible to try to delete
         # non existing resources (exception with None value)
         # so deleting it with the low level api still works, also opennebula doesn't need the external name feature
-        util.log_info("Deleting resource '{r}'".format(r=resource.name))
-        rs = lin.resource_dfn_delete(name=resource.name)
+        util.log_info("Deleting resource '{r}'".format(r=resource_name))
+        rs = lin.resource_dfn_delete(name=resource_name)
         if not rs[0].is_success():
-            raise LinstorError('Could not delete resource {}: {}'.format(resource.name, rs[0]))
+            raise LinstorError('Could not delete resource {}: {}'.format(resource_name, rs[0]))
     return True
 
 
