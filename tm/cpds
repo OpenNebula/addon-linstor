@@ -22,7 +22,7 @@ from __future__ import print_function
 import sys
 import traceback
 
-from linstor_helper import clone, CloneMode
+from linstor_helper import clone, CloneMode, get_rsc_name
 from linstor import Resource
 from one import util, vm
 from one.datastore import Datastore
@@ -36,14 +36,13 @@ DS_ID = sys.argv[5]
 def main():
     util.log_info("Entering tm cpds with " + str(sys.argv[1:]))
 
-    disk_ID = SRC.split(".")[-1].strip()
+    disk_id = SRC.split(".")[-1].strip()
     datastore = Datastore(util.show_ds(DS_ID))
 
     target_vm = vm.Vm(util.show_vm(VM_ID))
 
-    res_name = target_vm.disk_source(disk_ID)
-    if target_vm.disk_persistent(disk_ID) != "YES":
-        res_name = "{}-vm{}-disk{}".format(res_name, VM_ID, disk_ID)
+    res_name = get_rsc_name(target_vm, disk_id)
+    util.log_info("SOURCE IMAGE: " + res_name)
 
     res = Resource(res_name, datastore.linstor_controllers)
     success = clone(
