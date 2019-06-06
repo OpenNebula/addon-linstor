@@ -1,6 +1,7 @@
 import time
 
 from linstor import Resource, Volume, MultiLinstor, LinstorError
+from linstor.responses import ResourceResponse
 from one import util, consts
 from one.vm import Vm
 
@@ -61,7 +62,7 @@ def delete(resource_name, uri_list):
     Deletes a resource with all it's snapshots
 
     :param str resource_name: name of the resource
-    :param str uris: linstor uris string
+    :param str uri_list: linstor uris string
     :return: True
     """
     with MultiLinstor(MultiLinstor.controller_uri_list(uri_list)) as lin:
@@ -110,7 +111,7 @@ def get_in_use_node(resource):
     :rtype: bool
     """
     with MultiLinstor(resource.client.uri_list) as lin:
-        lst = lin.resource_list(filter_by_resources=[resource.name])
+        lst = lin.resource_list(filter_by_resources=[resource.name])  # type: list[ResourceResponse]
         if lst:
             nodes = [x for x in lst[0].resource_states if x.in_use]
             if nodes:
@@ -134,10 +135,13 @@ def clone(resource, clone_name, place_nodes, auto_place_count, mode=CloneMode.SN
     util.log_info("Cloning from resource '{src}' to '{tgt}'.".format(src=resource.name, tgt=clone_name))
     if mode == CloneMode.SNAPSHOT:
         snap_name = "for-" + clone_name
-        resource.snapshot_create(snap_name)
-        resource.restore_from_snapshot(snap_name, clone_name)
-        time.sleep(1)  # wait a second for deletion, here is a potential race condition
-        resource.snapshot_delete(snap_name)
+        try:
+            resource.snapshot_create(snap_name)
+            resource.restore_from_snapshot(snap_name, clone_name)
+            time.sleep(1)  # wait a second for deletion, here is a potential race condition
+        finally:
+            # always try to get rid of the temporary snapshot
+            resource.snapshot_delete(snap_name)
     elif mode == CloneMode.COPY:
         clone_res = Resource(
             name=clone_name,
