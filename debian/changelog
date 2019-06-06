@@ -1,3 +1,14 @@
+linstor-opennebula (0.9.5-1) experimental; urgency=medium
+
+  [ Rene Peinthor ]
+  * extender-delete: work around a regression in python-linstor
+  * README: update TM_MAD_CONF for Opennebula 5.8
+  * context-vms: fix bugs with VM's without context images
+  * extender/clone: always delete temporary snapshot
+  * tm/cpds: fix incorrect source image names
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Thu, 06 Jun 2019 11:15:25 +0200
+
 linstor-opennebula (0.9.4-1) experimental; urgency=medium
 
   [ Rene Peinthor ]
