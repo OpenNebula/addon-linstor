@@ -1,3 +1,10 @@
+linstor-opennebula (0.9.6-1) experimental; urgency=medium
+
+  [ Rene Peinthor ]
+  * tm/delete: fix delete vm folder calls (system DS)
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Thu, 13 Jun 2019 09:08:51 +0200
+
 linstor-opennebula (0.9.5-1) experimental; urgency=medium
 
   [ Rene Peinthor ]
