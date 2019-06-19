@@ -90,20 +90,29 @@ def main():
         )
 
     hosts = res.diskful_nodes()
+    dest_node = hosts[0]
+
+    conv_opts = []
+    if res.is_thin():
+        conv_opts.append("sparse")
+
+    command = [
+        copy_command,
+        "|",
+        "ssh",
+        dest_node,
+        "dd",
+        "of={}".format(get_device_path(res)),
+        "bs=2M",
+        "oflag=direct"
+    ]
+
+    if conv_opts:
+        command.append("conv=" + ",".join(conv_opts))
 
     rc = util.exec_and_log(
-        " ".join(
-            [
-                copy_command,
-                "|",
-                "ssh",
-                hosts[0],
-                "dd",
-                "of={}".format(get_device_path(res)),
-                "bs=2M",
-            ]
-        ),
-        '"{}"'.format("Error copying data to {} on {}".format(res.name, hosts[0])),
+        " ".join(command),
+        '"{}"'.format("Error copying data to {} on {}".format(res.name, dest_node)),
     )
 
     if int(rc) != 0:
