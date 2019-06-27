@@ -100,9 +100,15 @@ class Datastore(object):
 
     @property
     def deployment_nodes(self):
-        """Returns deployment_nodes"""
+        """
+        Returns deployment_nodes
+
+        :return: list on deployment nodes
+        :rtype: list[str]
+        """
         try:
-            return self._deployment_nodes.text
+            nodes_str = self._deployment_nodes.text
+            return nodes_str.split(" ")
         except AttributeError:
             return None
 

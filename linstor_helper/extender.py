@@ -24,6 +24,10 @@ def calculate_space(lin, storage_pool_name, nodes, auto_place):
     if nodes:
         lowest_free_node = nodes[0]
         for node in nodes:
+            if node not in free_space_by_node:
+                raise RuntimeError(
+                    "Node '{node}' does not have storage pool '{sp}'".format(node=node, sp=storage_pool_name)
+                )
             if free_space_by_node[node].total_capacity < free_space_by_node[node].total_capacity:
                 lowest_free_node = node
         storage_pool_total_MiB += free_space_by_node[lowest_free_node].total_capacity // 1024
@@ -41,12 +45,12 @@ def deploy(resource, deployment_nodes, auto_place_count):
     Deploys resource depending on deployment nodes or auto_place setting.
 
     :param Resource resource:
-    :param str deployment_nodes:
+    :param list[str] deployment_nodes: list of node names
     :param int auto_place_count:
     :return:
     """
     if deployment_nodes:
-        for node in deployment_nodes.split(" "):
+        for node in deployment_nodes:
             resource.diskful(node)
     elif auto_place_count:
         resource.placement.redundancy = auto_place_count
