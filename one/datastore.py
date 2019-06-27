@@ -118,7 +118,7 @@ class Datastore(object):
         try:
             return self._storage_pool.text
         except AttributeError:
-            return None
+            return "DfltStorPool"
 
     @property
     def linstor_controllers(self):
