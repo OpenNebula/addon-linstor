@@ -1,7 +1,7 @@
 import time
 
 from linstor import Resource, Volume, MultiLinstor, LinstorError
-from linstor.responses import ResourceResponse
+from linstor.responses import ResourceResponse, ResourceDefinitionResponse
 from one import util, consts
 from one.vm import Vm
 
@@ -83,6 +83,35 @@ def delete(resource_name, uri_list):
         if not rs[0].is_success():
             raise LinstorError('Could not delete resource {}: {}'.format(resource_name, rs[0]))
     return True
+
+
+def delete_vm_contexts(uri_list, vm_id, disk_id):
+    """
+    Tries to delete all generated vm context images.
+    First queries linstor for all context images for the vm and then deletes one by one ignoring any failed attempts.
+
+    :param str uri_list: linstor uri list string
+    :param int vm_id: Opennebula id of the VM
+    :param int disk_id: Opennebula disk id of the VM
+    :return: Dict, where key is the resource name and either None(Success) or LinstorError on failure.
+    :rtype: dict[str, Optional[LinstorError]]
+    """
+    del_result = {}
+    with MultiLinstor(MultiLinstor.controller_uri_list(uri_list)) as lin:
+        rsc_dfn_list_resp = lin.resource_dfn_list(query_volume_definitions=False)
+        if rsc_dfn_list_resp:
+            rsc_dfn_list = rsc_dfn_list_resp[0]  # type: ResourceDefinitionResponse
+            delete_list = [x.name for x in rsc_dfn_list.resource_definitions
+                           if x.name.startswith(consts.CONTEXT_PREFIX + "-vm{vm_id}-disk{disk_id}"
+                                                                        .format(vm_id=vm_id, disk_id=disk_id))]
+            for rsc_name in delete_list:
+                try:
+                    delete(rsc_name, uri_list)
+                    del_result[rsc_name] = None
+                except LinstorError as le:
+                    del_result[rsc_name] = le
+
+    return del_result
 
 
 class CloneMode(object):
@@ -221,6 +250,52 @@ def get_rsc_name(target_vm, disk_id):
             util.log_info("{} is a persistent OS or DATABLOCK image".format(res_name))
 
     return res_name
+
+
+def get_current_context_id(uri_list, vm_id, disk_id):
+    """
+
+    :param str uri_list: linstor uri list string
+    :param int vm_id: Opennebula id of the VM
+    :param int disk_id: Opennebula disk id of the VM
+    :return:
+    :rtype: Optional[int]
+    """
+    with MultiLinstor(MultiLinstor.controller_uri_list(uri_list)) as lin:
+        rsc_dfn_list_resp = lin.resource_dfn_list(query_volume_definitions=False)
+        if rsc_dfn_list_resp:
+            rsc_dfn_list = rsc_dfn_list_resp[0]  # type: ResourceDefinitionResponse
+            prefix = consts.CONTEXT_PREFIX + "-vm{vm_id}-disk{disk_id}".format(vm_id=vm_id, disk_id=disk_id)
+            contexts = [x.name for x in rsc_dfn_list.resource_definitions
+                        if x.name.startswith(prefix)]
+            index_dict = {}
+            for context in contexts:
+                strindex = context[len(prefix):]
+                if strindex:  # e.g. strindex = '-2'
+                    numindex = int(strindex[1:])
+                else:
+                    numindex = 0
+                index_dict[numindex] = context
+            return sorted(index_dict.keys())[-1] if index_dict else None
+    return None
+
+
+def get_current_context(uri_list, vm_id, disk_id):
+    """
+    Returns the latest/current context resource name for the specified vm_id and disk_id
+
+    :param str uri_list: linstor uri list string
+    :param int vm_id: Opennebula id of the VM
+    :param int disk_id: Opennebula disk id of the VM
+    :return: resource name string
+    :rtype: str
+    """
+    c_id = get_current_context_id(uri_list, vm_id, disk_id)
+    if c_id is None:
+        return None
+    elif c_id == 0:
+        return consts.CONTEXT_PREFIX + "-vm{vm_id}-disk{disk_id}".format(vm_id=vm_id, disk_id=disk_id)
+    return consts.CONTEXT_PREFIX + "-vm{vm_id}-disk{disk_id}-{cid}".format(vm_id=vm_id, disk_id=disk_id, cid=c_id)
 
 
 def get_device_path(res):

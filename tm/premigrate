@@ -23,9 +23,9 @@ import sys
 import traceback
 
 from linstor import Resource
-from one import util, vm, consts
+from one import util, vm
 from one.datastore import Datastore
-from linstor_helper import get_rsc_name, get_device_path
+from linstor_helper import get_rsc_name, get_device_path, get_current_context
 
 SRC_HOST = sys.argv[1]
 DST_HOST = sys.argv[2]
@@ -106,7 +106,7 @@ def main():
                 )
             )
         else:
-            res_name = "{}-vm{}-disk{}".format(consts.CONTEXT_PREFIX, VM_ID, context_id)
+            res_name = get_current_context(datastore.linstor_controllers, VM_ID, context_id)
             res = Resource(name=res_name, uri=datastore.linstor_controllers)
             res.activate(DST_HOST)
             res.allow_two_primaries = True

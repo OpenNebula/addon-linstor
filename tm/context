@@ -26,7 +26,7 @@ import shutil
 import subprocess
 from one import util, consts
 from one.datastore import Datastore
-from linstor_helper import delete, get_device_path
+from linstor_helper import get_device_path, delete_vm_contexts, get_current_context_id
 from linstor import LinstorError, Resource, Volume
 
 FILES = sys.argv[1:-3]
@@ -79,13 +79,16 @@ def main():
         iso_size = os.path.getsize(iso_file)
         iso_size_mb = int(iso_size / 1024 / 1024) + 1
 
-        res_name = consts.CONTEXT_PREFIX + "-vm{vm_id}-disk{disk_id}".format(vm_id=VM_ID, disk_id=disk_id)
+        del_result = delete_vm_contexts(datastore.linstor_controllers, VM_ID, disk_id)
+        for res in del_result:
+            if del_result[res] is not None:
+                util.log_info(str(del_result[res]))
 
-        try:
-            delete(res_name, datastore.linstor_controllers)
-        except LinstorError as e:
-            pass
-
+        c_id = get_current_context_id(datastore.linstor_controllers, VM_ID, disk_id)
+        c_id = 1 if c_id is None else c_id + 1
+        res_name = consts.CONTEXT_PREFIX + "-vm{vm_id}-disk{disk_id}-{cid}".format(
+            vm_id=VM_ID, disk_id=disk_id, cid=c_id
+        )
         resource = Resource(res_name, datastore.linstor_controllers)
         resource.placement.storage_pool = datastore.storage_pool
         resource.volumes[0] = Volume('{s}MiB'.format(s=iso_size_mb))

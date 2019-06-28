@@ -24,9 +24,9 @@ import sys
 import traceback
 
 from linstor import Resource
-from one import util, vm, consts
+from one import util, vm
 from one.datastore import Datastore
-from linstor_helper import get_rsc_name
+from linstor_helper import get_rsc_name, get_current_context
 
 SRC = sys.argv[1]
 DST = sys.argv[2]
@@ -61,7 +61,7 @@ def main():
         if target_vm.has_context:
             # context image
             disk_ID = target_vm.context_ID
-            res_name = "{}-vm{}-disk{}".format(consts.CONTEXT_PREFIX, VM_ID, disk_ID)
+            res_name = get_current_context(datastore.linstor_controllers, VM_ID, disk_ID)
 
             res = Resource(name=res_name, uri=datastore.linstor_controllers)
             util.log_info("Active context resource '{r}' on destination host: {h}".format(r=res_name, h=dst_host))
