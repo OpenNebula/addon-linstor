@@ -1,3 +1,13 @@
+linstor-opennebula (0.9.7-1) experimental; urgency=medium
+
+  [ Rene Peinthor ]
+  * datastore/cp: set better dd options
+  * monitor: fix calculate space for LINSTOR_DEPLOYMENT_NODES SETTING
+  * use DfltStorPool if no LINSTOR_STORAGE_POOL was set
+  * context: generate unique context image names
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Fri, 28 Jun 2019 08:59:52 +0200
+
 linstor-opennebula (0.9.6-1) experimental; urgency=medium
 
   [ Rene Peinthor ]

@@ -72,7 +72,7 @@ setup(
         "python-linstor>=0.9.6"
     ],
     author="Hayley Swimelar, Rene Peinthor <rene.peinthor@linbit.com>",
-    author_email="hayley@linbit.com",
+    author_email="rene.peinthor@linbit.com",
     url="https://github.com/LINBIT/addon-linstor",
     long_description=(
         "A driver for OpenNebula to consume storage from LINSTOR. It supports"
