@@ -22,7 +22,7 @@ from __future__ import print_function
 import sys
 import traceback
 
-from one import util, vm, consts
+from one import util, vm
 from one.datastore import Datastore
 from linstor_helper import delete, get_rsc_name, delete_vm_contexts
 from linstor import Resource, LinstorError

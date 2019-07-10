@@ -48,7 +48,7 @@ def _source(file, command, string_args=None):
 
 
 def error_message(msg):
-    syslog.syslog(syslog.LOG_ERR, msg)
+    syslog.syslog(syslog.LOG_ERR, "ERROR {}".format(msg))
 
 
 def log_info(msg):
@@ -56,6 +56,14 @@ def log_info(msg):
 
 
 def _wait_for_subp(cmd, log=True):
+    """
+    Executes the given command and waits until finished.
+
+    :param list[str] cmd: command to execute
+    :param bool log: command should be logged to opennebula
+    :return: process return code
+    :rtype: int
+    """
     if log:
         log_info("running shell command: {}".format(" ".join(cmd)))
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

@@ -25,7 +25,6 @@ import traceback
 
 from one import util, consts
 from one.datastore import Datastore
-from one.vm import Vm
 from linstor_helper import deploy, get_device_path
 from linstor import Resource, Volume, SizeCalc
 
@@ -44,8 +43,6 @@ def main():
     dst_host = util.arg_host(DST).strip()
     dst_path = util.arg_path(DST).strip()
     dst_dir = os.path.dirname(dst_path).strip()
-
-    target_vm = Vm(util.show_vm(VM_ID))
 
     datastore = Datastore(util.show_ds(DS_ID))
 

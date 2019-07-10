@@ -158,14 +158,16 @@ def clone(resource, clone_name, place_nodes, auto_place_count, mode=CloneMode.SN
 
     :param Resource resource: resource object to clone
     :param str clone_name: name of the new resource
-    :param str place_nodes: deployment nodes string, e.g. "alpha bravo charly"
+    :param list[str] place_nodes: deployment nodes string, e.g. "alpha bravo charly"
     :param int auto_place_count:
     :param int mode:
     :return: True if clone was successful
     :rtype: bool
     """
     return_code = 0
-    util.log_info("Cloning from resource '{src}' to '{tgt}'.".format(src=resource.name, tgt=clone_name))
+    util.log_info("Cloning from resource '{src}' to '{tgt}' clone mode {m}.".format(
+        src=resource.name, tgt=clone_name, m=CloneMode.to_str(mode))
+    )
     if mode == CloneMode.SNAPSHOT:
         snap_name = "for-" + clone_name
         try:

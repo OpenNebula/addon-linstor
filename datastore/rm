@@ -23,7 +23,6 @@ from __future__ import print_function
 import sys
 import base64
 
-from linstor import Resource
 from linstor_helper import delete
 from one import consts, util, driver_action
 
