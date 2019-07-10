@@ -176,7 +176,11 @@ def clone(resource, clone_name, place_nodes, auto_place_count, mode=CloneMode.SN
             time.sleep(1)  # wait a second for deletion, here is a potential race condition
         finally:
             # always try to get rid of the temporary snapshot
-            resource.snapshot_delete(snap_name)
+            try:
+                resource.snapshot_delete(snap_name)
+            except LinstorError as le:
+                #  the snapshot delete will always fail for zfs storage pools (parent-child relation)
+                util.log_info("Snapshot '{s}' delete failed: {ex}".format(s=snap_name, ex=le))
     elif mode == CloneMode.COPY:
         clone_res = Resource(
             name=clone_name,
