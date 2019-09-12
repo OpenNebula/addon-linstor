@@ -63,7 +63,7 @@ def main():
     register_command = """cat << EOF
       set -e
 
-      export PATH=/usr/sbin:/sbin:\$PATH
+      export PATH=/usr/sbin:/sbin:$PATH
 
       if [ -z "{0}" ] || [ "{0}" == "raw" ]; then exit 0;
       fi
