@@ -24,8 +24,8 @@ Support for this addon can be found at the
 
 ## Compatibility
 
-* This addon is compatible with OpenNebula versions up to 5.6
-* It was tested with version 5.6
+* This addon is compatible with OpenNebula versions up to 5.8
+* It was tested with version 5.8
 * This version of README.md describes the installation process for ONE 5.6 environments
 * This is intended for use as an images datastore for use with either an NFS shared
 * system datastore or a SSH system datastore
@@ -33,6 +33,7 @@ Support for this addon can be found at the
 ## Requirements
 
 * DRBD9 9.0.14+
+* LINSTOR 1.0.0+
 
 ## Features
 
@@ -54,260 +55,13 @@ Run the following commands as either oneadmin or whichever user is filling the
 python setup.py install
 ```
 
-### Upgrading
+## Upgrading
 
 To upgrade the driver, simply run the above installation script again.
 
 ## Configuration
-
-### Configure the Driver in OpenNebula
-
-Modify the following sections of `/etc/one/oned.conf`
-
-Add linstor to the list of drivers in the `TM_MAD` and `DATASTORE_MAD`
-sections:
-
-```
-TM_MAD = [
-  executable = "one_tm",
-  arguments = "-t 15 -d dummy,lvm,shared,fs_lvm,qcow2,ssh,vmfs,ceph,linstor"
-]
-```
-```
-DATASTORE_MAD = [
-    EXECUTABLE = "one_datastore",
-    ARGUMENTS  = "-t 15 -d dummy,fs,lvm,ceph,dev,iscsi_libvirt,vcenter,linstor -s shared,ssh,ceph,fs_lvm,qcow2,linstor"
-```
-
-Add new TM_MAD_CONF and DS_MAD_CONF sections:
-
-```
-TM_MAD_CONF = [
-    NAME = "linstor", LN_TARGET = "NONE", CLONE_TARGET = "SELF", SHARED = "yes", ALLOW_ORPHANS="yes",
-    TM_MAD_SYSTEM = "ssh,shared", LN_TARGET_SSH = "NONE", CLONE_TARGET_SSH = "SELF", DISK_TYPE_SSH = "BLOCK",
-    LN_TARGET_SHARED = "NONE", CLONE_TARGET_SHARED = "SELF", DISK_TYPE_SHARED = "BLOCK"
-]
-```
-```
-DS_MAD_CONF = [
-    NAME = "linstor", REQUIRED_ATTRS = "BRIDGE_LIST", PERSISTENT_ONLY = "NO",
-    MARKETPLACE_ACTIONS = "export"
-]
-```
-After making these changes, restart the opennebula service.
-
-### Configuring the Nodes
-
-#### Overview of node Roles
-
-The Front-End node issues commands to the Storage and Host nodes via Linstor
-
-Storage nodes hold disk images of VMs locally.
-
-Host nodes are responsible for running instantiated VMs and typically have the
-storage for the images they need attached across the network via Linstor
-diskless mode.
-
-All nodes must have DRBD9 and Linstor installed. This process is detailed in the
-[User's Guide for DRBD9](http://docs.linbit.com/doc/users-guide-90/ch-admin-linstor/)
-
-It is possible to have Front-End and Host nodes act as storage nodes in
-addition to their primary role as long as they the meet all the requirements
-for both roles.
-
-
-#### Front-End Configuration
-
-Please verify that the control node(s) that you hope to communicate with are
-reachable from the Front-End node. `linstor node list` for locally running
-Linstor controllers and `linstor --controllers "<IP:PORT>" node list` for
-remotely running Linstor Controllers is a handy way to test this.
-
-#### Host Configuration
-
-Host nodes must have Linstor satellite processes running on them and be members
-of the same Linstor cluster as the Front-End and Storage nodes, and may optionally
-have storage locally. If the `oneadmin` user is able to passwordlessly ssh between
-hosts then live migration may be used with the even with the ssh system datastore.
-
-#### Storage Node Configuration
-
-Only the Front-End and Host nodes require OpenNebula to be installed, but the
-oneadmin user must be able to passwordlessly access storage nodes. Refer to
-the OpenNebula install guide for your distribution on how to manually
-configure the oneadmin user account.
-
-The Storage nodes must use storage pools created with a driver that's capable
-of making snapshots, such as the thin LVM plugin.
-
-In this example preparation of thinly-provisioned storage using LVM for Linstor,
-you must create a volume group and thinLV using LVM on each storage node.
-
-Example of this process using two physical volumes (/dev/sdX and /dev/sdY) and
-generic names for the volume group and thinpool. Make sure to set the thinLV's
-metadata volume to a reasonable size, once it becomes full it can be difficult to resize:
-
-```bash
-pvcreate /dev/sdX /dev/sdY
-vgcreate drbdpool /dev/sdX /dev/sdY
-lvcreate -l 95%VG --poolmetadatasize 8g -T /dev/drbdpool/drbdthinpool
-```
-
-Then you'll create storage pool(s) on Linstor using this as the backing storage.
-
-### Permissions for Oneadmin
-
-The oneadmin user must have passwordless sudo access to the `mkfs` command on
-the Storage nodes
-
-```bash
-oneadmin ALL=(root) NOPASSWD: /sbin/mkfs
-```
-
-#### Groups
-
-Be sure to consider the groups that oneadmin should be added to in order to
-gain access to the devices and programs needed to access storage and
-instantiate VMs. For this addon, the oneadmin user must belong to the `disk`
-group on all nodes in order to access the DRBD devices where images are held.
-
-```bash
-usermod -a -G disk oneadmin
-```
-
-### Creating a New Linstor Datastore
-
-Create a datastore configuration file named ds.conf and use the `onedatastore`
-tool to create a new datastore based on that configuration. There are two
-mutually exclusive deployment options: LINSTOR_AUTO_PLACE and
-LINSTOR_DEPLOYMENT_NODES. If both are configured, LINSTOR_AUTO_PLACE is ignored.
-For both of these options, BRIDGE_LIST must be a space
-separated list of all storage nodes in the Linstor cluster.
-
-#### Deploying via auto placement
-
-The LINSTOR_AUTO_PLACE option takes a level of redundancy which is a number between
-one and the total number of storage nodes. Resources are assigned to storage
-nodes automatically based on the level of redundancy.
-The following example shows a cluster with three storage
-nodes that will deploy new resources to two of the nodes that have the LINSTOR_STORAGE_POOL
-named "thin" configured on them.
-
-```bash
-cat >ds.conf <<EOI
-NAME = linstor_auto_place
-DS_MAD = linstor
-TM_MAD = linstor
-TYPE = IMAGE_DS
-DISK_TYPE = BLOCK
-LINSTOR_AUTO_PLACE = 2
-LINSTOR_STORAGE_POOL = "thin"
-BRIDGE_LIST = "alice bob charlie"
-EOI
-
-onedatastore create ds.conf
-```
-#### Deploying to a List of Nodes
-
-Using LINSTOR_DEPLOYMENT_NODES allows you to select a group of nodes that
-resources will always be assigned to. In the following example, new resources
-will always be assigned to the nodes alice and charlie. Please note that the
-bridge list still contains all of the storage nodes in the Linstor cluster.
-
-```bash
-cat >ds.conf <<EOI
-NAME = linstor_nodes
-DS_MAD = linstor
-TM_MAD = linstor
-TYPE = IMAGE_DS
-DISK_TYPE = BLOCK
-LINSTOR_DEPLOYMENT_NODES = "alice charlie"
-BRIDGE_LIST = "alice bob charlie"
-EOI
-
-onedatastore create ds.conf
-```
-
-#### Optional Attributes
-
-Additional attributes that you may add to a datastore's
-template:
-
-
-##### `LINSTOR_CONTROLLERS`
-
-linstor_controllers can be used to pass a comma separated list of controller
-ips and ports to the Linstor client in the case where a Linstor controller
-process is not running locally on the Front-End:
-
-```bash
-cat >ds.conf <<EOI
-NAME = linstor_nodes
-DS_MAD = linstor
-TM_MAD = linstor
-TYPE = IMAGE_DS
-DISK_TYPE = BLOCK
-LINSTOR_DEPLOYMENT_NODES = "alice charlie"
-LINSTOR_CONTROLLERS = "192.168.1.10:8080,192.168.1.11:6000"
-BRIDGE_LIST = "alice bob charlie"
-EOI
-
-onedatastore create ds.conf
-```
-
-##### `LINSTOR_CLONE_MODE`
-
-Linstor supports 2 different clone modes and are set via the `LINSTOR_CLONE_MODE` variable:
-
-###### snapshot
-
-The default mode is `snapshot` it uses a linstor snapshot and restores a new resource
-from this snapshot, which is then a clone of the image.
-This mode is usually faster than using the `copy` mode as snapshots are cheap copies.
-
-###### copy
-
-The second mode is `copy` it creates a new resource with the same size as the original and
-copies the data with `dd` to the new resource.
-This mode will be slower than `snapshot`, but is more robust as it doesn't rely on any snapshot
-mechanism, it is also used if you are cloning an image into a different linstor datastore.
-
-```bash
-cat >ds.conf <<EOI
-NAME = linstor_auto_place
-DS_MAD = linstor
-TM_MAD = linstor
-TYPE = IMAGE_DS
-DISK_TYPE = BLOCK
-LINSTOR_AUTO_PLACE = 2
-LINSTOR_CLONE_MODE = "copy"
-LINSTOR_STORAGE_POOL = "thin"
-BRIDGE_LIST = "alice bob charlie"
-EOI
-
-onedatastore create ds.conf
-```
-
-### linstor as system datastore
-
-Linstor driver can also be used as a system datastore,
-configuration is pretty similar to normal datastores, with a few changes:
-
-```bash
-cat >system_ds.conf <<EOI
-NAME = linstor_system_auto_place
-TM_MAD = linstor
-TYPE = SYSTEM_DS
-LINSTOR_AUTO_PLACE = 2
-LINSTOR_STORAGE_POOL = "onepool_system"
-BRIDGE_LIST = "alice bob charlie"
-EOI
-
-onedatastore create system_ds.conf
-```
-
-If you want live migration with volatile disks you need to enable the `--unsafe` option for KVM, see:
-[opennebula-doc](https://docs.opennebula.org/5.6/deployment/open_cloud_host_setup/kvm_driver.html#live-migration-for-other-cache-settings)
+Please refer the DRBD user guide for configuration and documentation:
+[Users guide](https://docs.linbit.com/docs/users-guide-9.0/#ch-opennebula-linstor)
 
 ## Usage
 
