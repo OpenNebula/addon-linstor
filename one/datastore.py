@@ -40,6 +40,7 @@ class Datastore(object):
         self._storage_pool = root.find("TEMPLATE").find("LINSTOR_STORAGE_POOL")
         self._linstor_controllers = root.find("TEMPLATE").find("LINSTOR_CONTROLLERS")
         self._linstor_clone_mode = root.find("TEMPLATE").find("LINSTOR_CLONE_MODE")
+        self._linstor_resource_group = root.find("TEMPLATE").find("LINSTOR_RESOURCE_GROUP")
         self._restricted_dirs = root.find("TEMPLATE").find("RESTRICTED_DIRS")
         self._safe_dirs = root.find("TEMPLATE").find("SAFE_DIRS")
         self._staging_dirs = root.find("TEMPLATE").find("STAGING_DIR")
@@ -109,6 +110,18 @@ class Datastore(object):
         try:
             nodes_str = self._deployment_nodes.text
             return nodes_str.split(" ")
+        except AttributeError:
+            return None
+
+    @property
+    def linstor_resource_group(self):
+        """
+        Returns the defined resource group to use, if none is set return the default resource group
+        :return: Name of the configured resource group or None if not set
+        :rtype: Optional[str]
+        """
+        try:
+            return self._linstor_resource_group.text
         except AttributeError:
             return None
 

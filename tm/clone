@@ -51,6 +51,7 @@ def main():
         clone_name,
         datastore.deployment_nodes,
         datastore.auto_place,
+        datastore.linstor_resource_group,
         CloneMode.from_str(datastore.linstor_clone_mode)
     )
     res_clone = Resource(clone_name, uri=datastore.linstor_controllers)

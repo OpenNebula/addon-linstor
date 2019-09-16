@@ -50,6 +50,7 @@ def main():
         DST,
         datastore.deployment_nodes,
         datastore.auto_place,
+        datastore.linstor_resource_group,
         CloneMode.from_str(datastore.linstor_clone_mode)
     )
 

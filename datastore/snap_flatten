@@ -49,7 +49,13 @@ def main():
         util.log_info("Restore flattened resource '{r}' from temporary resource '{rt}'".format(
             r=res.name, rt=tmp_res.name)
         )
-        clone(tmp_res, driver.image.source, driver.datastore.deployment_nodes, driver.datastore.auto_place)
+        clone(
+            tmp_res,
+            driver.image.source,
+            driver.datastore.deployment_nodes,
+            driver.datastore.auto_place,
+            driver.datastore.linstor_resource_group
+        )
     finally:
         util.log_info("Deleting temporary resource '{r}'".format(r=tmp_res.name))
         tmp_res.delete()

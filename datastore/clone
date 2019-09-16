@@ -55,7 +55,14 @@ def main():
     util.log_info("Cloning into new resource '{r}' with clone mode '{cm}'".format(
         r=clone_name, cm=CloneMode.to_str(cloning_mode))
     )
-    success = clone(res, clone_name, driver.datastore.deployment_nodes, driver.datastore.auto_place, cloning_mode)
+    success = clone(
+        res,
+        clone_name,
+        driver.datastore.deployment_nodes,
+        driver.datastore.auto_place,
+        driver.datastore.linstor_resource_group,
+        cloning_mode
+    )
 
     util.log_info("Exiting datastore clone with " + "success." if success else "error.")
 

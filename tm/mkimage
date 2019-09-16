@@ -26,7 +26,7 @@ import traceback
 from one import util, consts
 from one.datastore import Datastore
 from linstor_helper import deploy, get_device_path
-from linstor import Resource, Volume, SizeCalc
+from linstor import SizeCalc
 
 SIZE = sys.argv[1]
 FORMAT = sys.argv[2]
@@ -47,11 +47,16 @@ def main():
     datastore = Datastore(util.show_ds(DS_ID))
 
     res_name = consts.VOLATILE_PREFIX + "-vm{vm_id}-disk{disk_id}".format(vm_id=VM_ID, disk_id=disk_id)
-    resource = Resource(res_name, datastore.linstor_controllers)
-    resource.placement.storage_pool = datastore.storage_pool
-    resource.volumes[0] = Volume('{s}Mib'.format(s=SIZE))
 
-    deploy(resource, datastore.deployment_nodes, datastore.auto_place)
+    resource = deploy(
+        linstor_controllers=datastore.linstor_controllers,
+        resource_name=res_name,
+        storage_pool=datastore.storage_pool,
+        vlm_size_str='{s}Mib'.format(s=SIZE),
+        deployment_nodes=datastore.deployment_nodes,
+        auto_place_count=datastore.auto_place,
+        resource_group=datastore.linstor_resource_group
+    )
 
     resource.activate(dst_host)
 

@@ -1,7 +1,7 @@
 import time
 
 from linstor import Resource, Volume, MultiLinstor, LinstorError
-from linstor.responses import ResourceResponse, ResourceDefinitionResponse
+from linstor.responses import ResourceDefinitionResponse
 from one import util, consts
 from one.vm import Vm
 
@@ -40,25 +40,53 @@ def calculate_space(lin, storage_pool_name, nodes, auto_place):
     return storage_pool_total_MiB - storage_pool_free_MiB, storage_pool_total_MiB, storage_pool_free_MiB
 
 
-def deploy(resource, deployment_nodes, auto_place_count):
+def deploy(
+        linstor_controllers,
+        resource_name,
+        storage_pool,
+        vlm_size_str,
+        deployment_nodes,
+        auto_place_count,
+        resource_group=None
+):
     """
-    Deploys resource depending on deployment nodes or auto_place setting.
+    Deploys resource depending on resource_group, deployment nodes or auto_place setting.
 
-    :param Resource resource:
+    :param str linstor_controllers:
+    :param str resource_name: Name of the new resource definition
+    :param str storage_pool: Name of the storage pool to use
+    :param str vlm_size_str: volume size string
     :param list[str] deployment_nodes: list of node names
     :param int auto_place_count:
-    :return:
+    :param Optional[str] resource_group: Name of the resource group to use
+    :return: Resource object of the new deployment
+    :rtype: Resource
     """
-    if deployment_nodes:
-        for node in deployment_nodes:
-            resource.diskful(node)
-    elif auto_place_count:
-        resource.placement.redundancy = auto_place_count
-        resource.autoplace()
-    else:
-        raise RuntimeError("No deploy mode selected. nodes: {n}, auto_place: {a}".format(
-            n=deployment_nodes, a=auto_place_count)
+    if resource_group:
+        util.log_info("Deploying resource '{}' using resource group '{}'".format(resource_name, resource_group))
+        resource = Resource.from_resource_group(
+            linstor_controllers,
+            resource_group,
+            resource_name,
+            [vlm_size_str]
         )
+    else:
+        resource = Resource(resource_name, linstor_controllers)
+        resource.placement.storage_pool = storage_pool
+        resource.volumes[0] = Volume(vlm_size_str)
+        if deployment_nodes:
+            util.log_info("Deploying resource '{}' using deployment_nodes '{}'".format(resource_name, deployment_nodes))
+            for node in deployment_nodes:
+                resource.diskful(node)
+        elif auto_place_count:
+            util.log_info("Deploying resource '{}' using auto-place-count {}".format(resource_name, auto_place_count))
+            resource.placement.redundancy = auto_place_count
+            resource.autoplace()
+        else:
+            raise RuntimeError("No deploy mode selected. nodes: {n}, resource_group: {a}".format(
+                n=deployment_nodes, a=resource_group)
+            )
+    return resource
 
 
 def delete(resource_name, uri_list):
@@ -144,7 +172,7 @@ def get_in_use_node(resource):
     :rtype: bool
     """
     with MultiLinstor(resource.client.uri_list) as lin:
-        lst = lin.resource_list(filter_by_resources=[resource.name])  # type: list[ResourceResponse]
+        lst = lin.resource_list(filter_by_resources=[resource.name])
         if lst:
             nodes = [x for x in lst[0].resource_states if x.in_use]
             if nodes:
@@ -152,7 +180,7 @@ def get_in_use_node(resource):
     return None
 
 
-def clone(resource, clone_name, place_nodes, auto_place_count, mode=CloneMode.SNAPSHOT):
+def clone(resource, clone_name, place_nodes, auto_place_count, resource_group=None, mode=CloneMode.SNAPSHOT):
     """
     Clones a resource to a new resource.
 
@@ -160,6 +188,7 @@ def clone(resource, clone_name, place_nodes, auto_place_count, mode=CloneMode.SN
     :param str clone_name: name of the new resource
     :param list[str] place_nodes: deployment nodes string, e.g. "alpha bravo charly"
     :param int auto_place_count:
+    :param Optional[str] resource_group: resource group to use
     :param int mode:
     :return: True if clone was successful
     :rtype: bool
@@ -182,13 +211,15 @@ def clone(resource, clone_name, place_nodes, auto_place_count, mode=CloneMode.SN
                 #  the snapshot delete will always fail for zfs storage pools (parent-child relation)
                 util.log_info("Snapshot '{s}' delete failed: {ex}".format(s=snap_name, ex=le))
     elif mode == CloneMode.COPY:
-        clone_res = Resource(
-            name=clone_name,
-            uri=",".join(resource.client.uri_list)
+        clone_res = deploy(
+            linstor_controllers=",".join(resource.client.uri_list),
+            resource_name=clone_name,
+            storage_pool=resource.volumes[0].storage_pool_name,
+            vlm_size_str=str(resource.volumes[0].size) + "b",
+            deployment_nodes=place_nodes,
+            auto_place_count=auto_place_count,
+            resource_group=resource_group
         )
-        clone_res.placement.storage_pool = resource.volumes[0].storage_pool_name
-        clone_res.volumes[0] = Volume(str(resource.volumes[0].size))
-        deploy(clone_res, place_nodes, auto_place_count)
 
         # use copy source on the current primary node or on one with a disk, if all secondary
         copy_node = get_in_use_node(resource)
@@ -237,7 +268,6 @@ def get_rsc_name(target_vm, disk_id):
     :return: The linstor resource name
     :rtype: str
     """
-    res_name = None
     disk_source = target_vm.disk_source(disk_id)
     if not disk_source:  # volatile
         res_name = consts.VOLATILE_PREFIX + "-vm{}-disk{}".format(target_vm.ID, disk_id)
