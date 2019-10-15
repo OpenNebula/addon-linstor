@@ -118,11 +118,10 @@ for both roles.
 
 #### Front-End Configuration
 
-The Front-End node must have the `linstor` command in its `PATH`. Please verify
-that the control node(s) that you hope to communicate with are reachable from
-the Front-End node. `linstor node list` for locally running Linstor controllers
-and `linstor --controllers "<IP:PORT>" node list` for remotely running Linstor
-Controllers is a handy way to test this.
+Please verify that the control node(s) that you hope to communicate with are
+reachable from the Front-End node. `linstor node list` for locally running
+Linstor controllers and `linstor --controllers "<IP:PORT>" node list` for
+remotely running Linstor Controllers is a handy way to test this.
 
 #### Host Configuration
 
