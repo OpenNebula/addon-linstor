@@ -1,3 +1,18 @@
+linstor-opennebula (1.0.0-1) experimental; urgency=medium
+
+  [ Rene Peinthor ]
+  * mvds: fix log typo
+  * mkfs/mkimage: fix incorrect escape sequence
+  * resource-groups: Support and use linstor resource groups
+  * docu: update and move documentation to linstor user guide
+  * remove duplicate log message
+  * depend on new python-linstor for resource-group features
+
+  [ Philipp Reisner ]
+  * Remove dependency on linstor-client
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Fri, 25 Oct 2019 10:18:25 +0200
+
 linstor-opennebula (0.9.8-1) experimental; urgency=medium
 
   [ Rene Peinthor ]

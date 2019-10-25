@@ -14,8 +14,7 @@ Conflicts: addon-linstor
 Replaces: addon-linstor
 Architecture: all
 Depends: drbd-utils,
-         linstor-client,
-         python-linstor (>=0.9.6),
+         python-linstor (>=1.0.5),
          ${misc:Depends},
          ${python:Depends}
 Description: Linstor addon for OpenNebula
