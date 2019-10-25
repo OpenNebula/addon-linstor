@@ -33,7 +33,7 @@ Support for this addon can be found at the
 ## Requirements
 
 * DRBD9 9.0.14+
-* LINSTOR 1.0.0+
+* LINSTOR 1.2.0+
 
 ## Features
 
