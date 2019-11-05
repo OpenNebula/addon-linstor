@@ -61,7 +61,7 @@ To upgrade the driver, simply run the above installation script again.
 
 ## Configuration
 Please refer the DRBD user guide for configuration and documentation:
-[Users guide](https://docs.linbit.com/docs/users-guide-9.0/#ch-opennebula-linstor)
+[Linstor User's guide](https://docs.linbit.com/docs/linstor-guide/#ch-opennebula-linstor)
 
 ## Usage
 
@@ -78,4 +78,6 @@ Apache 2.0
 
 If you have any questions about setting up, tuning, or administrating DRBD9 or
 Linstor, be sure to check out the information provided in the
-[User's Guide](http://docs.linbit.com/doc/users-guide-90/drbd-users-guide/)
+[Drbd User's Guide](http://docs.linbit.com/doc/users-guide-90/drbd-users-guide/)
+or the
+[Linstor User's Guide](https://docs.linbit.com/docs/linstor-guide/#ch-opennebula-linstor)
