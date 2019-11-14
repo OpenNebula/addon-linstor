@@ -69,7 +69,7 @@ setup(
     description="Linstor addon for OpenNebula",
     packages=["one", "linstor_helper"],
     install_requires=[
-        "python-linstor>=1.0.5"
+        "python-linstor>=1.0.7"
     ],
     author="Hayley Swimelar, Rene Peinthor <rene.peinthor@linbit.com>",
     author_email="rene.peinthor@linbit.com",
