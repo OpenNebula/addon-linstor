@@ -52,8 +52,8 @@ def main():
 
     clone_name = "{}-{}".format(consts.IMAGE_PREFIX, IMAGE_ID)
 
-    util.log_info("Cloning into new resource '{r}' with clone mode '{cm}'".format(
-        r=clone_name, cm=CloneMode.to_str(cloning_mode))
+    util.log_info("Cloning into new resource '{r}' with clone mode '{cm}' to pool '{p}'".format(
+        r=clone_name, cm=CloneMode.to_str(cloning_mode), p=res.placement.storage_pool)
     )
     success = clone(
         res,

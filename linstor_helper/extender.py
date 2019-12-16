@@ -197,6 +197,16 @@ def clone(resource, clone_name, place_nodes, auto_place_count, resource_group=No
     util.log_info("Cloning from resource '{src}' to '{tgt}' clone mode {m}.".format(
         src=resource.name, tgt=clone_name, m=CloneMode.to_str(mode))
     )
+
+    if mode == CloneMode.SNAPSHOT and resource.placement.storage_pool \
+            and resource.placement.storage_pool != resource.volumes[0].storage_pool_name:
+        util.log_info(
+            "Deployment storage pool '{dp}' in different storage pool '{sp}', fall back to clone mode COPY".format(
+                dp=resource.placement.storage_pool, sp=resource.volumes[0].storage_pool_name
+            )
+        )
+        mode = CloneMode.COPY
+
     if mode == CloneMode.SNAPSHOT:
         snap_name = "for-" + clone_name
         try:
@@ -211,10 +221,12 @@ def clone(resource, clone_name, place_nodes, auto_place_count, resource_group=No
                 #  the snapshot delete will always fail for zfs storage pools (parent-child relation)
                 util.log_info("Snapshot '{s}' delete failed: {ex}".format(s=snap_name, ex=le))
     elif mode == CloneMode.COPY:
+        use_storpool = resource.placement.storage_pool \
+            if resource.placement.storage_pool else resource.volumes[0].storage_pool_name
         clone_res = deploy(
             linstor_controllers=",".join(resource.client.uri_list),
             resource_name=clone_name,
-            storage_pool=resource.volumes[0].storage_pool_name,
+            storage_pool=use_storpool,
             vlm_size_str=str(resource.volumes[0].size) + "b",
             deployment_nodes=place_nodes,
             auto_place_count=auto_place_count,
