@@ -5,3 +5,4 @@ include MANIFEST.in
 include README.md
 include LICENSE
 include Makefile
+include setup.cfg.py2

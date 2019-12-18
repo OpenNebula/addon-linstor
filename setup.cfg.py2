@@ -4,7 +4,7 @@ doc_files = README.md LICENSE
 vendor = LINBIT
 packager = Rene Peinthor <rene.peinthor@linbit.com>
 build-requires =
-  python3-setuptools
+  python2-setuptools
 requires =
   opennebula
   python-linstor >= 1.0.9

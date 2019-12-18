@@ -71,7 +71,7 @@ setup(
     install_requires=[
         "python-linstor>=1.0.7"
     ],
-    author="Hayley Swimelar, Rene Peinthor <rene.peinthor@linbit.com>",
+    author="Rene Peinthor <rene.peinthor@linbit.com>",
     author_email="rene.peinthor@linbit.com",
     url="https://github.com/LINBIT/addon-linstor",
     long_description=(

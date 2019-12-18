@@ -1,4 +1,4 @@
-PYTHON = python2
+PYTHON = python3
 VERSION = $(shell $(PYTHON) ./setup.py --version)
 UP2DATE = $(shell grep -q $(VERSION) debian/changelog ; echo $$?)
 

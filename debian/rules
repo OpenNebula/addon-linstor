@@ -1,4 +1,7 @@
 #!/usr/bin/make -f
 
+export PYBUILD_NAME = linstor-opennebula
+export PYBUILD_DISABLE=test
+
 %:
-	dh $@ --with python2 --buildsystem=python_distutils
+	dh $@ --with python3 --buildsystem=pybuild
