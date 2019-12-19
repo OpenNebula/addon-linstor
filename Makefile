@@ -1,6 +1,6 @@
 PYTHON = python3
 VERSION = $(shell $(PYTHON) ./setup.py --version)
-UP2DATE = $(shell grep -q $(VERSION) debian/changelog ; echo $$?)
+UP2DATE = $(shell grep -q $(VERSION) debian/changelog </dev/null ; echo $$?)
 
 .PHONY: help
 help:
