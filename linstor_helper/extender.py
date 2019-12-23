@@ -243,7 +243,8 @@ def clone(resource, clone_name, place_nodes, auto_place_count, resource_group=No
         from_dev_path = get_device_path(resource)
         to_dev_path = get_device_path(clone_res)
 
-        block_count = int(resource.volumes[0].size) // 1024 / 64 + 1
+        block_count = resource.volumes[0].size // 1024 / 64
+        block_count_int = int(block_count) if block_count.is_integer() else (block_count + 1)
 
         conv_opts = ["sync"]
         if clone_res.is_thin():
@@ -252,7 +253,7 @@ def clone(resource, clone_name, place_nodes, auto_place_count, resource_group=No
         dd_cmd = '"dd if={_if} of={_of} bs=64K count={c} conv={conv}"'.format(
             _if=from_dev_path,
             _of=to_dev_path,
-            c=block_count,
+            c=block_count_int,
             conv=",".join(conv_opts)
         )
         # dd on the node
