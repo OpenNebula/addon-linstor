@@ -81,10 +81,10 @@ def _get_subp_out(cmd):
     out, err = proc.communicate()
 
     if proc.returncode != 0:
-        error_message("command {} failed: {}".format(cmd, err))
+        error_message("command {} failed: {}".format(cmd, err.decode()))
         raise subprocess.CalledProcessError
 
-    return out
+    return out.decode()
 
 
 def ssh_exec_and_log(string_args):
