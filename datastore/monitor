@@ -37,11 +37,25 @@ def main():
     driver = driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
 
     with linstor.MultiLinstor(linstor.MultiLinstor.controller_uri_list(driver.datastore.linstor_controllers)) as lin:
+        rsc_grp_name = driver.datastore.linstor_resource_group
+        if rsc_grp_name:
+            rsc_grp_resp = lin.resource_group_list_raise(filter_by_resource_groups=[rsc_grp_name])
+            if rsc_grp_resp.resource_groups:
+                rsc_grp_data = rsc_grp_resp.resource_groups[0]
+                storage_pool = rsc_grp_data.select_filter.storage_pool \
+                    if rsc_grp_data.select_filter.storage_pool else driver.datastore.storage_pool
+                deployment_nodes = None
+                auto_place_count = rsc_grp_data.select_filter.place_count
+        else:
+            storage_pool = driver.datastore.storage_pool
+            deployment_nodes = driver.datastore.deployment_nodes
+            auto_place_count = driver.datastore.auto_place
+
         stor_pool_used, stor_pool_total, stor_pool_free = calculate_space(
             lin,
-            driver.datastore.storage_pool,
-            driver.datastore.deployment_nodes,
-            driver.datastore.auto_place
+            storage_pool,
+            deployment_nodes,
+            auto_place_count
         )
 
         print(
