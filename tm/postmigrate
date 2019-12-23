@@ -21,6 +21,7 @@ limitations under the License.
 import base64
 import sys
 import traceback
+import io
 
 from linstor import Resource
 from one import util, vm
@@ -38,7 +39,15 @@ TEMPLATE = sys.argv[6]
 def main():
     util.log_info("Entering tm/postmigrate, from='{f}' to='{t}'".format(f=SRC_HOST, t=DST_HOST))
 
-    target_vm = vm.Vm(base64.b64decode(TEMPLATE))
+    try:
+        vmxml = base64.b64decode(TEMPLATE)
+    except base64.binascii.Error:
+        # since opennebula 5.10 the template XML should be provided via STDIN
+        outstr = io.BytesIO()
+        base64.decode(sys.stdin, outstr)
+        vmxml = outstr.getvalue().decode()
+
+    target_vm = vm.Vm(vmxml)
     src_host = util.arg_host(SRC_HOST).strip()
     dst_dir = util.arg_path(DST_PATH).strip()
 
