@@ -1,3 +1,14 @@
+linstor-opennebula (1.0.2-1) experimental; urgency=medium
+
+  * switch default to python3
+  * makefile: fix grep waiting for stdin
+  * python3: bytes to str encoding
+  * migrate: Opennebula 5.10.1 does not provide the TEMPL XML as argument
+  * dd-copy: do not try copy an additional block if block count matches exact
+  * monitor: Fix monitor script if only a resource group method is used
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Tue, 14 Jan 2020 12:59:18 +0000
+
 linstor-opennebula (1.0.1-1) experimental; urgency=medium
 
   [ Rene Peinthor ]
