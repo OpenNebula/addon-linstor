@@ -25,23 +25,36 @@ import sys
 import traceback
 
 import linstor
-from one import driver_action, util
 from linstor_helper import calculate_space
+from one import driver_action, util
 
 DRIVER_ACTION = sys.argv[1]
 
 
 def main():
-    util.log_info("Entering tm monitor.")
-
     driver = driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
+    util.log_info("Entering datastore monitor[{n}]".format(n=driver.datastore.name))
 
     with linstor.MultiLinstor(linstor.MultiLinstor.controller_uri_list(driver.datastore.linstor_controllers)) as lin:
+        rsc_grp_name = driver.datastore.linstor_resource_group
+        if rsc_grp_name:
+            rsc_grp_resp = lin.resource_group_list_raise(filter_by_resource_groups=[rsc_grp_name])
+            if rsc_grp_resp.resource_groups:
+                rsc_grp_data = rsc_grp_resp.resource_groups[0]
+                storage_pool = rsc_grp_data.select_filter.storage_pool \
+                    if rsc_grp_data.select_filter.storage_pool else driver.datastore.storage_pool
+                deployment_nodes = None
+                auto_place_count = rsc_grp_data.select_filter.place_count
+        else:
+            storage_pool = driver.datastore.storage_pool
+            deployment_nodes = driver.datastore.deployment_nodes
+            auto_place_count = driver.datastore.auto_place
+
         stor_pool_used, stor_pool_total, stor_pool_free = calculate_space(
             lin,
-            driver.datastore.storage_pool,
-            driver.datastore.deployment_nodes,
-            driver.datastore.auto_place
+            storage_pool,
+            deployment_nodes,
+            auto_place_count
         )
 
         print(
@@ -52,7 +65,9 @@ def main():
             )
         )
 
-    util.log_info("Leaving tm monitor.")
+    util.log_info("Exiting datastore monitor[{u}/{t}/{f}].".format(
+        u=stor_pool_used, t=stor_pool_total, f=stor_pool_free)
+    )
 
 
 if __name__ == "__main__":

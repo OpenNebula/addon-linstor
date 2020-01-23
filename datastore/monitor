@@ -32,9 +32,8 @@ DRIVER_ACTION = sys.argv[1]
 
 
 def main():
-    util.log_info("Entering datastore monitor.")
-
     driver = driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
+    util.log_info("Entering datastore monitor[{n}]".format(n=driver.datastore.name))
 
     with linstor.MultiLinstor(linstor.MultiLinstor.controller_uri_list(driver.datastore.linstor_controllers)) as lin:
         rsc_grp_name = driver.datastore.linstor_resource_group
