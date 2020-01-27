@@ -26,6 +26,7 @@ import io
 from linstor import Resource
 from one import util, vm
 from one.datastore import Datastore
+from one.image import Image
 from linstor_helper import get_rsc_name, get_current_context
 
 SRC_HOST = sys.argv[1]
@@ -51,16 +52,17 @@ def main():
     src_host = util.arg_host(SRC_HOST).strip()
     dst_dir = util.arg_path(DST_PATH).strip()
 
-    datastore = Datastore(util.show_ds(DS_ID))
-
     for disk in target_vm.disk_IDs:
         if target_vm.tm_mad(disk) == "linstor":
+            image = Image(util.show_image(target_vm.disk_image_ID(disk)))
+            image_datastore = Datastore(util.show_ds(image.datastore_ID))
             res_name = get_rsc_name(target_vm, disk)
-            res = Resource(name=res_name, uri=datastore.linstor_controllers)
+            res = Resource(name=res_name, uri=image_datastore.linstor_controllers)
 
             res.deactivate(src_host)
             res.allow_two_primaries = False
 
+    datastore = Datastore(util.show_ds(DS_ID))
     if datastore.tm_mad == "linstor":
         if target_vm.has_context:
             # deactivate context image too

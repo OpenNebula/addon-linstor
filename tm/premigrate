@@ -26,6 +26,7 @@ import io
 from linstor import Resource
 from one import util, vm
 from one.datastore import Datastore
+from one.image import Image
 from linstor_helper import get_rsc_name, get_device_path, get_current_context
 
 SRC_HOST = sys.argv[1]
@@ -52,13 +53,13 @@ def main():
     src_host = util.arg_host(SRC_HOST).strip()
     dst_dir = util.arg_path(DST_PATH).strip()
 
-    datastore = Datastore(util.show_ds(DS_ID))
-
     for disk in target_vm.disk_IDs:
         if target_vm.tm_mad(disk) == "linstor":
+            image = Image(util.show_image(target_vm.disk_image_ID(disk)))
+            image_datastore = Datastore(util.show_ds(image.datastore_ID))
             res_name = get_rsc_name(target_vm, disk)
 
-            res = Resource(name=res_name, uri=datastore.linstor_controllers)
+            res = Resource(name=res_name, uri=image_datastore.linstor_controllers)
             res.activate(DST_HOST)
             res.allow_two_primaries = True
             dst_path = "{}/disk.{}".format(dst_dir, disk)
@@ -90,6 +91,8 @@ def main():
     util.migrate_other(args)
 
     if target_vm.has_context:
+        datastore = Datastore(util.show_ds(DS_ID))
+
         context_id = target_vm.context_ID
         context_path = "{}/disk.{}".format(dst_dir, context_id)
         if datastore.tm_mad != "linstor":
@@ -115,6 +118,7 @@ def main():
                 )
             )
         else:
+            # here we have for sure a linstor datastore
             res_name = get_current_context(datastore.linstor_controllers, VM_ID, context_id)
             res = Resource(name=res_name, uri=datastore.linstor_controllers)
             res.activate(DST_HOST)
