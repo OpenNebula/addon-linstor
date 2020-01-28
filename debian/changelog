@@ -1,3 +1,12 @@
+linstor-opennebula (1.0.3-1) experimental; urgency=medium
+
+  [ Rene Peinthor ]
+  * monitor: update the tm/monitor script
+  * live-migrate: fix mixed system-datastore migration
+  * ensure there is a float result
+
+ -- Rene Peinthor <peinthor@gmail.com>  Tue, 28 Jan 2020 13:08:43 +0100
+
 linstor-opennebula (1.0.2-1) experimental; urgency=medium
 
   * switch default to python3

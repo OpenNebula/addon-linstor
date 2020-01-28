@@ -7,7 +7,7 @@ build-requires =
   python2-setuptools
 requires =
   opennebula
-  python-linstor >= 1.0.9
+  python-linstor >= 1.0.11
 # https://fedoraproject.org/wiki/Upgrade_paths_%E2%80%94_renaming_or_splitting_packages
 obsoletes = addon-linstor
 # provides = addon-linstor
