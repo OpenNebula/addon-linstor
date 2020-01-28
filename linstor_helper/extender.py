@@ -243,7 +243,7 @@ def clone(resource, clone_name, place_nodes, auto_place_count, resource_group=No
         from_dev_path = get_device_path(resource)
         to_dev_path = get_device_path(clone_res)
 
-        block_count = resource.volumes[0].size // 1024 / 64
+        block_count = resource.volumes[0].size / 1024.0 / 64  # float division
         block_count_int = int(block_count) if block_count.is_integer() else (block_count + 1)
 
         conv_opts = ["sync"]
