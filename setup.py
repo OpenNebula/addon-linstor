@@ -18,7 +18,6 @@ limitations under the License.
 
 
 import os
-import pwd
 import subprocess
 from setuptools import setup
 from glob import glob
@@ -30,8 +29,6 @@ VERSION_FILE = ".version"
 ONE_LOCATION = os.getenv("ONE_LOCATION")
 if ONE_LOCATION:
     REMOTES_DIR = os.path.join(ONE_LOCATION, "var/remotes")
-
-ONE_USER = os.getenv("ONE_USER", pwd.getpwuid(os.getuid()).pw_name)
 
 
 def version():
