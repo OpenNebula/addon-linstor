@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
+import unittest
 
 from one import vm
 
@@ -192,25 +192,23 @@ TEXT_XML_1 = """
 """
 
 
-def test_create_vm():
-    test_vm = vm.Vm(TEXT_XML_1)
-    assert test_vm.ID == "0"
-    assert ["0", "1", "2"] == sorted(test_vm.disk_IDs)
+class TestVMs(unittest.TestCase):
+    def test_create_vm(self):
+        test_vm = vm.Vm(TEXT_XML_1)
+        self.assertEqual(test_vm.ID, "0")
+        self.assertEqual(["0", "1", "2"], sorted(test_vm.disk_IDs))
 
-    assert test_vm.disk_image_ID("0") == "146"
-    assert test_vm.disk_target("0") == "hdb"
-    assert test_vm.disk_persistent("0") == "YES"
-    assert test_vm.disk_save_as("0") == ""
-    assert test_vm.disk_type("0") == "FILE"
-    assert test_vm.disk_is_clone("0") == "NO"
+        self.assertEqual(test_vm.disk_image_ID("0"), "146")
+        self.assertEqual(test_vm.disk_target("0"), "hdb")
+        self.assertEqual(test_vm.disk_persistent("0"), "YES")
+        self.assertEqual(test_vm.disk_save_as("0"), "")
+        self.assertEqual(test_vm.disk_type("0"), "FILE")
+        self.assertEqual(test_vm.disk_is_clone("0"), "NO")
 
-    assert test_vm.disk_image_ID("2") == "149"
-    assert test_vm.disk_target("2") == "hdc"
-    assert test_vm.disk_persistent("2") == "NO"
-    assert test_vm.disk_save_as("2") == ""
-    assert test_vm.disk_type("2") == "BLOCK"
-    assert test_vm.disk_is_clone("2") == "YES"
-    assert (
-        test_vm.disk_source("2")
-        == "/var/lib/one//datastores/1/baee88c26cb6055334aaed153a7c8327"
-    )
+        self.assertEqual(test_vm.disk_image_ID("2"), "149")
+        self.assertEqual(test_vm.disk_target("2"), "hdc")
+        self.assertEqual(test_vm.disk_persistent("2"), "NO")
+        self.assertEqual(test_vm.disk_save_as("2"), "")
+        self.assertEqual(test_vm.disk_type("2"), "BLOCK")
+        self.assertEqual(test_vm.disk_is_clone("2"), "YES")
+        self.assertEqual(test_vm.disk_source("2"), "/var/lib/one//datastores/1/baee88c26cb6055334aaed153a7c8327")

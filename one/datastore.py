@@ -93,7 +93,11 @@ class Datastore(object):
 
     @property
     def auto_place(self):
-        """Returns auto_place"""
+        """
+        Returns auto_place
+
+        :rtype: Optional[int]
+        """
         try:
             return int(self._auto_place.text)
         except AttributeError:

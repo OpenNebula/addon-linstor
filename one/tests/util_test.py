@@ -16,58 +16,62 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import unittest
 
 from one import util
 
 
-def test__source():
+class TestUtils(unittest.TestCase):
+    def test__source(self):
 
-    assert util._source("foo.sh", "foo_cmd") == [
-        "bash",
-        "-c",
-        "source foo.sh && foo_cmd",
-    ]
+        self.assertEqual(util._source("foo.sh", "foo_cmd"), [
+                "bash",
+                "-c",
+                "source foo.sh && foo_cmd",
+            ])
 
-    assert util._source("bar.sh", "bar_cmd", "args") == [
-        "bash",
-        "-c",
-        "source bar.sh && bar_cmd args",
-    ]
+        self.assertEqual(util._source("bar.sh", "bar_cmd", "args"), [
+                "bash",
+                "-c",
+                "source bar.sh && bar_cmd args",
+            ])
 
-    assert util._source("bar.sh", "bar_cmd", "multi args") == [
-        "bash",
-        "-c",
-        "source bar.sh && bar_cmd multi args",
-    ]
+        self.assertEqual(util._source("bar.sh", "bar_cmd", "multi args"), [
+                "bash",
+                "-c",
+                "source bar.sh && bar_cmd multi args",
+            ])
 
-    dst_dir = "/var/lib/one/datastores/115/34"
-    res_path = "/dev/drbd1007"
-    dst_path = "/var/lib/one/datastores/115/34/disk.0"
-    dst_host = "help.computah"
-    res_name = "OpenNebula-Image-165"
+        dst_dir = "/var/lib/one/datastores/115/34"
+        res_path = "/dev/drbd1007"
+        dst_path = "/var/lib/one/datastores/115/34/disk.0"
+        dst_host = "help.computah"
+        res_name = "OpenNebula-Image-165"
 
-    link_command = " ; ".join(
-        [
-            "set -e",
-            "mkdir -p {}".format(dst_dir),
-            "ln -fs {} {}".format(res_path, dst_path),
-        ]
-    )
+        link_command = " ; ".join(
+            [
+                "set -e",
+                "mkdir -p {}".format(dst_dir),
+                "ln -fs {} {}".format(res_path, dst_path),
+            ]
+        )
 
-    args = " ".join(
-        [
-            '"{}"'.format(dst_host),
-            '"{}"'.format(link_command),
-            '"Error: Unable to link {} to {} on {}"'.format(
-                res_name, dst_path, dst_host
-            ),
-        ]
-    )
+        args = " ".join(
+            [
+                '"{}"'.format(dst_host),
+                '"{}"'.format(link_command),
+                '"Error: Unable to link {} to {} on {}"'.format(
+                    res_name, dst_path, dst_host
+                ),
+            ]
+        )
 
-    assert util._source(
-        "/var/lib/one/remotes//scripts_common.sh", "ssh_exec_and_log", args
-    ) == [
-        "bash",
-        "-c",
-        'source /var/lib/one/remotes//scripts_common.sh && ssh_exec_and_log "help.computah" "set -e ; mkdir -p /var/lib/one/datastores/115/34 ; ln -fs /dev/drbd1007 /var/lib/one/datastores/115/34/disk.0" "Error: Unable to link OpenNebula-Image-165 to /var/lib/one/datastores/115/34/disk.0 on help.computah"',
-    ]
+        self.assertEqual(util._source("/var/lib/one/remotes//scripts_common.sh", "ssh_exec_and_log", args),
+                         [
+                "bash",
+                "-c",
+                'source /var/lib/one/remotes//scripts_common.sh && ssh_exec_and_log '
+                '"help.computah" "set -e ; mkdir -p /var/lib/one/datastores/115/34 ; '
+                'ln -fs /dev/drbd1007 /var/lib/one/datastores/115/34/disk.0" '
+                '"Error: Unable to link OpenNebula-Image-165 to /var/lib/one/datastores/115/34/disk.0 on help.computah"'
+            ])

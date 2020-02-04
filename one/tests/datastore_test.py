@@ -15,6 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import unittest
 
 from one import datastore
 
@@ -101,26 +102,27 @@ TEST_XML_2 = """
 """
 
 
-def test_create_datastore():
-    test_datastore = datastore.Datastore(TEST_XML_1)
+class TestDriverAction(unittest.TestCase):
+    def test_create_datastore(self):
+        test_datastore = datastore.Datastore(TEST_XML_1)
 
-    assert test_datastore.ID == "1"
-    assert test_datastore.name == "default"
-    assert test_datastore.ds_mad == "fs"
-    assert test_datastore.tm_mad == "shared"
-    assert test_datastore.total_mb == "86845"
-    assert test_datastore.free_mb == "20777"
-    assert test_datastore.used_mb == "1000"
-    assert test_datastore.storage_pool == "drbdpool"
-    assert test_datastore.auto_place == "3"
-    assert test_datastore.deployment_nodes is None
+        self.assertEqual(test_datastore.ID, "1")
+        self.assertEqual(test_datastore.name, "default")
+        self.assertEqual(test_datastore.ds_mad, "fs")
+        self.assertEqual(test_datastore.tm_mad, "shared")
+        self.assertEqual(test_datastore.total_mb, "86845")
+        self.assertEqual(test_datastore.free_mb, "20777")
+        self.assertEqual(test_datastore.used_mb, "1000")
+        self.assertEqual(test_datastore.storage_pool, "drbdpool")
+        self.assertEqual(test_datastore.auto_place, 3)
+        self.assertIsNone(test_datastore.deployment_nodes)
 
-    test_datastore = datastore.Datastore(TEST_XML_2)
+        test_datastore = datastore.Datastore(TEST_XML_2)
 
-    assert test_datastore.ID == "100"
-    assert test_datastore.name == "fantastic-datastore"
-    assert test_datastore.ds_mad == "linstor"
-    assert test_datastore.tm_mad == "shared"
-    assert test_datastore.total_mb == "555555585"
-    assert test_datastore.free_mb == "20000"
-    assert test_datastore.used_mb == "5000"
+        self.assertEqual(test_datastore.ID, "100")
+        self.assertEqual(test_datastore.name, "fantastic-datastore")
+        self.assertEqual(test_datastore.ds_mad, "linstor")
+        self.assertEqual(test_datastore.tm_mad, "shared")
+        self.assertEqual(test_datastore.total_mb, "555555585")
+        self.assertEqual(test_datastore.free_mb, "20000")
+        self.assertEqual(test_datastore.used_mb, "5000")

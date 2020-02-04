@@ -80,4 +80,5 @@ setup(
         "Live-migration of VMs using linstor volumes, with ssh system datastore"
         "and shared system datastore."
     ),
+    test_suite="one.tests"
 )

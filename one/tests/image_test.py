@@ -15,6 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import unittest
 
 from one import image
 
@@ -159,19 +160,19 @@ SNAP_DELETE_XML = """
 """
 
 
-def test_create_image():
-    test_image = image.Image(TEXT_XML_1)
-    assert test_image.ID == "0"
-    assert test_image.size == "40"
-    assert test_image.datastore_ID == "1"
+class TestImage(unittest.TestCase):
+    def test_create_image(self):
+        test_image = image.Image(TEXT_XML_1)
+        self.assertEqual(test_image.ID,  "0")
+        self.assertEqual(test_image.size,  "40")
+        self.assertEqual(test_image.datastore_ID,  "1")
 
-    test_image = image.Image(TEXT_XML_2)
-    assert test_image.ID == "5"
-    assert test_image.size == "5830"
-    assert test_image.datastore_ID == "100"
+        test_image = image.Image(TEXT_XML_2)
+        self.assertEqual(test_image.ID,  "5")
+        self.assertEqual(test_image.size,  "5830")
+        self.assertEqual(test_image.datastore_ID,  "100")
 
-
-def test_snap_delete():
-    test_image = image.Image(SNAP_DELETE_XML)
-    assert test_image.source == "OpenNebula-Image-233"
-    assert test_image.target_snap == "0"
+    def test_snap_delete(self):
+        test_image = image.Image(SNAP_DELETE_XML)
+        self.assertEqual(test_image.source,  "OpenNebula-Image-233")
+        self.assertEqual(test_image.target_snap,  "0")
