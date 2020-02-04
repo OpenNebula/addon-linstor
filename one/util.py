@@ -20,7 +20,6 @@ limitations under the License.
 from __future__ import print_function
 
 import os
-import shlex
 import subprocess
 import syslog
 
@@ -156,8 +155,8 @@ def migrate_other(string_args):
     return _wait_for_subp(_source(TM_COMMON, "migrate_other", string_args), log=False)
 
 
-def show_vm(vm_ID):
-    return _get_subp_out(shlex.split("onevm show -x {}".format(vm_ID)))
+def show_vm(vm_id):
+    return _get_subp_out(["onevm", "show", "-x", str(vm_id)])
 
 
 def show_image(image_id):
