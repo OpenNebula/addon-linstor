@@ -64,7 +64,7 @@ setup(
     ],
     license="Apache-2.0",
     description="Linstor addon for OpenNebula",
-    packages=["one", "linstor_helper"],
+    packages=["one"],
     install_requires=[
         "python-linstor>=1.0.11"
     ],

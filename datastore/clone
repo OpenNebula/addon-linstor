@@ -23,7 +23,7 @@ import base64
 import sys
 import traceback
 
-from linstor_helper import clone, CloneMode
+from one.extender import clone, CloneMode
 from linstor import Resource
 from one import consts, driver_action, util
 from one.image import Image

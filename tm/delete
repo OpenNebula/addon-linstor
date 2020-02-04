@@ -24,7 +24,7 @@ import traceback
 
 from one import util, vm
 from one.datastore import Datastore
-from linstor_helper import delete, get_rsc_name, delete_vm_contexts
+from one.extender import delete, get_rsc_name, delete_vm_contexts
 from linstor import Resource, LinstorError
 
 DST = sys.argv[1]

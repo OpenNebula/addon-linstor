@@ -25,7 +25,7 @@ import sys
 import traceback
 
 import linstor
-from linstor_helper import calculate_space
+from one.extender import calculate_space
 from one import driver_action, util
 
 DRIVER_ACTION = sys.argv[1]

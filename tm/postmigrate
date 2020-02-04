@@ -27,7 +27,7 @@ from linstor import Resource
 from one import util, vm
 from one.datastore import Datastore
 from one.image import Image
-from linstor_helper import get_rsc_name, get_current_context
+from one.extender import get_rsc_name, get_current_context
 
 SRC_HOST = sys.argv[1]
 DST_HOST = sys.argv[2]

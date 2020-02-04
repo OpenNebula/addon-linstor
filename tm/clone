@@ -22,7 +22,7 @@ from __future__ import print_function
 import os
 import sys
 
-from linstor_helper import clone, CloneMode, get_device_path
+from one.extender import clone, CloneMode, get_device_path
 from linstor import Resource
 from one import util
 from one.datastore import Datastore

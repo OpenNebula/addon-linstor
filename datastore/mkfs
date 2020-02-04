@@ -25,9 +25,9 @@ import random
 import sys
 
 from linstor import SizeCalc
-from linstor_helper import deploy
+from one.extender import deploy
 from one import consts, driver_action, util
-from linstor_helper import get_device_path
+from one.extender import get_device_path
 
 DRIVER_ACTION = sys.argv[1]
 IMAGE_ID = sys.argv[2]

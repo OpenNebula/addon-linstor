@@ -25,7 +25,7 @@ import traceback
 from linstor import Resource, SizeCalc
 from one import util, vm
 from one.datastore import Datastore
-from linstor_helper import get_rsc_name
+from one.extender import get_rsc_name
 
 
 SRC = sys.argv[1]

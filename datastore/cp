@@ -23,7 +23,7 @@ import base64
 import sys
 import traceback
 
-from linstor_helper import get_device_path, deploy
+from one.extender import get_device_path, deploy
 from one import consts, driver_action, util
 
 DRIVER_ACTION = sys.argv[1]

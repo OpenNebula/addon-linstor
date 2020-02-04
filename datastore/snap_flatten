@@ -22,7 +22,7 @@ import base64
 import sys
 import traceback
 
-from linstor_helper import clone, delete
+from one.extender import clone, delete
 from linstor import Resource
 from one import consts, driver_action, util
 

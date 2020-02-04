@@ -26,7 +26,7 @@ import traceback
 from one import util
 from one.datastore import Datastore
 from linstor.resource import Resource
-from linstor_helper import get_device_path
+from one.extender import get_device_path
 
 SRC = sys.argv[1]
 DST = sys.argv[2]

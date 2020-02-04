@@ -26,7 +26,7 @@ import shutil
 import subprocess
 from one import util, consts
 from one.datastore import Datastore
-from linstor_helper import get_device_path, get_current_context_id, deploy
+from one.extender import get_device_path, get_current_context_id, deploy
 from linstor import Resource
 
 FILES = sys.argv[1:-3]

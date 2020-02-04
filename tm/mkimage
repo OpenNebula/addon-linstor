@@ -25,7 +25,7 @@ import traceback
 
 from one import util, consts
 from one.datastore import Datastore
-from linstor_helper import deploy, get_device_path
+from one.extender import deploy, get_device_path
 from linstor import SizeCalc
 
 SIZE = sys.argv[1]

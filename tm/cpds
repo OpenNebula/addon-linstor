@@ -22,7 +22,7 @@ from __future__ import print_function
 import sys
 import traceback
 
-from linstor_helper import clone, CloneMode, get_rsc_name
+from one.extender import clone, CloneMode, get_rsc_name
 from linstor import Resource
 from one import util, vm
 from one.datastore import Datastore
