@@ -3,9 +3,11 @@
 *.pyc
 .pytest_cache/*
 .idea/*
+.eggs/
+venv/*
 
 build/
 dist/
-addon_linstor.egg-info/
+linstor_opennebula.egg-info/
 MANIFEST
 .version
