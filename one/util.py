@@ -129,11 +129,25 @@ def check_restricted(string_args):
 
 
 def arg_host(string_args):
-    return _get_subp_out(_source(TM_COMMON, "arg_host", string_args))
+    """
+    Returns the host part of string_args e.g.:
+        example.com:/tmp/file -> example.com
+    :param str string_args: opennebula string args
+    :return: the host path of string_args
+    """
+    split = string_args.split(":", 1)
+    return split[0]
 
 
 def arg_path(string_args):
-    return _get_subp_out(_source(TM_COMMON, "arg_path", string_args))
+    """
+    Returns the path part of an opennebula path arg and also normalizes the path.
+    :param str string_args: opennebula string args
+    :return: the normalized path arg
+    """
+    split = string_args.split(":", 1)
+    path = split[1] if len(split) > 1 else split[0]
+    return os.path.normpath(path)
 
 
 def migrate_other(string_args):

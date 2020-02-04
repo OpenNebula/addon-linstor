@@ -75,3 +75,28 @@ class TestUtils(unittest.TestCase):
                 'ln -fs /dev/drbd1007 /var/lib/one/datastores/115/34/disk.0" '
                 '"Error: Unable to link OpenNebula-Image-165 to /var/lib/one/datastores/115/34/disk.0 on help.computah"'
             ])
+
+    def test_arg_host(self):
+        self.assertEqual(util.arg_host("oneb200.linbit:OpenNebula-Image-814"), "oneb200.linbit")
+        self.assertEqual(util.arg_host(
+            "oneb200.linbit:/var/lib/one//datastores/112/372/disk.0"),
+            "oneb200.linbit")
+        self.assertEqual(util.arg_host(
+            "oneb200.linbit"),
+            "oneb200.linbit")
+        self.assertEqual(util.arg_host(
+            "oneb203.linbit:/var/lib/one//datastores/112/372/disk.1"),
+            "oneb203.linbit")
+        self.assertEqual(util.arg_host("0"), "0")
+
+    def test_arg_path(self):
+        self.assertEqual(util.arg_path("oneb200.linbit:OpenNebula-Image-814"), "OpenNebula-Image-814")
+        self.assertEqual(util.arg_path(
+            "oneb200.linbit:/var/lib/one//datastores/112/372/disk.0"),
+            "/var/lib/one/datastores/112/372/disk.0")
+        self.assertEqual(util.arg_path(
+            "/var/lib/one//datastores/112/372"),
+            "/var/lib/one/datastores/112/372")
+        self.assertEqual(util.arg_path(
+            "oneb203.linbit:/var/lib/one//datastores/112/372/disk.0"),
+            "/var/lib/one/datastores/112/372/disk.0")
