@@ -4,6 +4,7 @@ from linstor import Resource, Volume, MultiLinstor, LinstorError
 from linstor.responses import ResourceDefinitionResponse
 from one import util, consts
 from one.vm import Vm
+from one.datastore import Datastore
 
 
 def calculate_space(lin, storage_pool_name, nodes, auto_place):
@@ -367,3 +368,25 @@ def get_device_path(res):
         raise RuntimeError("Could not get volume device path for resource '{res}'".format(res=res.name))
 
     return device_path
+
+
+def get_storage_pool_name(lin, datastore):
+    """
+    Returns the used storage pool of the given datastore.
+
+    :param MultiLinstor lin: Linstor access object
+    :param Datastore datastore: Opennebula datastore object
+    :return: Used storage pool name from datastore
+    :rtype: str
+    """
+    rsc_grp_name = datastore.linstor_resource_group
+    if rsc_grp_name:
+        rsc_grp_resp = lin.resource_group_list_raise(filter_by_resource_groups=[rsc_grp_name])
+        if rsc_grp_resp.resource_groups:
+            rsc_grp_data = rsc_grp_resp.resource_groups[0]
+            storage_pool = rsc_grp_data.select_filter.storage_pool \
+                if rsc_grp_data.select_filter.storage_pool else datastore.storage_pool
+    else:
+        storage_pool = datastore.storage_pool
+
+    return storage_pool
