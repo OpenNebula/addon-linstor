@@ -8,7 +8,7 @@ Here are some notes on how to trigger various driver scripts:
 ### clone
 
 Used in various places.
-Stroage -> Images -> Clone
+Storage -> Images -> Clone
 
 ### cp
 
@@ -16,7 +16,7 @@ Storage -> Images -> Add Image ->
 Type: Readonly CD-ROM
 Datastore: linstor datastore
 * Path from server
-Path: path to an uploaed iso on the server
+Path: path to an uploaded iso on the server
 
 -- Advance
 BUS: SCSI
@@ -35,7 +35,7 @@ Persistent: yes
 
 -- Advance
 BUS: virtio
-Image mapping dirver: qcow2
+Image mapping driver: qcow2
 
 ### monitor
 
