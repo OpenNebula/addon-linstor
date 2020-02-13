@@ -1,3 +1,18 @@
+linstor-opennebula (1.0.4-1) experimental; urgency=medium
+
+  * tests: rewrite tests to use py-unittests
+  * arg_host & arg_path native rewrite + unittests
+  * setup.py: remove unused ONE_USER
+  * gitignore: update
+  * Add Jenkinsfile
+  * one/util: remove shlex dep
+  * mv linstor_helper package code to one package
+  * notes.md: fix typos
+  * snap_flatten: do not try if storage pool is ZFS
+  * migrate: fix for maybe missing TEMPLATE arg in OpenNebula 5.10
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Thu, 13 Feb 2020 09:00:31 +0000
+
 linstor-opennebula (1.0.3-1) experimental; urgency=medium
 
   [ Rene Peinthor ]
