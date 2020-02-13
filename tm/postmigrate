@@ -34,15 +34,15 @@ DST_HOST = sys.argv[2]
 DST_PATH = sys.argv[3]
 VM_ID = sys.argv[4]
 DS_ID = sys.argv[5]
-TEMPLATE = sys.argv[6]
 
 
 def main():
     util.log_info("Entering tm/postmigrate, from='{f}' to='{t}'".format(f=SRC_HOST, t=DST_HOST))
 
     try:
+        TEMPLATE = sys.argv[6]
         vmxml = base64.b64decode(TEMPLATE)
-    except base64.binascii.Error:
+    except (base64.binascii.Error, IndexError):
         # since opennebula 5.10 the template XML should be provided via STDIN
         outstr = io.BytesIO()
         base64.decode(sys.stdin, outstr)
