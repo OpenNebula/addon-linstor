@@ -51,13 +51,13 @@ class Vm(object):
     def context_ID(self):
         return self._root.find("TEMPLATE").find("CONTEXT").find("DISK_ID").text
 
-    def disk(self, disk_ID):
+    def disk(self, disk_id):
         """Returns disk with the given ID"""
         try:
-            return self._disks[disk_ID]
+            return self._disks[disk_id]
         except KeyError:
             util.error_message(
-                "couldn't find disk {} on vm {}".format(disk_ID, self.ID)
+                "couldn't find disk {} on vm {}".format(disk_id, self.ID)
             )
             raise
 
