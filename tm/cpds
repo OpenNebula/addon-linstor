@@ -28,7 +28,7 @@ from one import util, vm
 from one.datastore import Datastore
 
 SRC = sys.argv[1]
-DST = sys.argv[2]
+DST = sys.argv[2]  # clone name
 VM_ID = sys.argv[4]
 DS_ID = sys.argv[5]
 
@@ -36,6 +36,7 @@ DS_ID = sys.argv[5]
 def main():
     util.log_info("Entering tm cpds with " + str(sys.argv[1:]))
 
+    src_host = util.arg_host(SRC)
     disk_id = SRC.split(".")[-1].strip()
     datastore = Datastore(util.show_ds(DS_ID))
 
@@ -51,7 +52,8 @@ def main():
         datastore.deployment_nodes,
         datastore.auto_place,
         datastore.linstor_resource_group,
-        CloneMode.from_str(datastore.linstor_clone_mode)
+        CloneMode.from_str(datastore.linstor_clone_mode),
+        prefer_node=src_host
     )
 
     util.log_info("Exiting tm cpds with " + "success." if success else "error.")

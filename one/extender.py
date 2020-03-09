@@ -41,6 +41,21 @@ def calculate_space(lin, storage_pool_name, nodes, auto_place):
     return storage_pool_total_MiB - storage_pool_free_MiB, storage_pool_total_MiB, storage_pool_free_MiB
 
 
+def node_has_storagepool(uri_list, node, storage_pool):
+    """
+    Checks if a node has the given storage pool.
+
+    :param str uri_list: linstor controller uri list
+    :param str node: node to check for storage pool
+    :param str storage_pool: storage pool name to check
+    :return: True if node has the given storage pool
+    :rtype: bool
+    """
+    with MultiLinstor(MultiLinstor.controller_uri_list(uri_list)) as lin:
+        stor_pool_result = lin.storage_pool_list_raise(filter_by_nodes=[node], filter_by_stor_pools=[storage_pool])
+        return bool(stor_pool_result.storage_pools)
+
+
 def deploy(
         linstor_controllers,
         resource_name,
@@ -48,7 +63,8 @@ def deploy(
         vlm_size_str,
         deployment_nodes,
         auto_place_count,
-        resource_group=None
+        resource_group=None,
+        prefer_node=None
 ):
     """
     Deploys resource depending on resource_group, deployment nodes or auto_place setting.
@@ -60,17 +76,25 @@ def deploy(
     :param list[str] deployment_nodes: list of node names
     :param int auto_place_count:
     :param Optional[str] resource_group: Name of the resource group to use
+    :param Optional[str] prefer_node: Tries to place a diskful on this node(if autoplace)
     :return: Resource object of the new deployment
     :rtype: Resource
     """
     if resource_group:
-        util.log_info("Deploying resource '{}' using resource group '{}'".format(resource_name, resource_group))
+        util.log_info("Deploying resource '{}' using resource group '{}', prefer node: {n}".format(
+            resource_name, resource_group, n=prefer_node))
         resource = Resource.from_resource_group(
             linstor_controllers,
             resource_group,
             resource_name,
-            [vlm_size_str]
+            [vlm_size_str],
+            definitions_only=bool(prefer_node)
         )
+        if prefer_node:
+            resource.placement.storage_pool = storage_pool
+            if node_has_storagepool(linstor_controllers, prefer_node, storage_pool):
+                resource.diskful(prefer_node)
+            resource.autoplace()
     else:
         resource = Resource(resource_name, linstor_controllers)
         resource.placement.storage_pool = storage_pool
@@ -80,7 +104,10 @@ def deploy(
             for node in deployment_nodes:
                 resource.diskful(node)
         elif auto_place_count:
-            util.log_info("Deploying resource '{}' using auto-place-count {}".format(resource_name, auto_place_count))
+            util.log_info("Deploying resource '{}' using auto-place-count {}, prefer node: {n}".format(
+                resource_name, auto_place_count, n=prefer_node))
+            if prefer_node and node_has_storagepool(linstor_controllers, prefer_node, storage_pool):
+                resource.diskful(prefer_node)
             resource.placement.redundancy = auto_place_count
             resource.autoplace()
         else:
@@ -181,7 +208,14 @@ def get_in_use_node(resource):
     return None
 
 
-def clone(resource, clone_name, place_nodes, auto_place_count, resource_group=None, mode=CloneMode.SNAPSHOT):
+def clone(
+        resource,
+        clone_name,
+        place_nodes,
+        auto_place_count,
+        resource_group=None,
+        mode=CloneMode.SNAPSHOT,
+        prefer_node=None):
     """
     Clones a resource to a new resource.
 
@@ -191,6 +225,7 @@ def clone(resource, clone_name, place_nodes, auto_place_count, resource_group=No
     :param int auto_place_count:
     :param Optional[str] resource_group: resource group to use
     :param int mode:
+    :param Optional[str] prefer_node: try to place resource on this node
     :return: True if clone was successful
     :rtype: bool
     """
@@ -214,6 +249,8 @@ def clone(resource, clone_name, place_nodes, auto_place_count, resource_group=No
             resource.snapshot_create(snap_name)
             resource.restore_from_snapshot(snap_name, clone_name)
             time.sleep(1)  # wait a second for deletion, here is a potential race condition
+            if prefer_node:
+                resource.diskful(prefer_node)
         finally:
             # always try to get rid of the temporary snapshot
             try:
@@ -231,14 +268,17 @@ def clone(resource, clone_name, place_nodes, auto_place_count, resource_group=No
             vlm_size_str=str(resource.volumes[0].size) + "b",
             deployment_nodes=place_nodes,
             auto_place_count=auto_place_count,
-            resource_group=resource_group
+            resource_group=resource_group,
+            prefer_node=prefer_node
         )
 
         # use copy source on the current primary node or on one with a disk, if all secondary
         copy_node = get_in_use_node(resource)
         if copy_node is None:
-            nodes = resource.diskful_nodes()
-            copy_node = nodes[0]
+            if prefer_node in resource.diskful_nodes():
+                copy_node = prefer_node
+            else:
+                copy_node = resource.diskful_nodes()[0]
         clone_res.activate(copy_node)
 
         from_dev_path = get_device_path(resource)
@@ -278,7 +318,7 @@ def get_rsc_name(target_vm, disk_id):
     Tries to detect the correct resource name.
 
     :param Vm target_vm: Vm object
-    :param int disk_id: Id of the disk vm
+    :param str disk_id: Id of the disk vm
     :return: The linstor resource name
     :rtype: str
     """
@@ -379,6 +419,7 @@ def get_storage_pool_name(lin, datastore):
     :return: Used storage pool name from datastore
     :rtype: str
     """
+    storage_pool = 'DfltStorPool'
     rsc_grp_name = datastore.linstor_resource_group
     if rsc_grp_name:
         rsc_grp_resp = lin.resource_group_list_raise(filter_by_resource_groups=[rsc_grp_name])

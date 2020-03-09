@@ -34,25 +34,26 @@ DS_ID = sys.argv[4]
 
 
 def main():
-    util.log_info("Entering tm clone")
+    util.log_info("Entering tm clone src:{s} dst:{d}".format(s=SRC, d=DST))
 
     src_path = util.arg_path(SRC).strip()
     dst_host = util.arg_host(DST).strip()
     dst_path = util.arg_path(DST).strip()
     dst_dir = os.path.dirname(dst_path).strip()
-    disk_ID = dst_path.split(".")[-1].strip()
+    disk_id = dst_path.split(".")[-1].strip()
 
     datastore = Datastore(util.show_ds(DS_ID))
 
     res = Resource(name=src_path, uri=datastore.linstor_controllers)
-    clone_name = "{}-vm{}-disk{}".format(res.name, VM_ID, disk_ID)
+    clone_name = "{}-vm{}-disk{}".format(res.name, VM_ID, disk_id)
     clone(
         res,
         clone_name,
         datastore.deployment_nodes,
         datastore.auto_place,
         datastore.linstor_resource_group,
-        CloneMode.from_str(datastore.linstor_clone_mode)
+        CloneMode.from_str(datastore.linstor_clone_mode),
+        prefer_node=dst_host
     )
     res_clone = Resource(clone_name, uri=datastore.linstor_controllers)
 
