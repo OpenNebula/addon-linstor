@@ -103,6 +103,39 @@ def exec_and_log(cmd, message):
     return rc
 
 
+def link_file(dst_host, dst_dir, dst_path, device_path, resource_name):
+    """
+    Calls the ln command on the dst_host
+
+    :param str dst_host:
+    :param str dst_dir:
+    :param str dst_path:
+    :param str device_path:
+    :param str resource_name: Resource name for error output
+    :return: True if run, else throws exception
+    """
+    link_command = " ; ".join(
+        [
+            "set -e",
+            "mkdir -p {}".format(dst_dir),
+            "ln -fs {} {}".format(device_path, dst_path),
+        ]
+    )
+    rc = ssh_exec_and_log(
+        " ".join(
+            [
+                '"{}"'.format(dst_host),
+                '"{}"'.format(link_command),
+                '"Error: Unable to link {} to {} on {}"'.format(resource_name, dst_path, dst_host),
+            ]
+        )
+    )
+    if rc != 0:
+        raise RuntimeError("Error: Unable to link {} to {} on {}".format(resource_name, dst_path, dst_host))
+
+    return True
+
+
 def mkfs_command(string_args):
     return _wait_for_subp(_source(SCRIPTS_COMMON, "mkfs_command", string_args))
 

@@ -115,25 +115,7 @@ def main():
                 dev_path=get_device_path(resource), n=dst_host))
 
         # link drbd device
-        link_command = " ; ".join(
-            [
-                "set -e",
-                "mkdir -p {}".format(dst_dir),
-                "ln -fs {} {}".format(get_device_path(resource), dst_path),
-            ]
-        )
-
-        util.ssh_exec_and_log(
-            " ".join(
-                [
-                    '"{}"'.format(dst_host),
-                    '"{}"'.format(link_command),
-                    '"Error: Unable to link {} to {} on {}"'.format(
-                        res_name, dst_path, dst_host
-                    ),
-                ]
-            )
-        )
+        util.link_file(dst_host, dst_dir, dst_path, get_device_path(resource), res_name)
 
     shutil.rmtree(iso_dir, ignore_errors=True)
 

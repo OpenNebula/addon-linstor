@@ -48,25 +48,7 @@ def main():
     res = Resource(name=src_path, uri=datastore.linstor_controllers)
     res.activate(dst_host)
 
-    link_command = " ; ".join(
-        [
-            "set -e",
-            "mkdir -p {}".format(dst_dir),
-            "ln -fs {} {}".format(get_device_path(res), dst_path),
-        ]
-    )
-
-    util.ssh_exec_and_log(
-        " ".join(
-            [
-                '"{}"'.format(dst_host),
-                '"{}"'.format(link_command),
-                '"Error: Unable to link {} to {} on {}"'.format(
-                    res.name, dst_path, dst_host
-                ),
-            ]
-        )
-    )
+    util.link_file(dst_host, dst_dir, dst_path, get_device_path(res), res.name)
 
     util.log_info("Exiting tm ln")
 
