@@ -75,7 +75,7 @@ def main():
             "rm -Rf {src_path}".format(src_path=src_path)
         ])
 
-        util.ssh_exec_and_log(
+        rc = util.ssh_exec_and_log(
             " ".join([
                 '"{}"'.format(src_host),
                 '"{}"'.format(tar_copy_cmd),
@@ -83,6 +83,8 @@ def main():
                 ]
             )
         )
+        if rc != 0:
+            raise RuntimeError("Unable to tar copy to new host")
     else:
         # normal drbd image
         res_name = get_rsc_name(target_vm, disk_ID)
