@@ -42,21 +42,7 @@ def main():
 
     datastore = Datastore(util.show_ds(DS_ID))
 
-    unlink_command = " ; ".join(["set -e", "rm -f {}".format(src_path)])
-
-    util.ssh_exec_and_log(
-        " ".join(
-            [
-                '"{}"'.format(src_host),
-                '"{}"'.format(unlink_command),
-                '"{}"'.format(
-                    "Error: Unable to remove symbolic link {} on {}".format(
-                        src_path, src_host
-                    )
-                ),
-            ]
-        )
-    )
+    util.unlink_file(src_host, src_path)
 
     target_vm = vm.Vm(util.show_vm(VM_ID))
 

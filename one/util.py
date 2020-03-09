@@ -136,6 +136,38 @@ def link_file(dst_host, dst_dir, dst_path, device_path, resource_name):
     return True
 
 
+def unlink_file(host, path):
+    """
+    Deletes a file or path.
+
+    :param str host: host computer
+    :param str path: path on the host to delete
+    :return: True, or raises RuntimeError()
+    """
+    unlink_command = " ; ".join(["set -e", """if [ -d "{dst}" ]; then
+            rm -rf "{dst}"
+        else
+            rm -f {dst}
+        fi""".format(dst=path)])
+
+    rc = ssh_exec_and_log(
+        " ".join(
+            [
+                '"{}"'.format(host),
+                '"{}"'.format(unlink_command),
+                '"{}"'.format(
+                    "Error: Unable to remove symbolic link {} on {}".format(
+                        path, host
+                    )
+                ),
+            ]
+        )
+    )
+    if rc != 0:
+        raise RuntimeError("Error: Unable to remove symbolic link {} on {}".format(path, host))
+    return True
+
+
 def mkfs_command(string_args):
     return _wait_for_subp(_source(SCRIPTS_COMMON, "mkfs_command", string_args))
 
