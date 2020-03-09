@@ -23,9 +23,9 @@ from __future__ import print_function
 import sys
 import traceback
 from linstor import Resource, SizeCalc
-from one import util, vm
+from one import util, vm, image
 from one.datastore import Datastore
-from one.extender import get_rsc_name
+from one.extender import get_rsc_name, get_in_use_node, get_device_path
 
 
 SRC = sys.argv[1]
@@ -46,6 +46,15 @@ def main():
 
     resource = Resource(res_name, datastore.linstor_controllers)
     resource.volumes[0].size = SizeCalc.convert(int(SIZE), SizeCalc.UNIT_MiB, SizeCalc.UNIT_B)
+
+    image_data = image.Image(util.show_image(target_vm.disk_image_ID(disk_id)))
+    if image_data.format == "qcow2":
+        primary_node = get_in_use_node(resource)
+        resize_node = primary_node if primary_node else resource.diskful_nodes()[0]
+        rc = util.ssh_exec_and_log('{n} "qemu-img resize {p} {s}M" "Error qemu resize image {p}"'.format(
+            n=resize_node, p=get_device_path(resource), s=SIZE))
+        if rc != 0:
+            raise RuntimeError("Error qemu resize image {p}".format(p=get_device_path(resource)))
 
     util.log_info("Leaving resize successfully.")
 

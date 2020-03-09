@@ -125,3 +125,15 @@ class Image(object):
             return self._root.find("TEMPLATE").find("LIMIT_TRANSFER_BW").text
         except AttributeError:
             return '""'
+
+    @property
+    def format(self):
+        """
+        Format of the image
+        :return: Image format info string, e.g. raw, qcow2
+        :rtype: str
+        """
+        try:
+            return self._root.find("TEMPLATE").find("FORMAT").text
+        except AttributeError:
+            return ''
