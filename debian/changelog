@@ -1,3 +1,14 @@
+linstor-opennebula (1.0.5-1ubuntu1) experimental; urgency=medium
+
+  * resize: Also resize qcow2 image if format is used
+  * unify link(ln) calls into function
+  * unify unlink commands into function
+  * check the command ssh_exec_and_log failed
+  * vm: disk() rename disk_ID param
+  * clone: add prefer_node option
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Thu, 12 Mar 2020 11:15:56 +0000
+
 linstor-opennebula (1.0.4-1) experimental; urgency=medium
 
   * tests: rewrite tests to use py-unittests
