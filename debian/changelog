@@ -1,4 +1,10 @@
-linstor-opennebula (1.0.5-1ubuntu1) experimental; urgency=medium
+linstor-opennebula (1.0.6-1) experimental; urgency=medium
+
+  * pre/postmigrate: use datastore info from vm
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Mon, 16 Mar 2020 10:09:19 +0000
+
+linstor-opennebula (1.0.5-1) experimental; urgency=medium
 
   * resize: Also resize qcow2 image if format is used
   * unify link(ln) calls into function
