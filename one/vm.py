@@ -52,7 +52,12 @@ class Vm(object):
         return self._root.find("TEMPLATE").find("CONTEXT").find("DISK_ID").text
 
     def disk(self, disk_id):
-        """Returns disk with the given ID"""
+        """
+        Returns disk with the given ID
+
+        :param disk_id:
+        :return:
+        """
         try:
             return self._disks[disk_id]
         except KeyError:
@@ -74,6 +79,18 @@ class Vm(object):
             return self.disk(disk_ID).find("TYPE").text
         except AttributeError:
             return ""
+
+    def disk_datastore_id(self, disk_id):
+        """
+        Return the datastore id of the disk.
+
+        :param disk_id: disk id to get the datastore id for
+        :return:
+        """
+        try:
+            return self.disk(disk_id).find("DATASTORE_ID").text
+        except AttributeError:
+            return None
 
     def disk_save_as(self, disk_ID):
         """Returns disk_save_as"""

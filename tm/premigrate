@@ -26,7 +26,6 @@ import io
 from linstor import Resource
 from one import util, vm
 from one.datastore import Datastore
-from one.image import Image
 from one.extender import get_rsc_name, get_device_path, get_current_context
 
 SRC_HOST = sys.argv[1]
@@ -40,8 +39,8 @@ def main():
     util.log_info("Entering tm/premigrate from {s} to {t} in {tp}".format(s=SRC_HOST, t=DST_HOST, tp=DST_PATH))
 
     try:
-        TEMPLATE = sys.argv[6]
-        vmxml = base64.b64decode(TEMPLATE)
+        template_b64_xml = sys.argv[6]
+        vmxml = base64.b64decode(template_b64_xml)
     except (base64.binascii.Error, IndexError):
         # since opennebula 5.10 the template XML should be provided via STDIN
         outstr = io.BytesIO()
@@ -55,8 +54,7 @@ def main():
 
     for disk in target_vm.disk_IDs:
         if target_vm.tm_mad(disk) == "linstor":
-            image = Image(util.show_image(target_vm.disk_image_ID(disk)))
-            image_datastore = Datastore(util.show_ds(image.datastore_ID))
+            image_datastore = Datastore(util.show_ds(target_vm.disk_datastore_id(disk)))
             res_name = get_rsc_name(target_vm, disk)
 
             res = Resource(name=res_name, uri=image_datastore.linstor_controllers)
