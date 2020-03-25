@@ -1,0 +1,22 @@
+image: python:3.5.1
+
+before_script:
+  # setup ssh access to clone python-linstor dep
+  - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+  - eval $(ssh-agent -s)
+  - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+  - ssh-keyscan $GIT_HOST >> ~/.ssh/known_hosts
+  # now install python-linstor into venv
+  - pushd /tmp
+  - python -m venv venv
+  - git clone --recursive git@$GIT_HOST:$PYTHON_LINSTOR_PATH
+  - cd linstor-api-py
+  - ../venv/bin/python setup.py install
+  - popd
+
+test:
+  stage: test
+  script:
+    - /tmp/venv/bin/python setup.py test
