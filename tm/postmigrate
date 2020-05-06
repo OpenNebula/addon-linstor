@@ -78,8 +78,8 @@ def main():
 
     util.migrate_other(args)
 
-    # always remove old vm entries from src host
-    util.unlink_file(src_host, dst_dir)
+    # do not delete if we are on a shared fileystem
+    util.rm_shared_safe(src_host, dst_dir)
 
     util.log_info("Exiting tm/postmigrate")
 

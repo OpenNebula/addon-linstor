@@ -86,6 +86,18 @@ def _get_subp_out(cmd):
     return out.decode()
 
 
+def ssh_direct(host, cmd):
+    """
+    Executes the given cmd on the host and returns the output of the command.
+
+    :param str host: host to execute the command
+    :param str cmd: Command to execute
+    :return: stdout of the executed command
+    :rtype: str
+    """
+    return _get_subp_out(_source(SCRIPTS_COMMON, "$SSH", '"{h}" "{c}"'.format(h=host, c=cmd)))
+
+
 def ssh_exec_and_log(string_args):
     return _wait_for_subp(_source(SCRIPTS_COMMON, "ssh_exec_and_log", string_args))
 
@@ -165,6 +177,24 @@ def unlink_file(host, path):
     )
     if rc != 0:
         raise RuntimeError("Error: Unable to remove symbolic link {} on {}".format(path, host))
+    return True
+
+
+def rm_shared_safe(host, path):
+    """
+    Deletes a file or path if it isn't on a network filesystem.
+
+    :param str host: host computer
+    :param str path: path on the host to delete
+    :return: True, or raises RuntimeError()
+    """
+    fstype = ssh_direct(host, 'stat --file-system --format=%T "{dst}"'.format(dst=path)).strip()
+
+    if fstype and fstype not in ['nfs']:
+        unlink_file(host, path)
+    else:
+        log_info("filesystem is shared('{fs}'), not deleting: {p}".format(fs=fstype, p=path))
+
     return True
 
 
