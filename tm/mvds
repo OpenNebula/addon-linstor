@@ -23,7 +23,7 @@ import sys
 import traceback
 
 from linstor import Resource
-from one import util, vm
+from one import util, vm, extender
 from one.datastore import Datastore
 
 SRC = sys.argv[1]
@@ -37,8 +37,7 @@ def main():
 
     src_host = util.arg_host(SRC).strip()
     src_path = util.arg_path(SRC).strip()
-
-    disk_ID = SRC.split(".")[-1].strip()
+    disk_id = SRC.split(".")[-1].strip()
 
     datastore = Datastore(util.show_ds(DS_ID))
 
@@ -46,19 +45,7 @@ def main():
 
     target_vm = vm.Vm(util.show_vm(VM_ID))
 
-    res_name = target_vm.disk_source(disk_ID)
-
-    if not target_vm.disk_persistent(disk_ID):
-        if target_vm.disk_type(disk_ID) == "CDROM":
-            util.log_info("{} is a non-persistent CDROM image".format(res_name))
-        else:
-            res_name = "{}-vm{}-disk{}".format(res_name, VM_ID, disk_ID)
-            util.log_info(
-                "{} is a non-persistent OS or DATABLOCK image".format(res_name)
-            )
-    else:
-        util.log_info("{} is a persistent OS or DATABLOCK image".format(res_name))
-
+    res_name = extender.get_rsc_name(target_vm, disk_id)
     res = Resource(name=res_name, uri=datastore.linstor_controllers)
 
     res.deactivate(src_host)
