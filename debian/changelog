@@ -1,3 +1,14 @@
+linstor-opennebula (1.0.7-1) experimental; urgency=medium
+
+  * switch to gitlab-ci
+  * mvds: use common get_rsc_name
+  * postmigrate: do not delete the VM folder on shared network filesystems
+  * clone-snapshot: fix prefer diskful if no storage pool
+  * support setting disk size on instantiate template ui
+  * use xmlrunner and produce junit XMLs
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Fri, 29 May 2020 09:11:23 +0000
+
 linstor-opennebula (1.0.6-1) experimental; urgency=medium
 
   * pre/postmigrate: use datastore info from vm
