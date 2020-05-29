@@ -5,6 +5,7 @@
 .idea/*
 .eggs/
 venv/*
+test-reports/*
 
 build/
 dist/
