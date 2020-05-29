@@ -243,13 +243,17 @@ def clone(
         )
         mode = CloneMode.COPY
 
+    use_storpool = resource.placement.storage_pool \
+        if resource.placement.storage_pool else resource.volumes[0].storage_pool_name
+    linstor_controllers = ",".join(resource.client.uri_list)
+
     if mode == CloneMode.SNAPSHOT:
         snap_name = "for-" + clone_name
         try:
             resource.snapshot_create(snap_name)
             resource.restore_from_snapshot(snap_name, clone_name)
             time.sleep(1)  # wait a second for deletion, here is a potential race condition
-            if prefer_node:
+            if prefer_node and node_has_storagepool(linstor_controllers, prefer_node, use_storpool):
                 resource.diskful(prefer_node)
         finally:
             # always try to get rid of the temporary snapshot
@@ -259,10 +263,8 @@ def clone(
                 #  the snapshot delete will always fail for zfs storage pools (parent-child relation)
                 util.log_info("Snapshot '{s}' delete failed: {ex}".format(s=snap_name, ex=le))
     elif mode == CloneMode.COPY:
-        use_storpool = resource.placement.storage_pool \
-            if resource.placement.storage_pool else resource.volumes[0].storage_pool_name
         clone_res = deploy(
-            linstor_controllers=",".join(resource.client.uri_list),
+            linstor_controllers=linstor_controllers,
             resource_name=clone_name,
             storage_pool=use_storpool,
             vlm_size_str=str(resource.volumes[0].size) + "b",
