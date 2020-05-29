@@ -1,10 +1,11 @@
 import time
 
-from linstor import Resource, Volume, MultiLinstor, LinstorError
+from linstor import Resource, Volume, MultiLinstor, LinstorError, SizeCalc
 from linstor.responses import ResourceDefinitionResponse
 from one import util, consts
 from one.vm import Vm
 from one.datastore import Datastore
+from one.image import Image
 
 
 def calculate_space(lin, storage_pool_name, nodes, auto_place):
@@ -433,3 +434,25 @@ def get_storage_pool_name(lin, datastore):
         storage_pool = datastore.storage_pool
 
     return storage_pool
+
+
+def resize_disk(resource, target_vm, disk_id, new_size):
+    """
+
+    :param Resource resource:
+    :param vm.Vm target_vm:
+    :param str disk_id:
+    :param int new_size: new size in mega bytes
+    :return:
+    """
+    util.log_info("Resizing resource {r} new size: {s}MiB".format(r=resource.name, s=new_size))
+    resource.volumes[0].size = SizeCalc.convert(new_size, SizeCalc.UNIT_MiB, SizeCalc.UNIT_B)
+
+    image_data = Image(util.show_image(target_vm.disk_image_ID(disk_id)))
+    if image_data.format == "qcow2":
+        primary_node = get_in_use_node(resource)
+        resize_node = primary_node if primary_node else resource.diskful_nodes()[0]
+        rc = util.ssh_exec_and_log('{n} "qemu-img resize {p} {s}M" "Error qemu resize image {p}"'.format(
+            n=resize_node, p=get_device_path(resource), s=new_size))
+        if rc != 0:
+            raise RuntimeError("Error qemu resize image {p}".format(p=get_device_path(resource)))

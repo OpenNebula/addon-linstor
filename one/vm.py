@@ -127,6 +127,18 @@ class Vm(object):
         except AttributeError:
             return ""
 
+    def disk_size(self, disk_id):
+        """
+        Return the disk size, of given disk id
+        :param str disk_id: disk id as str
+        :return: disk size in megabytes
+        :rtype: int
+        """
+        try:
+            return int(self.disk(disk_id).find("SIZE").text)
+        except AttributeError:
+            return None
+
     def tm_mad(self, disk_ID):
         """Returns the tm driver identifier"""
         try:

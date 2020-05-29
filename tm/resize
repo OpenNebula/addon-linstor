@@ -22,10 +22,10 @@ from __future__ import print_function
 
 import sys
 import traceback
-from linstor import Resource, SizeCalc
-from one import util, vm, image
+from linstor import Resource
+from one import util, vm
 from one.datastore import Datastore
-from one.extender import get_rsc_name, get_in_use_node, get_device_path
+from one.extender import get_rsc_name, resize_disk
 
 
 SRC = sys.argv[1]
@@ -43,18 +43,8 @@ def main():
     res_name = get_rsc_name(target_vm, disk_id)
 
     util.log_info("Entering resize: Set '{r}' to size '{s}'.".format(r=res_name, s=SIZE))
-
     resource = Resource(res_name, datastore.linstor_controllers)
-    resource.volumes[0].size = SizeCalc.convert(int(SIZE), SizeCalc.UNIT_MiB, SizeCalc.UNIT_B)
-
-    image_data = image.Image(util.show_image(target_vm.disk_image_ID(disk_id)))
-    if image_data.format == "qcow2":
-        primary_node = get_in_use_node(resource)
-        resize_node = primary_node if primary_node else resource.diskful_nodes()[0]
-        rc = util.ssh_exec_and_log('{n} "qemu-img resize {p} {s}M" "Error qemu resize image {p}"'.format(
-            n=resize_node, p=get_device_path(resource), s=SIZE))
-        if rc != 0:
-            raise RuntimeError("Error qemu resize image {p}".format(p=get_device_path(resource)))
+    resize_disk(resource, target_vm, disk_id, int(SIZE))
 
     util.log_info("Leaving resize successfully.")
 

@@ -22,10 +22,11 @@ from __future__ import print_function
 import os
 import sys
 
-from one.extender import clone, CloneMode, get_device_path
-from linstor import Resource
+from one.extender import clone, CloneMode, get_device_path, resize_disk
+from linstor import Resource, SizeCalc
 from one import util
 from one.datastore import Datastore
+from one.vm import Vm
 
 SRC = sys.argv[1]
 DST = sys.argv[2]
@@ -43,6 +44,7 @@ def main():
     disk_id = dst_path.split(".")[-1].strip()
 
     datastore = Datastore(util.show_ds(DS_ID))
+    vm = Vm(util.show_vm(VM_ID))
 
     res = Resource(name=src_path, uri=datastore.linstor_controllers)
     clone_name = "{}-vm{}-disk{}".format(res.name, VM_ID, disk_id)
@@ -56,6 +58,9 @@ def main():
         prefer_node=dst_host
     )
     res_clone = Resource(clone_name, uri=datastore.linstor_controllers)
+
+    if vm.disk_size(disk_id) > SizeCalc.convert(res.volumes[0].size, SizeCalc.UNIT_B, SizeCalc.UNIT_MiB):
+        resize_disk(res_clone, vm, disk_id, vm.disk_size(disk_id))
 
     res_clone.activate(dst_host)
 
