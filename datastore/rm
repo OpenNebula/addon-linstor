@@ -42,8 +42,4 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as err:
-        util.error_message(str(err))
-        raise
+    util.run_main(main)

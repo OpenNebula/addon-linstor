@@ -31,4 +31,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    util.run_main(main)

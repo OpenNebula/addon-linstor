@@ -20,7 +20,6 @@ limitations under the License.
 from __future__ import print_function
 
 import sys
-import traceback
 
 from one import util, vm
 from one.datastore import Datastore
@@ -78,9 +77,4 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as err:
-        util.error_message(traceback.format_exc())
-        print("ERROR: " + str(err))
-        raise
+    util.run_main(main)

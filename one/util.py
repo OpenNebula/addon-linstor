@@ -19,9 +19,11 @@ limitations under the License.
 
 from __future__ import print_function
 
+import sys
 import os
 import subprocess
 import syslog
+import traceback
 
 REMOTES_DIR = "/var/lib/one/remotes/"
 
@@ -81,7 +83,7 @@ def _get_subp_out(cmd):
 
     if proc.returncode != 0:
         error_message("command {} failed: {}".format(cmd, err.decode()))
-        raise subprocess.CalledProcessError
+        raise subprocess.CalledProcessError(returncode=proc.returncode, cmd=cmd, output=out, stderr=err)
 
     return out.decode()
 
@@ -270,3 +272,18 @@ def fs_size(string_args):
 
 def get_copy_command(string_args):
     return DOWNLOADER + " " + string_args
+
+
+def run_main(main_func):
+    try:
+        main_func()
+    except subprocess.CalledProcessError as cpe:
+        error_message(traceback.format_exc())
+        traceback.print_exc(file=sys.stderr)
+        print("ERROR: Command {c} returned error: {o}".format(c=cpe.cmd, o=cpe.stdout + cpe.stderr), file=sys.stderr)
+        sys.exit(2)
+    except Exception as err:
+        error_message(traceback.format_exc())
+        traceback.print_exc(file=sys.stderr)
+        print("ERROR: " + str(err), file=sys.stderr)
+        sys.exit(1)
