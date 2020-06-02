@@ -22,7 +22,7 @@ from __future__ import print_function
 import os
 import sys
 
-from one.extender import clone, CloneMode, get_device_path, resize_disk
+from one.extender import clone, CloneMode, get_device_path, resize_disk, resize_if_qcow2
 from linstor import Resource, SizeCalc
 from one import util
 from one.datastore import Datastore
@@ -45,8 +45,13 @@ def main():
 
     datastore = Datastore(util.show_ds(DS_ID))
     vm = Vm(util.show_vm(VM_ID))
+    clone_mode = CloneMode.from_str(datastore.linstor_clone_mode)
 
     res = Resource(name=src_path, uri=datastore.linstor_controllers)
+
+    new_size = vm.disk_size(disk_id) \
+        if vm.disk_size(disk_id) > SizeCalc.convert(res.volumes[0].size, SizeCalc.UNIT_B, SizeCalc.UNIT_MiB) else None
+
     clone_name = "{}-vm{}-disk{}".format(res.name, VM_ID, disk_id)
     clone(
         res,
@@ -54,17 +59,21 @@ def main():
         datastore.deployment_nodes,
         datastore.auto_place,
         datastore.linstor_resource_group,
-        CloneMode.from_str(datastore.linstor_clone_mode),
-        prefer_node=dst_host
+        clone_mode,
+        prefer_node=dst_host,
+        new_size=new_size
     )
     res_clone = Resource(clone_name, uri=datastore.linstor_controllers)
-
-    if vm.disk_size(disk_id) > SizeCalc.convert(res.volumes[0].size, SizeCalc.UNIT_B, SizeCalc.UNIT_MiB):
-        resize_disk(res_clone, vm, disk_id, vm.disk_size(disk_id))
 
     res_clone.activate(dst_host)
 
     util.link_file(dst_host, dst_dir, dst_path, get_device_path(res_clone), res_clone.name)
+
+    if new_size:  # we need to resize
+        if CloneMode.COPY == clone_mode:  # in clone mode the new volume already has the correct size, but qcow2 may not
+            resize_if_qcow2(res_clone, vm, disk_id, new_size)
+        else:
+            resize_disk(res_clone, vm, disk_id, new_size)
 
     util.log_info("Exiting tm clone")
 

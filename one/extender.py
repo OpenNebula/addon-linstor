@@ -216,7 +216,8 @@ def clone(
         auto_place_count,
         resource_group=None,
         mode=CloneMode.SNAPSHOT,
-        prefer_node=None):
+        prefer_node=None,
+        new_size=None):
     """
     Clones a resource to a new resource.
 
@@ -227,6 +228,7 @@ def clone(
     :param Optional[str] resource_group: resource group to use
     :param int mode:
     :param Optional[str] prefer_node: try to place resource on this node
+    :param Optional[int] new_size: new volume size, works only in CloneMode.COPY, None to keep original size
     :return: True if clone was successful
     :rtype: bool
     """
@@ -264,11 +266,12 @@ def clone(
                 #  the snapshot delete will always fail for zfs storage pools (parent-child relation)
                 util.log_info("Snapshot '{s}' delete failed: {ex}".format(s=snap_name, ex=le))
     elif mode == CloneMode.COPY:
+        vol_size_str = str(new_size) + "MiB" if new_size else str(resource.volumes[0].size) + "b"
         clone_res = deploy(
             linstor_controllers=linstor_controllers,
             resource_name=clone_name,
             storage_pool=use_storpool,
-            vlm_size_str=str(resource.volumes[0].size) + "b",
+            vlm_size_str=vol_size_str,
             deployment_nodes=place_nodes,
             auto_place_count=auto_place_count,
             resource_group=resource_group,
@@ -448,6 +451,19 @@ def resize_disk(resource, target_vm, disk_id, new_size):
     util.log_info("Resizing resource {r} new size: {s}MiB".format(r=resource.name, s=new_size))
     resource.volumes[0].size = SizeCalc.convert(new_size, SizeCalc.UNIT_MiB, SizeCalc.UNIT_B)
 
+    resize_if_qcow2(resource, target_vm, disk_id, new_size)
+
+
+def resize_if_qcow2(resource, target_vm, disk_id, new_size):
+    """
+    Resize the qcow2 image if it is one, otherwise noop.
+
+    :param Resource resource:
+    :param vm.Vm target_vm:
+    :param str disk_id:
+    :param int new_size: new size in mega bytes
+    :return:
+    """
     image_data = Image(util.show_image(target_vm.disk_image_ID(disk_id)))
     if image_data.format == "qcow2":
         primary_node = get_in_use_node(resource)
