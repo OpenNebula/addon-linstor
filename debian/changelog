@@ -1,3 +1,13 @@
+linstor-opennebula (1.0.8-1) experimental; urgency=medium
+
+  * move error handling into a util function and improve output
+  * clone: rework new image size to work with thick lvm
+  * extender: fix incorrect return type in docstring
+  * qcow2 resize, check FORMAT and DRIVER attribute
+  * improve error message on qemu-img errors
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Mon, 29 Jun 2020 08:50:31 +0000
+
 linstor-opennebula (1.0.7-1) experimental; urgency=medium
 
   * switch to gitlab-ci
