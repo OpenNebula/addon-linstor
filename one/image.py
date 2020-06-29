@@ -137,3 +137,15 @@ class Image(object):
             return self._root.find("TEMPLATE").find("FORMAT").text
         except AttributeError:
             return ''
+
+    @property
+    def driver(self):
+        """
+        Driver of the image
+        :return: Image driver info string, e.g. raw, qcow2
+        :rtype: str
+        """
+        try:
+            return self._root.find("TEMPLATE").find("DRIVER").text
+        except AttributeError:
+            return ''

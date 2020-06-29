@@ -465,7 +465,7 @@ def resize_if_qcow2(resource, target_vm, disk_id, new_size):
     :return:
     """
     image_data = Image(util.show_image(target_vm.disk_image_ID(disk_id)))
-    if image_data.format == "qcow2":
+    if image_data.format == "qcow2" or image_data.driver == "qcow2":
         primary_node = get_in_use_node(resource)
         resize_node = primary_node if primary_node else resource.diskful_nodes()[0]
         rc = util.ssh_exec_and_log('{n} "qemu-img resize {p} {s}M" "Error qemu resize image {p}"'.format(
