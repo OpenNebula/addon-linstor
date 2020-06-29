@@ -198,7 +198,7 @@ def get_in_use_node(resource):
 
     :param Resource resource: resource object to check for in use(primary).
     :return: node name of the primary node, or None if all secondary
-    :rtype: bool
+    :rtype: Optional[str]
     """
     with MultiLinstor(resource.client.uri_list) as lin:
         lst = lin.resource_list(filter_by_resources=[resource.name])
