@@ -76,16 +76,28 @@ def _wait_for_subp(cmd, log=True):
     return proc.returncode
 
 
-def _get_subp_out(cmd):
+def _get_subp_out_base(cmd):
+    """
+    Runs cmd and logs into syslog and returns output
+    :param cmd:
+    :return: Tuple of [returncode, stdout, stderr]
+    :rtype: (int, str, str)
+    """
     log_info("running shell command: {}".format(" ".join(cmd)))
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
 
-    if proc.returncode != 0:
-        error_message("command {} failed: {}".format(cmd, err.decode()))
-        raise subprocess.CalledProcessError(returncode=proc.returncode, cmd=cmd, output=out, stderr=err)
+    return proc.returncode, out.decode(), err.decode()
 
-    return out.decode()
+
+def _get_subp_out(cmd):
+    rc, out, err = _get_subp_out_base(cmd)
+
+    if rc != 0:
+        error_message("command {} failed: {}".format(cmd, err))
+        raise subprocess.CalledProcessError(returncode=rc, cmd=cmd, output=out, stderr=err)
+
+    return out
 
 
 def ssh_direct(host, cmd):
@@ -102,6 +114,16 @@ def ssh_direct(host, cmd):
 
 def ssh_exec_and_log(string_args):
     return _wait_for_subp(_source(SCRIPTS_COMMON, "ssh_exec_and_log", string_args))
+
+
+def ssh_exec_and_log_with_out(string_args):
+    """
+    Runs cmd and logs into syslog and returns return code, output and stderr
+    :param cmd:
+    :return: Tuple of [returncode, stdout, stderr]
+    :rtype: (int, str, str)
+    """
+    return _get_subp_out_base(_source(SCRIPTS_COMMON, "ssh_exec_and_log", string_args))
 
 
 def ssh_monitor_and_log(string_args):

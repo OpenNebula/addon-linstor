@@ -468,7 +468,10 @@ def resize_if_qcow2(resource, target_vm, disk_id, new_size):
     if image_data.format == "qcow2" or image_data.driver == "qcow2":
         primary_node = get_in_use_node(resource)
         resize_node = primary_node if primary_node else resource.diskful_nodes()[0]
-        rc = util.ssh_exec_and_log('{n} "qemu-img resize {p} {s}M" "Error qemu resize image {p}"'.format(
-            n=resize_node, p=get_device_path(resource), s=new_size))
+        rc, out, err = util.ssh_exec_and_log_with_out(
+            '{n} "qemu-img resize {p} {s}M" "Error qemu resize image {p}"'.format(
+                n=resize_node, p=get_device_path(resource), s=new_size))
         if rc != 0:
-            raise RuntimeError("Error qemu resize image {p}".format(p=get_device_path(resource)))
+            raise RuntimeError("Error qemu resize image {p}: {o}".format(
+                p=get_device_path(resource),
+                o=err + out))
