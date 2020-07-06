@@ -254,10 +254,11 @@ def clone(
         snap_name = "for-" + clone_name
         try:
             resource.snapshot_create(snap_name)
-            resource.restore_from_snapshot(snap_name, clone_name)
+            clone_res = resource.restore_from_snapshot(snap_name, clone_name)
             time.sleep(1)  # wait a second for deletion, here is a potential race condition
             if prefer_node and node_has_storagepool(linstor_controllers, prefer_node, use_storpool):
-                resource.diskful(prefer_node)
+                clone_res.placement.storage_pool = use_storpool
+                clone_res.diskful(prefer_node)
         finally:
             # always try to get rid of the temporary snapshot
             try:
