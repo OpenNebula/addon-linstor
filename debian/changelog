@@ -1,3 +1,9 @@
+linstor-opennebula (1.0.9-1) experimental; urgency=medium
+
+  * clone: fix prefer node mode with clone mode snapshot, using wrong stor [...]
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Thu, 09 Jul 2020 05:02:45 +0000
+
 linstor-opennebula (1.0.8-1) experimental; urgency=medium
 
   * move error handling into a util function and improve output
