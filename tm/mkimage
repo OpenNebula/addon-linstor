@@ -78,14 +78,9 @@ def main():
     )
 
     rc = util.ssh_exec_and_log(
-        " ".join(
-            [
-                dst_host,
-                register_command,
-                "Error mkimage {}, on {}".format(device_path, dst_host),
-            ]
-        )
-    )
+        host=dst_host,
+        cmd=register_command,
+        error_msg="Error mkimage {}, on {}".format(device_path, dst_host))
 
     if rc != 0:
         sys.exit(rc)

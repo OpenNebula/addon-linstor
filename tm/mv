@@ -75,13 +75,9 @@ def main():
         ])
 
         rc = util.ssh_exec_and_log(
-            " ".join([
-                '"{}"'.format(src_host),
-                '"{}"'.format(tar_copy_cmd),
-                '"Unable to tar copy to new host"'
-                ]
-            )
-        )
+            host=src_host,
+            cmd=tar_copy_cmd,
+            error_msg='Unable to tar copy to new host')
         if rc != 0:
             raise RuntimeError("Unable to tar copy to new host")
     else:

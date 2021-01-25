@@ -300,7 +300,7 @@ def clone(
         if clone_res.is_thin():
             conv_opts.append("sparse")
 
-        dd_cmd = '"dd if={_if} of={_of} bs={bs}K count={c} conv={conv}"'.format(
+        dd_cmd = 'dd if={_if} of={_of} bs={bs}K count={c} conv={conv}'.format(
             _if=from_dev_path,
             _of=to_dev_path,
             bs=block_size_kb,
@@ -309,12 +309,9 @@ def clone(
         )
         # dd on the node
         return_code = util.ssh_exec_and_log(
-            " ".join([
-                '"{}"'.format(copy_node),
-                dd_cmd,
-                '"error copying image data from {_if} to {_of}"'.format(_if=from_dev_path, _of=to_dev_path)
-            ])
-        )
+            host=copy_node,
+            cmd=dd_cmd,
+            error_msg='error copying image data from {_if} to {_of}'.format(_if=from_dev_path, _of=to_dev_path))
 
         time.sleep(0.5)  # wait a bit until we are sure dd closed the block device
 
@@ -473,8 +470,9 @@ def resize_if_qcow2(resource, target_vm, disk_id, new_size):
         primary_node = get_in_use_node(resource)
         resize_node = primary_node if primary_node else resource.diskful_nodes()[0]
         rc, out, err = util.ssh_exec_and_log_with_out(
-            '{n} "qemu-img resize {p} {s}M" "Error qemu resize image {p}"'.format(
-                n=resize_node, p=get_device_path(resource), s=new_size))
+            host=resize_node,
+            cmd="qemu-img resize {p} {s}M".format(p=get_device_path(resource), s=new_size),
+            error_msg="Error qemu resize image {p}".format(p=get_device_path(resource)))
         if rc != 0:
             raise RuntimeError("Error qemu resize image {p}: {o}".format(
                 p=get_device_path(resource),

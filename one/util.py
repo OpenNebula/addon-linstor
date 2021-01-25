@@ -76,14 +76,16 @@ def _wait_for_subp(cmd, log=True):
     return proc.returncode
 
 
-def _get_subp_out_base(cmd):
+def _get_subp_out_base(cmd, log=True):
     """
     Runs cmd and logs into syslog and returns output
-    :param cmd:
+    :param list[str] cmd: shell command to run
+    :param bool log: if cmdn should be logged as INFO
     :return: Tuple of [returncode, stdout, stderr]
     :rtype: (int, str, str)
     """
-    log_info("running shell command: {}".format(" ".join(cmd)))
+    if log:
+        log_info("running shell command: {}".format(" ".join(cmd)))
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
 
@@ -112,18 +114,39 @@ def ssh_direct(host, cmd):
     return _get_subp_out(_source(SCRIPTS_COMMON, "$SSH", '"{h}" "{c}"'.format(h=host, c=cmd)))
 
 
-def ssh_exec_and_log(string_args):
-    return _wait_for_subp(_source(SCRIPTS_COMMON, "ssh_exec_and_log", string_args))
+def ssh_exec_and_log(host, cmd, error_msg):
+    """
+
+    :param str host: hostname to ssh to
+    :param str cmd: cmd to execute
+    :param str error_msg: error message if cmd fails
+    :return:
+    """
+    log_info("ssh '{h}' cmd: {c}".format(h=host, c=cmd))
+    ssh_cmd = [
+        '"{}"'.format(host),
+        '"{}"'.format(cmd),
+        '"{}"'.format(error_msg)
+    ]
+    return _wait_for_subp(_source(SCRIPTS_COMMON, "ssh_exec_and_log", " ".join(ssh_cmd)), log=False)
 
 
-def ssh_exec_and_log_with_out(string_args):
+def ssh_exec_and_log_with_out(host, cmd, error_msg):
     """
     Runs cmd and logs into syslog and returns return code, output and stderr
-    :param cmd:
+    :param str host: Where ssh should connect to
+    :param str cmd: command to run on host
+    :param str error_msg: log message if error occurs
     :return: Tuple of [returncode, stdout, stderr]
     :rtype: (int, str, str)
     """
-    return _get_subp_out_base(_source(SCRIPTS_COMMON, "ssh_exec_and_log", string_args))
+    log_info("ssh '{h}' cmd: {c}".format(h=host, c=cmd))
+    ssh_cmd = [
+        '"{}"'.format(host),
+        '"{}"'.format(cmd),
+        '"{}"'.format(error_msg)
+    ]
+    return _get_subp_out_base(_source(SCRIPTS_COMMON, "ssh_exec_and_log", " ".join(ssh_cmd)), log=False)
 
 
 def ssh_monitor_and_log(string_args):
@@ -158,14 +181,9 @@ def link_file(dst_host, dst_dir, dst_path, device_path, resource_name):
         ]
     )
     rc = ssh_exec_and_log(
-        " ".join(
-            [
-                '"{}"'.format(dst_host),
-                '"{}"'.format(link_command),
-                '"Error: Unable to link {} to {} on {}"'.format(resource_name, dst_path, dst_host),
-            ]
-        )
-    )
+        host=dst_host,
+        cmd=link_command,
+        error_msg='Error: Unable to link {} to {} on {}'.format(resource_name, dst_path, dst_host))
     if rc != 0:
         raise RuntimeError("Error: Unable to link {} to {} on {}".format(resource_name, dst_path, dst_host))
 
@@ -187,18 +205,9 @@ def unlink_file(host, path):
         fi""".format(dst=path)])
 
     rc = ssh_exec_and_log(
-        " ".join(
-            [
-                '"{}"'.format(host),
-                '"{}"'.format(unlink_command),
-                '"{}"'.format(
-                    "Error: Unable to remove symbolic link {} on {}".format(
-                        path, host
-                    )
-                ),
-            ]
-        )
-    )
+        host=host,
+        cmd=unlink_command,
+        error_msg="Error: Unable to remove symbolic link {} on {}".format(path, host))
     if rc != 0:
         raise RuntimeError("Error: Unable to remove symbolic link {} on {}".format(path, host))
     return True
