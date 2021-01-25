@@ -291,16 +291,19 @@ def clone(
         from_dev_path = get_device_path(resource)
         to_dev_path = get_device_path(clone_res)
 
-        block_count = resource.volumes[0].size / 1024.0 / 64  # float division
+        block_size_kb = 64
+
+        block_count = resource.volumes[0].size / 1024.0 / block_size_kb  # float division
         block_count_int = int(block_count) if block_count.is_integer() else (block_count + 1)
 
-        conv_opts = ["sync"]
+        conv_opts = ["fsync"]
         if clone_res.is_thin():
             conv_opts.append("sparse")
 
-        dd_cmd = '"dd if={_if} of={_of} bs=64K count={c} conv={conv}"'.format(
+        dd_cmd = '"dd if={_if} of={_of} bs={bs}K count={c} conv={conv}"'.format(
             _if=from_dev_path,
             _of=to_dev_path,
+            bs=block_size_kb,
             c=block_count_int,
             conv=",".join(conv_opts)
         )
