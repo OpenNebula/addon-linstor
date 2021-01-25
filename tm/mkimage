@@ -61,29 +61,19 @@ def main():
 
     device_path = get_device_path(resource)
 
-    register_command = """cat << EOF
-      set -e
+    if FORMAT and FORMAT != "raw":
+        mkfs_command = 'set -e ; export PATH=/usr/sbin:/sbin:$PATH ; $(mkfs_command "{0}" "{1}" "{2}")'.format(
+            device_path,
+            FORMAT,
+            SizeCalc.convert(resource.volumes[0].size, SizeCalc.UNIT_B, SizeCalc.UNIT_MiB))
 
-      export PATH=/usr/sbin:/sbin:$PATH
+        rc = util.ssh_exec_and_log(
+            host=dst_host,
+            cmd=mkfs_command,
+            error_msg="Error mkimage {}, on {}".format(device_path, dst_host))
 
-      if [ -z "{0}" ] || [ "{0}" == "raw" ]; then exit 0;
-      fi
-
-      $SUDO $(mkfs_command "{1}" "{0}" "{2}")
-
-    EOF""".format(
-        FORMAT,
-        device_path,
-        SizeCalc.convert(resource.volumes[0].size, SizeCalc.UNIT_B, SizeCalc.UNIT_MiB)
-    )
-
-    rc = util.ssh_exec_and_log(
-        host=dst_host,
-        cmd=register_command,
-        error_msg="Error mkimage {}, on {}".format(device_path, dst_host))
-
-    if rc != 0:
-        sys.exit(rc)
+        if rc != 0:
+            sys.exit(rc)
 
     # link drbd device
     util.link_file(dst_host, dst_dir, dst_path, device_path, res_name)

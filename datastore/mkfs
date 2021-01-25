@@ -66,34 +66,24 @@ def main():
         resource_group=driver.datastore.linstor_resource_group
     )
 
-    register_command = """cat << EOF
-      set -e
-
-      export PATH=/usr/sbin:/sbin:$PATH
-
-      if [ -z "{0}" ] || [ "{0}" == "raw" ]; then exit 0;
-      fi
-
-      $SUDO $(mkfs_command "{1}" "{0}" "{2}")
-
-    EOF""".format(
-        driver.image.FS_type,
-        get_device_path(res),
-        SizeCalc.convert(res.volumes[0].size, SizeCalc.UNIT_B, SizeCalc.UNIT_MiB)
-    )
-
     res_host = random.choice(list(res.diskful_nodes()))
 
-    rc = util.ssh_exec_and_log(
-        host=res_host,
-        cmd=register_command,
-        error_msg="Error registering {}, on {}".format(res, res_host))
+    if driver.image.FS_type and driver.image.FS_type != "raw":
+        register_command = 'set -e ; export PATH=/usr/sbin:/sbin:$PATH ; $(mkfs_command "{0}" "{1}" "{2}")'.format(
+            get_device_path(res),
+            driver.image.FS_type,
+            SizeCalc.convert(res.volumes[0].size, SizeCalc.UNIT_B, SizeCalc.UNIT_MiB))
 
-    if int(rc) != 0:
-        res.delete()
-        sys.exit(1)
+        rc = util.ssh_exec_and_log(
+            host=res_host,
+            cmd=register_command,
+            error_msg="Error registering {}, on {}".format(res, res_host))
 
-    util.log_info("Created {} on {}".format(res, res_host))
+        if int(rc) != 0:
+            res.delete()
+            sys.exit(1)
+
+        util.log_info("Created filesystem {} on {} at {}".format(driver.image.FS_type, res, res_host))
     util.log_info("Exiting datastore mkfs.")
 
     print(res.name)

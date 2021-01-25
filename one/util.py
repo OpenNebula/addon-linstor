@@ -173,13 +173,9 @@ def link_file(dst_host, dst_dir, dst_path, device_path, resource_name):
     :param str resource_name: Resource name for error output
     :return: True if run, else throws exception
     """
-    link_command = " ; ".join(
-        [
-            "set -e",
-            "mkdir -p {}".format(dst_dir),
-            "ln -fs {} {}".format(device_path, dst_path),
-        ]
-    )
+    link_command = 'mkdir -p {dstdir} && ln -fs {devp} {dstp}'.format(
+        dstdir=dst_dir, devp=device_path, dstp=dst_path)
+
     rc = ssh_exec_and_log(
         host=dst_host,
         cmd=link_command,
@@ -198,11 +194,7 @@ def unlink_file(host, path):
     :param str path: path on the host to delete
     :return: True, or raises RuntimeError()
     """
-    unlink_command = " ; ".join(["set -e", """if [ -d "{dst}" ]; then
-            rm -rf "{dst}"
-        else
-            rm -f {dst}
-        fi""".format(dst=path)])
+    unlink_command = 'set -e;if [ -d "{dst}" ]; then rm -rf "{dst}"; else rm -f "{dst}"; fi'.format(dst=path)
 
     rc = ssh_exec_and_log(
         host=host,
