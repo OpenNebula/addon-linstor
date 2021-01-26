@@ -38,13 +38,13 @@ def main():
 
     # determine cloning mode
     # use copy if the datastores differ, because snapshot mode would use the same storage pool
-    cloning_image = Image(util.show_image(driver.image.cloning_ID))
+    cloning_image = Image(util.show_image(driver.image.cloning_id))
 
     cloning_mode = CloneMode.from_str(driver.datastore.linstor_clone_mode) \
-        if cloning_image.datastore_ID == driver.datastore.ID else CloneMode.COPY
+        if cloning_image.datastore_id == driver.datastore.id else CloneMode.COPY
 
     res = Resource(
-        name="{}-{}".format(consts.IMAGE_PREFIX, driver.image.cloning_ID),
+        name="{}-{}".format(consts.IMAGE_PREFIX, driver.image.cloning_id),
         uri=driver.datastore.linstor_controllers
     )
     res.placement.storage_pool = driver.datastore.storage_pool

@@ -29,26 +29,26 @@ from one.datastore import Datastore
 
 SRC = sys.argv[1]
 SNAP_ID = sys.argv[2]
-VM_ID = sys.argv[3]
+VM_ID = int(sys.argv[3])
 DS_ID = sys.argv[4]
 
 
 def main():
     util.log_info("Entering tm/snap_revert")
 
-    disk_ID = SRC.split(".")[-1].strip()
-    snap_ID = util.arg_host(SNAP_ID).strip()
+    disk_id = SRC.split(".")[-1].strip()
+    snap_id = util.arg_host(SNAP_ID).strip()
 
     datastore = Datastore(util.show_ds(DS_ID))
 
     target_vm = vm.Vm(util.show_vm(VM_ID))
 
-    res_name = target_vm.disk_source(disk_ID)
-    if target_vm.disk_persistent(disk_ID) != "YES":
-        res_name = "{}-vm{}-disk{}".format(res_name, VM_ID, disk_ID)
+    res_name = target_vm.disk_source(disk_id)
+    if target_vm.disk_persistent(disk_id) != "YES":
+        res_name = "{}-vm{}-disk{}".format(res_name, VM_ID, disk_id)
 
     res = Resource(name=res_name, uri=datastore.linstor_controllers)
-    res.snapshot_rollback("{}-{}".format(consts.SNAP_PREFIX, snap_ID))
+    res.snapshot_rollback("{}-{}".format(consts.SNAP_PREFIX, snap_id))
 
     util.log_info("Exiting tm/snap_revert")
 

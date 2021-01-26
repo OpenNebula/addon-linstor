@@ -21,8 +21,8 @@ def calculate_space(lin, storage_pool_name, nodes, auto_place):
 
     storage_pools = lin.storage_pool_list_raise(filter_by_stor_pools=[storage_pool_name])
     free_space_by_node = {x.node_name: x.free_space for x in storage_pools.storage_pools if x.free_space}
-    storage_pool_total_MiB = 0
-    storage_pool_free_MiB = 0
+    storage_pool_total_mib = 0
+    storage_pool_free_mib = 0
     if nodes:
         lowest_free_node = nodes[0]
         for node in nodes:
@@ -32,14 +32,14 @@ def calculate_space(lin, storage_pool_name, nodes, auto_place):
                 )
             if free_space_by_node[node].total_capacity < free_space_by_node[node].total_capacity:
                 lowest_free_node = node
-        storage_pool_total_MiB += free_space_by_node[lowest_free_node].total_capacity // 1024
-        storage_pool_free_MiB += free_space_by_node[lowest_free_node].free_capacity // 1024
+        storage_pool_total_mib += free_space_by_node[lowest_free_node].total_capacity // 1024
+        storage_pool_free_mib += free_space_by_node[lowest_free_node].free_capacity // 1024
     else:
         for space_info in free_space_by_node.values():
-            storage_pool_total_MiB += (space_info.total_capacity // int(auto_place)) // 1024
-            storage_pool_free_MiB += (space_info.free_capacity // int(auto_place)) // 1024
+            storage_pool_total_mib += (space_info.total_capacity // int(auto_place)) // 1024
+            storage_pool_free_mib += (space_info.free_capacity // int(auto_place)) // 1024
 
-    return storage_pool_total_MiB - storage_pool_free_MiB, storage_pool_total_MiB, storage_pool_free_MiB
+    return storage_pool_total_mib - storage_pool_free_mib, storage_pool_total_mib, storage_pool_free_mib
 
 
 def node_has_storagepool(uri_list, node, storage_pool):
@@ -331,7 +331,7 @@ def get_rsc_name(target_vm, disk_id):
     """
     disk_source = target_vm.disk_source(disk_id)
     if not disk_source:  # volatile
-        res_name = consts.VOLATILE_PREFIX + "-vm{}-disk{}".format(target_vm.ID, disk_id)
+        res_name = consts.VOLATILE_PREFIX + "-vm{}-disk{}".format(target_vm.id, disk_id)
     else:
         res_name = target_vm.disk_source(disk_id)
 
@@ -339,7 +339,7 @@ def get_rsc_name(target_vm, disk_id):
             if target_vm.disk_type(disk_id) == "CDROM":
                 util.log_info("{} is a non-persistent CDROM image".format(res_name))
             else:
-                res_name = "{}-vm{}-disk{}".format(res_name, target_vm.ID, disk_id)
+                res_name = "{}-vm{}-disk{}".format(res_name, target_vm.id, disk_id)
                 util.log_info(
                     "{} is a non-persistent OS or DATABLOCK image".format(res_name)
                 )
@@ -465,7 +465,7 @@ def resize_if_qcow2(resource, target_vm, disk_id, new_size):
     :param int new_size: new size in mega bytes
     :return:
     """
-    image_data = Image(util.show_image(target_vm.disk_image_ID(disk_id)))
+    image_data = Image(util.show_image(target_vm.disk_image_id(disk_id)))
     if image_data.format == "qcow2" or image_data.driver == "qcow2":
         primary_node = get_in_use_node(resource)
         resize_node = primary_node if primary_node else resource.diskful_nodes()[0]

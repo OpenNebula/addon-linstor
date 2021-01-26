@@ -171,7 +171,7 @@ class TestDriverAction(unittest.TestCase):
     def test_create_driver_action(self):
         driver_action_test = driver_action.DriverAction(TEST_XML)
 
-        self.assertEqual(driver_action_test.image.ID, "0")
+        self.assertEqual(driver_action_test.image.id, "0")
         self.assertEqual(driver_action_test.image.size, "40")
 
         self.assertEqual(driver_action_test.datastore.ds_mad, "fs")
@@ -180,10 +180,10 @@ class TestDriverAction(unittest.TestCase):
     def test_stat_xml(self):
         driver_action_test = driver_action.DriverAction(STAT_XML)
 
-        self.assertEqual(driver_action_test.datastore.ID, "106")
+        self.assertEqual(driver_action_test.datastore.id, "106")
 
     def test_monitor_xml(self):
         driver_action_test = driver_action.DriverAction(MONITOR_XML)
 
-        self.assertEqual(driver_action_test.datastore.ID, "117")
+        self.assertEqual(driver_action_test.datastore.id, "117")
         self.assertEqual(driver_action_test.datastore.storage_pool, "thin")

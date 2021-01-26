@@ -30,7 +30,7 @@ from one.vm import Vm
 
 SRC = sys.argv[1]
 DST = sys.argv[2]
-VM_ID = sys.argv[3]
+VM_ID = int(sys.argv[3])
 DS_ID = sys.argv[4]
 
 

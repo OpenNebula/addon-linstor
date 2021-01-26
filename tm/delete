@@ -27,7 +27,7 @@ from one.extender import delete, get_rsc_name, delete_vm_contexts
 from linstor import Resource, LinstorError
 
 DST = sys.argv[1]
-VM_ID = sys.argv[2]
+VM_ID = int(sys.argv[2])
 DS_ID = sys.argv[3]
 
 
@@ -65,7 +65,7 @@ def main():
                 util.log_info(str(le))
     else:
         if target_vm.has_context:
-            del_result = delete_vm_contexts(datastore.linstor_controllers, VM_ID, target_vm.context_ID)
+            del_result = delete_vm_contexts(datastore.linstor_controllers, VM_ID, target_vm.context_id)
 
             for res in del_result:
                 if del_result[res] is not None:

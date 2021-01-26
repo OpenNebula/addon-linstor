@@ -31,7 +31,7 @@ class Image(object):
         return self.xmlstr
 
     @property
-    def ID(self):
+    def id(self):
         """Returns name"""
         try:
             return self._root.find("ID").text
@@ -63,7 +63,7 @@ class Image(object):
             return '""'
 
     @property
-    def datastore_ID(self):
+    def datastore_id(self):
         """Returns name"""
         try:
             return self._root.find("DATASTORE_ID").text
@@ -71,7 +71,7 @@ class Image(object):
             return ""
 
     @property
-    def FS_type(self):
+    def fs_type(self):
         """Returns FS_type"""
         try:
             return self._root.find("FSTYPE").text
@@ -87,7 +87,7 @@ class Image(object):
             return ""
 
     @property
-    def cloning_ID(self):
+    def cloning_id(self):
         """Returns cloning_ID"""
         try:
             return self._root.find("CLONING_ID").text

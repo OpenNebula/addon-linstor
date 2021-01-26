@@ -29,7 +29,7 @@ from one.extender import get_rsc_name, get_device_path
 
 SRC = sys.argv[1]
 DST = sys.argv[2]
-VM_ID = sys.argv[3]
+VM_ID = int(sys.argv[3])
 DS_ID = sys.argv[4]
 
 
@@ -54,9 +54,9 @@ def main():
 
     target_vm = vm.Vm(util.show_vm(VM_ID))
 
-    disk_ID = SRC.split(".")[-1].strip() if "disk." in SRC else None
+    disk_id = SRC.split(".")[-1].strip() if "disk." in SRC else None
 
-    if disk_ID is None:
+    if disk_id is None:
         # this path is executed if used as system ds and as final mv call as the vm directory
         util.ssh_make_path(" ".join([dst_host, dst_dir]))
 
@@ -82,7 +82,7 @@ def main():
             raise RuntimeError("Unable to tar copy to new host")
     else:
         # normal drbd image
-        res_name = get_rsc_name(target_vm, disk_ID)
+        res_name = get_rsc_name(target_vm, disk_id)
 
         res = Resource(name=res_name, uri=datastore.linstor_controllers)
         util.log_info("Active resource '{r}' on destination host: {h}".format(r=res_name, h=dst_host))

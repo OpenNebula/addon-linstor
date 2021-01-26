@@ -195,17 +195,17 @@ TEXT_XML_1 = """
 class TestVMs(unittest.TestCase):
     def test_create_vm(self):
         test_vm = vm.Vm(TEXT_XML_1)
-        self.assertEqual(test_vm.ID, "0")
-        self.assertEqual(["0", "1", "2"], sorted(test_vm.disk_IDs))
+        self.assertEqual(test_vm.id, "0")
+        self.assertEqual(["0", "1", "2"], sorted(test_vm.disk_ids))
 
-        self.assertEqual(test_vm.disk_image_ID("0"), "146")
+        self.assertEqual(test_vm.disk_image_id("0"), "146")
         self.assertEqual(test_vm.disk_target("0"), "hdb")
         self.assertEqual(test_vm.disk_persistent("0"), "YES")
         self.assertEqual(test_vm.disk_save_as("0"), "")
         self.assertEqual(test_vm.disk_type("0"), "FILE")
         self.assertEqual(test_vm.disk_is_clone("0"), "NO")
 
-        self.assertEqual(test_vm.disk_image_ID("2"), "149")
+        self.assertEqual(test_vm.disk_image_id("2"), "149")
         self.assertEqual(test_vm.disk_target("2"), "hdc")
         self.assertEqual(test_vm.disk_persistent("2"), "NO")
         self.assertEqual(test_vm.disk_save_as("2"), "")

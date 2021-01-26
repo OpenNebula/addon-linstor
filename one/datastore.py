@@ -49,7 +49,7 @@ class Datastore(object):
         return self.xmlstr
 
     @property
-    def ID(self):
+    def id(self):
         """Returns ID"""
         return self._ID
 

@@ -106,7 +106,7 @@ class TestDriverAction(unittest.TestCase):
     def test_create_datastore(self):
         test_datastore = datastore.Datastore(TEST_XML_1)
 
-        self.assertEqual(test_datastore.ID, "1")
+        self.assertEqual(test_datastore.id, "1")
         self.assertEqual(test_datastore.name, "default")
         self.assertEqual(test_datastore.ds_mad, "fs")
         self.assertEqual(test_datastore.tm_mad, "shared")
@@ -119,7 +119,7 @@ class TestDriverAction(unittest.TestCase):
 
         test_datastore = datastore.Datastore(TEST_XML_2)
 
-        self.assertEqual(test_datastore.ID, "100")
+        self.assertEqual(test_datastore.id, "100")
         self.assertEqual(test_datastore.name, "fantastic-datastore")
         self.assertEqual(test_datastore.ds_mad, "linstor")
         self.assertEqual(test_datastore.tm_mad, "shared")

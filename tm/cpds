@@ -28,7 +28,7 @@ from one.datastore import Datastore
 
 SRC = sys.argv[1]
 DST = sys.argv[2]  # clone name
-VM_ID = sys.argv[4]
+VM_ID = int(sys.argv[4])
 DS_ID = sys.argv[5]
 
 

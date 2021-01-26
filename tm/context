@@ -78,7 +78,7 @@ def main():
         iso_size = os.path.getsize(iso_file)
         iso_size_mb = int(iso_size / 1024 / 1024) + 1
 
-        c_id = get_current_context_id(datastore.linstor_controllers, VM_ID, disk_id)
+        c_id = get_current_context_id(datastore.linstor_controllers, int(VM_ID), int(disk_id))
         # del_result = delete_vm_contexts(datastore.linstor_controllers, VM_ID, disk_id)
         # for res in del_result:
         #     if del_result[res] is not None:

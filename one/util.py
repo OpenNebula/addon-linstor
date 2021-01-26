@@ -276,6 +276,12 @@ def migrate_other(string_args):
 
 
 def show_vm(vm_id):
+    """
+    Executes the onevm show command and returns the xml output.
+
+    :param int vm_id: vm id number
+    :return: XML output from onevm show command
+    """
     return _get_subp_out(["onevm", "show", "-x", str(vm_id)])
 
 

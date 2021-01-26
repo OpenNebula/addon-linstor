@@ -51,7 +51,7 @@ def main():
     src_host = util.arg_host(SRC_HOST).strip()
     dst_dir = util.arg_path(DST_PATH).strip()
 
-    for disk in target_vm.disk_IDs:
+    for disk in target_vm.disk_ids:
         if target_vm.tm_mad(disk) == "linstor":
             image_datastore = Datastore(util.show_ds(target_vm.disk_datastore_id(disk)))
             res_name = get_rsc_name(target_vm, disk)
@@ -71,7 +71,7 @@ def main():
     if target_vm.has_context:
         datastore = Datastore(util.show_ds(DS_ID))
 
-        context_id = target_vm.context_ID
+        context_id = target_vm.context_id
         context_path = "{}/disk.{}".format(dst_dir, context_id)
         if datastore.tm_mad != "linstor":
             # [phil] I guess this does not belong here, but I want working live

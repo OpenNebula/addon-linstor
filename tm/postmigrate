@@ -50,7 +50,7 @@ def main():
     src_host = util.arg_host(SRC_HOST).strip()
     dst_dir = util.arg_path(DST_PATH).strip()
 
-    for disk in target_vm.disk_IDs:
+    for disk in target_vm.disk_ids:
         if target_vm.tm_mad(disk) == "linstor":
             image_datastore = Datastore(util.show_ds(target_vm.disk_datastore_id(disk)))
             res_name = get_rsc_name(target_vm, disk)
@@ -63,8 +63,8 @@ def main():
     if datastore.tm_mad == "linstor":
         if target_vm.has_context:
             # deactivate context image too
-            context_id = target_vm.context_ID
-            res_name = get_current_context(datastore.linstor_controllers, VM_ID, context_id)
+            context_id = target_vm.context_id
+            res_name = get_current_context(datastore.linstor_controllers, int(VM_ID), context_id)
             res = Resource(name=res_name, uri=datastore.linstor_controllers)
             res.deactivate(src_host)
             res.allow_two_primaries = False

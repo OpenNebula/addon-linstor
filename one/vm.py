@@ -31,7 +31,7 @@ class Vm(object):
             self._disks[disk.find("DISK_ID").text] = disk
 
     @property
-    def ID(self):
+    def id(self):
         """Returns name"""
         try:
             return self._root.find("ID").text
@@ -39,7 +39,7 @@ class Vm(object):
             return ""
 
     @property
-    def disk_IDs(self):
+    def disk_ids(self):
         """Returns IDs of all attached disks."""
         return list(self._disks)
 
@@ -48,7 +48,7 @@ class Vm(object):
         return self._root.find("TEMPLATE").find("CONTEXT") is not None
 
     @property
-    def context_ID(self):
+    def context_id(self):
         return self._root.find("TEMPLATE").find("CONTEXT").find("DISK_ID").text
 
     def disk(self, disk_id):
@@ -62,21 +62,21 @@ class Vm(object):
             return self._disks[disk_id]
         except KeyError:
             util.error_message(
-                "couldn't find disk {} on vm {}".format(disk_id, self.ID)
+                "couldn't find disk {} on vm {}".format(disk_id, self.id)
             )
             raise
 
-    def disk_image_ID(self, disk_ID):
+    def disk_image_id(self, disk_id):
         """Returns disk_image_ID"""
         try:
-            return self.disk(disk_ID).find("IMAGE_ID").text
+            return self.disk(disk_id).find("IMAGE_ID").text
         except AttributeError:
             return ""
 
-    def disk_type(self, disk_ID):
+    def disk_type(self, disk_id):
         """Returns disk_type"""
         try:
-            return self.disk(disk_ID).find("TYPE").text
+            return self.disk(disk_id).find("TYPE").text
         except AttributeError:
             return ""
 
@@ -92,38 +92,38 @@ class Vm(object):
         except AttributeError:
             return None
 
-    def disk_save_as(self, disk_ID):
+    def disk_save_as(self, disk_id):
         """Returns disk_save_as"""
         try:
-            return self.disk(disk_ID).find("SAVE_AS").text
+            return self.disk(disk_id).find("SAVE_AS").text
         except AttributeError:
             return ""
 
-    def disk_target(self, disk_ID):
+    def disk_target(self, disk_id):
         """Returns disk_target"""
         try:
-            return self.disk(disk_ID).find("TARGET").text
+            return self.disk(disk_id).find("TARGET").text
         except AttributeError:
             return ""
 
-    def disk_persistent(self, disk_ID):
+    def disk_persistent(self, disk_id):
         """Returns disk_persistent"""
         try:
-            return self.disk(disk_ID).find("PERSISTENT").text
+            return self.disk(disk_id).find("PERSISTENT").text
         except AttributeError:
             return ""
 
-    def disk_is_clone(self, disk_ID):
+    def disk_is_clone(self, disk_id):
         """Returns disk_persistent"""
         try:
-            return self.disk(disk_ID).find("CLONE").text
+            return self.disk(disk_id).find("CLONE").text
         except AttributeError:
             return ""
 
-    def disk_source(self, disk_ID):
+    def disk_source(self, disk_id):
         """Returns disk_source"""
         try:
-            return self.disk(disk_ID).find("SOURCE").text
+            return self.disk(disk_id).find("SOURCE").text
         except AttributeError:
             return ""
 
@@ -139,9 +139,9 @@ class Vm(object):
         except AttributeError:
             return None
 
-    def tm_mad(self, disk_ID):
+    def tm_mad(self, disk_id):
         """Returns the tm driver identifier"""
         try:
-            return self.disk(disk_ID).find("TM_MAD").text
+            return self.disk(disk_id).find("TM_MAD").text
         except AttributeError:
             return None

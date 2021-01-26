@@ -29,7 +29,7 @@ from one.extender import get_rsc_name, resize_disk
 
 SRC = sys.argv[1]
 SIZE = sys.argv[2]
-VM_ID = sys.argv[3]
+VM_ID = int(sys.argv[3])
 DATASTORE_ID = sys.argv[4]
 
 

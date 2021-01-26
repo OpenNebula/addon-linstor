@@ -163,14 +163,14 @@ SNAP_DELETE_XML = """
 class TestImage(unittest.TestCase):
     def test_create_image(self):
         test_image = image.Image(TEXT_XML_1)
-        self.assertEqual(test_image.ID,  "0")
+        self.assertEqual(test_image.id, "0")
         self.assertEqual(test_image.size,  "40")
-        self.assertEqual(test_image.datastore_ID,  "1")
+        self.assertEqual(test_image.datastore_id, "1")
 
         test_image = image.Image(TEXT_XML_2)
-        self.assertEqual(test_image.ID,  "5")
+        self.assertEqual(test_image.id, "5")
         self.assertEqual(test_image.size,  "5830")
-        self.assertEqual(test_image.datastore_ID,  "100")
+        self.assertEqual(test_image.datastore_id, "100")
 
     def test_snap_delete(self):
         test_image = image.Image(SNAP_DELETE_XML)

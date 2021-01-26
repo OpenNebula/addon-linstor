@@ -40,7 +40,7 @@ def main():
 
     resource_name = "{}-{}".format(consts.IMAGE_PREFIX, IMAGE_ID)
 
-    if driver.image.FS_type == "save_as":
+    if driver.image.fs_type == "save_as":
         util.log_info("No need to create new image, exiting.")
         print(resource_name)
         sys.exit(0)
@@ -68,10 +68,10 @@ def main():
 
     res_host = random.choice(list(res.diskful_nodes()))
 
-    if driver.image.FS_type and driver.image.FS_type != "raw":
+    if driver.image.fs_type and driver.image.fs_type != "raw":
         register_command = 'set -e ; export PATH=/usr/sbin:/sbin:$PATH ; $(mkfs_command "{0}" "{1}" "{2}")'.format(
             get_device_path(res),
-            driver.image.FS_type,
+            driver.image.fs_type,
             SizeCalc.convert(res.volumes[0].size, SizeCalc.UNIT_B, SizeCalc.UNIT_MiB))
 
         rc = util.ssh_exec_and_log(
@@ -83,7 +83,7 @@ def main():
             res.delete()
             sys.exit(1)
 
-        util.log_info("Created filesystem {} on {} at {}".format(driver.image.FS_type, res, res_host))
+        util.log_info("Created filesystem {} on {} at {}".format(driver.image.fs_type, res, res_host))
     util.log_info("Exiting datastore mkfs.")
 
     print(res.name)
