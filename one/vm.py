@@ -139,6 +139,30 @@ class Vm(object):
         except AttributeError:
             return None
 
+    def disk_format(self, disk_id):
+        """
+        Return the disk format, of given disk id
+        :param str disk_id: disk id as str
+        :return: disk format
+        :rtype: str
+        """
+        try:
+            return self.disk(disk_id).find("FORMAT").text
+        except AttributeError:
+            return None
+
+    def disk_driver(self, disk_id):
+        """
+        Return the disk format, of given disk id
+        :param str disk_id: disk id as str
+        :return: disk driver
+        :rtype: str
+        """
+        try:
+            driver = self.disk(disk_id).find("DRIVER").text
+        except AttributeError:
+            return None
+
     def tm_mad(self, disk_id):
         """Returns the tm driver identifier"""
         try:
