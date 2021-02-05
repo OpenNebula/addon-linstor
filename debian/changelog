@@ -1,3 +1,13 @@
+linstor-opennebula (1.0.10-1) experimental; urgency=medium
+
+  * extender: dd copy, use fsync instead of sync
+  * util: improve ssh_exec_and_log function
+  * simplify multiline bash scripts
+  * improve code: PEP8
+  * fix resize for volatile disks
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Fri, 05 Feb 2021 06:49:05 +0000
+
 linstor-opennebula (1.0.9-1) experimental; urgency=medium
 
   * clone: fix prefer node mode with clone mode snapshot, using wrong stor [...]
