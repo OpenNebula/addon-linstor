@@ -215,7 +215,7 @@ def rm_shared_safe(host, path):
     """
     fstype = ssh_direct(host, 'stat --file-system --format=%T "{dst}"'.format(dst=path)).strip()
 
-    if fstype and fstype not in ['nfs']:
+    if fstype and fstype not in ['nfs', 'fuseblk']:
         unlink_file(host, path)
     else:
         log_info("filesystem is shared('{fs}'), not deleting: {p}".format(fs=fstype, p=path))
