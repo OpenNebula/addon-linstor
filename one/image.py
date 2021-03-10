@@ -34,7 +34,7 @@ class Image(object):
     def id(self):
         """Returns name"""
         try:
-            return self._root.find("ID").text
+            return self._root.find("ID").text or ""
         except AttributeError:
             return ""
 
@@ -42,7 +42,7 @@ class Image(object):
     def size(self):
         """Returns name"""
         try:
-            return self._root.find("SIZE").text
+            return self._root.find("SIZE").text or ""
         except AttributeError:
             return ""
 
@@ -50,7 +50,7 @@ class Image(object):
     def source(self):
         """Returns source"""
         try:
-            return self._root.find("SOURCE").text
+            return self._root.find("SOURCE").text or ""
         except AttributeError:
             return '""'
 
@@ -58,7 +58,7 @@ class Image(object):
     def target_snap(self):
         """Returns target_snap"""
         try:
-            return self._root.find("TARGET_SNAPSHOT").text
+            return self._root.find("TARGET_SNAPSHOT").text or ""
         except AttributeError:
             return '""'
 
@@ -66,7 +66,7 @@ class Image(object):
     def datastore_id(self):
         """Returns name"""
         try:
-            return self._root.find("DATASTORE_ID").text
+            return self._root.find("DATASTORE_ID").text or ""
         except AttributeError:
             return ""
 
@@ -74,7 +74,7 @@ class Image(object):
     def fs_type(self):
         """Returns FS_type"""
         try:
-            return self._root.find("FSTYPE").text
+            return self._root.find("FSTYPE").text or ""
         except AttributeError:
             return ""
 
@@ -82,7 +82,7 @@ class Image(object):
     def path(self):
         """Returns path"""
         try:
-            return self._root.find("PATH").text
+            return self._root.find("PATH").text or ""
         except AttributeError:
             return ""
 
@@ -90,7 +90,7 @@ class Image(object):
     def cloning_id(self):
         """Returns cloning_ID"""
         try:
-            return self._root.find("CLONING_ID").text
+            return self._root.find("CLONING_ID").text or ""
         except AttributeError:
             return ""
 
@@ -98,7 +98,7 @@ class Image(object):
     def md5(self):
         """Returns md5"""
         try:
-            return self._root.find("TEMPLATE").find("MD5").text
+            return self._root.find("TEMPLATE").find("MD5").text or ""
         except AttributeError:
             return '""'
 
@@ -106,7 +106,7 @@ class Image(object):
     def sha1(self):
         """Returns sha1"""
         try:
-            return self._root.find("TEMPLATE").find("SHA1").text
+            return self._root.find("TEMPLATE").find("SHA1").text or ""
         except AttributeError:
             return '""'
 
@@ -114,7 +114,7 @@ class Image(object):
     def no_decompress(self):
         """Returns no_decompress"""
         try:
-            return self._root.find("TEMPLATE").find("NO_DECOMPRESS").text
+            return self._root.find("TEMPLATE").find("NO_DECOMPRESS").text or ""
         except AttributeError:
             return '""'
 
@@ -122,7 +122,7 @@ class Image(object):
     def limit_transfer_bw(self):
         """Returns limit_transfer_bw"""
         try:
-            return self._root.find("TEMPLATE").find("LIMIT_TRANSFER_BW").text
+            return self._root.find("TEMPLATE").find("LIMIT_TRANSFER_BW").text or ""
         except AttributeError:
             return '""'
 

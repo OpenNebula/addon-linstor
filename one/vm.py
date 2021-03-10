@@ -34,7 +34,7 @@ class Vm(object):
     def id(self):
         """Returns name"""
         try:
-            return self._root.find("ID").text
+            return self._root.find("ID").text or ""
         except AttributeError:
             return ""
 
@@ -69,14 +69,14 @@ class Vm(object):
     def disk_image_id(self, disk_id):
         """Returns disk_image_ID"""
         try:
-            return self.disk(disk_id).find("IMAGE_ID").text
+            return self.disk(disk_id).find("IMAGE_ID").text or ""
         except AttributeError:
             return ""
 
     def disk_type(self, disk_id):
         """Returns disk_type"""
         try:
-            return self.disk(disk_id).find("TYPE").text
+            return self.disk(disk_id).find("TYPE").text or ""
         except AttributeError:
             return ""
 
@@ -95,35 +95,35 @@ class Vm(object):
     def disk_save_as(self, disk_id):
         """Returns disk_save_as"""
         try:
-            return self.disk(disk_id).find("SAVE_AS").text
+            return self.disk(disk_id).find("SAVE_AS").text or ""
         except AttributeError:
             return ""
 
     def disk_target(self, disk_id):
         """Returns disk_target"""
         try:
-            return self.disk(disk_id).find("TARGET").text
+            return self.disk(disk_id).find("TARGET").text or ""
         except AttributeError:
             return ""
 
     def disk_persistent(self, disk_id):
         """Returns disk_persistent"""
         try:
-            return self.disk(disk_id).find("PERSISTENT").text
+            return self.disk(disk_id).find("PERSISTENT").text or ""
         except AttributeError:
             return ""
 
     def disk_is_clone(self, disk_id):
         """Returns disk_persistent"""
         try:
-            return self.disk(disk_id).find("CLONE").text
+            return self.disk(disk_id).find("CLONE").text or ""
         except AttributeError:
             return ""
 
     def disk_source(self, disk_id):
         """Returns disk_source"""
         try:
-            return self.disk(disk_id).find("SOURCE").text
+            return self.disk(disk_id).find("SOURCE").text or ""
         except AttributeError:
             return ""
 
