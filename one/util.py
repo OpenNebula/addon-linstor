@@ -327,6 +327,37 @@ def detect_image_format(host, path):
     return img_data["format"]
 
 
+def _get_one_version_str():
+    return subprocess.check_output(["onecluster", "show", "-V"]).decode()
+
+
+def _one_version_parse(version_info_str=None):
+    """
+    Returns the opennebula version as tuple.
+
+    :param str version_info_str: string with OpenNebula version info
+    :return: Tuple with major, minor, patch version
+    :rtype: (int, int, int)
+    """
+    output = _get_one_version_str() if version_info_str is None else version_info_str
+    m = re.search(r"OpenNebula (\d+)\.(\d+)\.(\d+)", output)
+    if m:
+        return int(m.group(1)), int(m.group(2)), int(m.group(3))
+    return 0, 0, 0
+
+
+def one_version_larger(major=5, minor=0, patch=0, version_info_str=None):
+    inst_major, inst_minor, inst_patch = _one_version_parse(version_info_str)
+    if inst_major > major:
+        return True
+    elif major == inst_major:
+        if inst_minor > minor:
+            return True
+        if inst_minor == minor and inst_patch > patch:
+            return True
+    return False
+
+
 def get_copy_command(string_args):
     return DOWNLOADER + " " + string_args
 

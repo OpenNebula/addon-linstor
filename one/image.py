@@ -79,6 +79,14 @@ class Image(object):
             return ""
 
     @property
+    def fs(self):
+        """Returns filesystem"""
+        try:
+            return self._root.find("FS").text or ""
+        except AttributeError:
+            return ""
+
+    @property
     def path(self):
         """Returns path"""
         try:
@@ -134,18 +142,30 @@ class Image(object):
         :rtype: str
         """
         try:
-            return self._root.find("TEMPLATE").find("FORMAT").text
+            return self._root.find("FORMAT").text or ""
         except AttributeError:
             return ''
 
     @property
-    def driver(self):
+    def template_format(self):
+        """
+        Format of the image
+        :return: Image format info string, e.g. raw, qcow2
+        :rtype: str
+        """
+        try:
+            return self._root.find("TEMPLATE").find("FORMAT").text or ""
+        except AttributeError:
+            return ''
+
+    @property
+    def template_driver(self):
         """
         Driver of the image
         :return: Image driver info string, e.g. raw, qcow2
         :rtype: str
         """
         try:
-            return self._root.find("TEMPLATE").find("DRIVER").text
+            return self._root.find("TEMPLATE").find("DRIVER").text or ""
         except AttributeError:
             return ''

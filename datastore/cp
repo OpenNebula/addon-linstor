@@ -98,13 +98,14 @@ def main():
     if res.is_thin():
         conv_opts.append("sparse")
 
+    device_path = get_device_path(res)
     command = [
         copy_command,
         "|",
         "ssh",
         dest_node,
         "dd",
-        "of={}".format(get_device_path(res)),
+        "of={}".format(device_path),
         "bs=2M",
         "oflag=direct"
     ]
@@ -121,9 +122,11 @@ def main():
         res.delete()
         sys.exit(1)
 
+    qemu_format = util.detect_image_format(dest_node, device_path)
+
     util.log_info("Exiting datastore cp")
 
-    print(res.name)
+    print(res.name, qemu_format)
 
 
 if __name__ == "__main__":

@@ -469,7 +469,7 @@ def resize_if_qcow2(resource, target_vm, disk_id, new_size):
     if image_id:
         image_data = Image(util.show_image(image_id))
         fmt = image_data.format
-        driver = image_data.driver
+        driver = image_data.template_driver
     else:
         fmt = target_vm.disk_format(disk_id)
         driver = target_vm.disk_driver(disk_id)

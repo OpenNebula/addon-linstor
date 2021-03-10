@@ -22,6 +22,15 @@ from one import util
 
 
 class TestUtils(unittest.TestCase):
+    VERSION_INFO_5_12_0 = """OpenNebula 5.12.0.3
+    Copyright 2002-2020, OpenNebula Project, OpenNebula Systems"""
+
+    VERSION_INFO_5_13_80 = """OpenNebula 5.13.80
+Copyright 2002-2021, OpenNebula Project, OpenNebula Systems"""
+
+    VERSION_INFO_6_0_0 = """OpenNebula 6.0.0
+    Copyright 2002-2021, OpenNebula Project, OpenNebula Systems"""
+
     def test__source(self):
 
         self.assertEqual(util._source("foo.sh", "foo_cmd"), [
@@ -100,3 +109,12 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(util.arg_path(
             "oneb203.linbit:/var/lib/one//datastores/112/372/disk.0"),
             "/var/lib/one/datastores/112/372/disk.0")
+
+    def test_version_checks(self):
+        self.assertFalse(util.one_version_larger(5, 12, 0, self.VERSION_INFO_5_12_0))
+        self.assertFalse(util.one_version_larger(5, 12, 1, self.VERSION_INFO_5_12_0))
+        self.assertFalse(util.one_version_larger(5, 13, 0, self.VERSION_INFO_5_12_0))
+        self.assertTrue(util.one_version_larger(5, 11, 0, self.VERSION_INFO_5_12_0))
+
+        self.assertTrue(util.one_version_larger(5, 12, 0, self.VERSION_INFO_5_13_80))
+        self.assertTrue(util.one_version_larger(5, 12, 0, self.VERSION_INFO_6_0_0))
