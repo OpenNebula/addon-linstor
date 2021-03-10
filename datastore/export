@@ -47,83 +47,31 @@ def main():
         driver.datastore.staging_dirs, "{}-{}".format(res.name, APP_ID)
     )
 
-    util.ssh_monitor_and_log(
-        " ".join(
-            [
-                dst_host,
-                " ".join(
-                    [
-                        "dd",
-                        "if={}".format(get_device_path(res)),
-                        "of={}".format(output_file),
-                        "bs=4M",
-                    ]
-                ),
-                "could not dd image",
-            ]
-        )
-    )
+    rc, _, err = util.ssh_monitor_and_log(
+        host=dst_host,
+        cmd="dd if={} of={} bs=4M oflag=fsync".format(get_device_path(res), output_file),
+        error_msg="could not dd image")
 
-    img_format = util.ssh_monitor_and_log(
-        " ".join(
-            [
-                dst_host,
-                " ".join(
-                    [
-                        "qemu-img",
-                        "info",
-                        output_file,
-                        "|",
-                        "grep",
-                        "file format",
-                        "|",
-                        "cut",
-                        "-d",
-                        "' '",
-                        "-f3",
-                    ]
-                ),
-                "could not export file format",
-            ]
-        )
-    )
+    if rc != 0:
+        raise RuntimeError("Unable to dd export image file: " + err)
+
+    img_format = util.detect_image_format(dst_host, output_file)
 
     if not driver.image.size:
-        img_size = util.ssh_monitor_and_log(
-            " ".join(
-                [
-                    dst_host,
-                    " ".join(["du", "-LM", output_file, "|", "cut", "-f1"]),
-                    "could not determine the size of the exported file",
-                ]
-            )
+        rc, img_size, _ = util.ssh_monitor_and_log(
+            host=dst_host,
+            cmd=" ".join(["du", "-LM", output_file, "|", "cut", "-f1"]),
+            error_msg="could not determine the size of the exported file"
         )
     else:
         img_size = driver.image.size
 
-    img_checksum = util.ssh_monitor_and_log(
-        " ".join(
-            [
-                dst_host,
-                " ".join(
-                    [
-                        "openssl",
-                        "dgst",
-                        "-md5",
-                        output_file,
-                        "|",
-                        "cut",
-                        "-d",
-                        "' '",
-                        "-f2",
-                    ]
-                ),
-                "could not determine checksum",
-            ]
-        )
-    )
+    rc, img_checksum, _ = util.ssh_monitor_and_log(
+        host=dst_host,
+        cmd="md5sum {} | cut -d ' ' -f1".format(output_file),
+        error_msg="could not determine checksum")
 
-    if not img_checksum:
+    if rc != 0 or not img_checksum:
         util.error_message("could not generate MD5SUM of the exported file")
         sys.exit(1)
 

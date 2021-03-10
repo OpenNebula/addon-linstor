@@ -16,7 +16,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-
 from __future__ import print_function
 
 import sys
@@ -24,6 +23,8 @@ import os
 import subprocess
 import syslog
 import traceback
+import json
+import re
 
 REMOTES_DIR = "/var/lib/one/remotes/"
 
@@ -131,7 +132,27 @@ def ssh_exec_and_log(host, cmd, error_msg):
     return _wait_for_subp(_source(SCRIPTS_COMMON, "ssh_exec_and_log", " ".join(ssh_cmd)), log=False)
 
 
-def ssh_exec_and_log_with_out(host, cmd, error_msg):
+def ssh_exec_and_log_with_err(host, cmd, error_msg):
+    """
+    Runs cmd and logs into syslog and returns return code and stderr
+    :param str host: Where ssh should connect to
+    :param str cmd: command to run on host
+    :param str error_msg: log message if error occurs
+    :return: Tuple of [returncode, stderr]
+    :rtype: (int, str)
+    """
+    log_info("ssh '{h}' cmd: {c}".format(h=host, c=cmd))
+    ssh_cmd = [
+        '"{}"'.format(host),
+        '"{}"'.format(cmd),
+        '"{}"'.format(error_msg)
+    ]
+    # ssh_exec_and_log doesn't return stdout
+    rc, _, err = _get_subp_out_base(_source(SCRIPTS_COMMON, "ssh_exec_and_log", " ".join(ssh_cmd)), log=False)
+    return rc, err
+
+
+def ssh_monitor_and_log(host, cmd, error_msg):
     """
     Runs cmd and logs into syslog and returns return code, output and stderr
     :param str host: Where ssh should connect to
@@ -146,11 +167,7 @@ def ssh_exec_and_log_with_out(host, cmd, error_msg):
         '"{}"'.format(cmd),
         '"{}"'.format(error_msg)
     ]
-    return _get_subp_out_base(_source(SCRIPTS_COMMON, "ssh_exec_and_log", " ".join(ssh_cmd)), log=False)
-
-
-def ssh_monitor_and_log(string_args):
-    return _get_subp_out(_source(SCRIPTS_COMMON, "ssh_monitor_and_log", string_args))
+    return _get_subp_out_base(_source(SCRIPTS_COMMON, "ssh_monitor_and_log", " ".join(ssh_cmd)), log=False)
 
 
 def exec_and_log(cmd, message):
@@ -297,6 +314,17 @@ def fs_size(string_args):
     return _get_subp_out(
         _source(LIBFS, 'UTILS_PATH="{}" fs_size'.format(UTILS_DIR), string_args)
     )
+
+
+def detect_image_format(host, path):
+    cmd = "$QEMU_IMG info --output json {p}".format(p=path)
+    rc, stdout, stderr = ssh_monitor_and_log(host, cmd, "qemu-img info failed for " + path)
+
+    if rc != 0:
+        raise RuntimeError("Error: qemu-img info failed for {}; Message {}".format(path, stdout + stderr))
+
+    img_data = json.loads(stdout)
+    return img_data["format"]
 
 
 def get_copy_command(string_args):
