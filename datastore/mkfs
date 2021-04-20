@@ -74,25 +74,27 @@ def main():
 
     res_host = random.choice(list(res.diskful_nodes()))
 
-    mkfs_cmd = 'set -e ; export PATH=/usr/sbin:/sbin:$PATH ; $(mkfs_command "{0}" "{1}" "{2}")'.format(
+    mkfs_cmd = 'mkfs_command "{0}" "{1}" "{2}"'.format(
         device_path,
         format_,
         SizeCalc.convert(res.volumes[0].size, SizeCalc.UNIT_B, SizeCalc.UNIT_MiB))
 
     if is_version6:
-        mkfs_cmd = 'set -e ; export PATH=/usr/sbin:/sbin:$PATH ; \
-source {remotes}etc/datastore/datastore.conf ; \
-FS_OPTS=$(eval $(echo "echo \\$FS_OPTS_{format}")) ; \
-$(mkfs_command "{devp}" "{format}" "{size}" "$SUPPORTED_FS" "{fs}" "$FS_OPTS")'.format(
+        mkfs_cmd = 'source {remotes}etc/datastore/datastore.conf ; \
+FS_OPTS=$(eval $(echo "echo \\$FS_OPTS_{fs}")) ; \
+mkfs_command "{devp}" "{format}" "{size}" "$SUPPORTED_FS" "{fs}" "$FS_OPTS"'.format(
             devp=device_path,
             format=format_,
             size=SizeCalc.convert(res.volumes[0].size, SizeCalc.UNIT_B, SizeCalc.UNIT_MiB),
             fs=driver.image.fs,
             remotes=util.REMOTES_DIR)
 
+    output = util.exec_local_with_out(mkfs_cmd)
+    output = 'set -e\nexport PATH=/usr/sbin:/sbin:$PATH\n' + output
+
     rc = util.ssh_exec_and_log(
         host=res_host,
-        cmd=mkfs_cmd,
+        cmd=output,
         error_msg="Error mkfs_command for resource {}, on {}".format(res, res_host))
 
     if int(rc) != 0:

@@ -103,6 +103,14 @@ def _get_subp_out(cmd):
     return out
 
 
+def exec_local_with_out(cmd):
+    """
+    :param str cmd:
+    :return:
+    """
+    return _get_subp_out(_source(SCRIPTS_COMMON, cmd))
+
+
 def ssh_direct(host, cmd):
     """
     Executes the given cmd on the host and returns the output of the command.
