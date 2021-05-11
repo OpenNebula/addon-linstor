@@ -92,6 +92,7 @@ def deploy(
             definitions_only=bool(prefer_node)
         )
         if prefer_node:
+            resource.placement.redundancy = None  # force resource group values, default would be 2
             resource.placement.storage_pool = storage_pool
             if node_has_storagepool(linstor_controllers, prefer_node, storage_pool):
                 resource.diskful(prefer_node)
