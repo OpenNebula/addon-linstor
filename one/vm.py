@@ -61,7 +61,7 @@ class Vm(object):
         try:
             return self._disks[disk_id]
         except KeyError:
-            util.error_message(
+            util.log_error(
                 "couldn't find disk {} on vm {}".format(disk_id, self.id)
             )
             raise

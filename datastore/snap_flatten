@@ -38,11 +38,11 @@ def main():
         storage_pool_name = get_storage_pool_name(lin, driver.datastore)
         stor_pool_resp = lin.storage_pool_list_raise(filter_by_stor_pools=[storage_pool_name])
         if len(stor_pool_resp.storage_pools) == 0:
-            util.error_message("Unable to query storage pool")
+            util.log_error("Unable to query storage pool")
             sys.exit(1)
 
         if stor_pool_resp.storage_pools[0].provider_kind.startswith("ZFS"):
-            util.error_message("Cannot flatten snapshots with ZFS storage pool")
+            util.log_error("Cannot flatten snapshots with ZFS storage pool")
             sys.exit(2)
 
     tmp_res_name = driver.image.source + "-flatten"

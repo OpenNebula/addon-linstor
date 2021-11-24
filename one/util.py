@@ -49,7 +49,7 @@ def _source(file, command, string_args=None):
     return exec_string
 
 
-def error_message(msg):
+def log_error(msg):
     syslog.syslog(syslog.LOG_ERR, "ERROR {}".format(msg))
 
 
@@ -72,7 +72,7 @@ def _wait_for_subp(cmd, log=True):
     _, err = proc.communicate()
 
     if proc.returncode != 0:
-        error_message("command {} failed: {}".format(cmd, err))
+        log_error("command {} failed: {}".format(cmd, err))
 
     return proc.returncode
 
@@ -97,7 +97,7 @@ def _get_subp_out(cmd):
     rc, out, err = _get_subp_out_base(cmd)
 
     if rc != 0:
-        error_message("command {} failed: {}".format(cmd, err))
+        log_error("command {} failed: {}".format(cmd, err))
         raise subprocess.CalledProcessError(returncode=rc, cmd=cmd, output=out, stderr=err)
 
     return out
@@ -182,7 +182,7 @@ def exec_and_log(cmd, message):
     rc = _wait_for_subp(["bash", "-c", cmd])
 
     if int(rc) != 0:
-        error_message(message)
+        log_error(message)
 
     return rc
 
@@ -374,12 +374,12 @@ def run_main(main_func):
     try:
         main_func()
     except subprocess.CalledProcessError as cpe:
-        error_message(traceback.format_exc())
+        log_error(traceback.format_exc())
         traceback.print_exc(file=sys.stderr)
         print("ERROR: Command {c} returned error: {o}".format(c=cpe.cmd, o=cpe.stdout + cpe.stderr), file=sys.stderr)
         sys.exit(2)
     except Exception as err:
-        error_message(traceback.format_exc())
+        log_error(traceback.format_exc())
         traceback.print_exc(file=sys.stderr)
         print("ERROR: " + str(err), file=sys.stderr)
         sys.exit(1)

@@ -72,7 +72,7 @@ def main():
         error_msg="could not determine checksum")
 
     if rc != 0 or not img_checksum:
-        util.error_message("could not generate MD5SUM of the exported file")
+        util.log_error("could not generate MD5SUM of the exported file")
         sys.exit(1)
 
     print(

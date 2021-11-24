@@ -76,12 +76,12 @@ def main():
         )
 
         if int(util.check_restricted(driver.image.path)) == 1:
-            util.error_message(
+            util.log_error(
                 "Not allowed to copy images from {}".format(
                     driver.datastore.restricted_dirs
                 )
             )
-            util.error_message(
+            util.log_error(
                 "Not allowed to copy image file {}".format(driver.image.path)
             )
 
