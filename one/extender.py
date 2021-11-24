@@ -172,27 +172,6 @@ def delete_vm_contexts(uri_list, vm_id, disk_id):
     return del_result
 
 
-class CloneMode(object):
-    SNAPSHOT = 1
-    COPY = 2
-
-    __STR_MAP = {
-        "snapshot": SNAPSHOT,
-        "copy": COPY
-    }
-
-    @classmethod
-    def from_str(cls, clone_mode):
-        return cls.__STR_MAP.get(clone_mode)
-
-    @classmethod
-    def to_str(cls, clone_mode):
-        for x in cls.__STR_MAP:
-            if cls.__STR_MAP[x] == clone_mode:
-                return x
-        return None
-
-
 def get_in_use_node(resource):
     """
     Returns the node that currently has the resource primary.
@@ -216,7 +195,6 @@ def clone(
         place_nodes,
         auto_place_count,
         resource_group=None,
-        mode=CloneMode.SNAPSHOT,
         prefer_node=None,
         new_size=None):
     """
@@ -227,47 +205,34 @@ def clone(
     :param list[str] place_nodes: deployment nodes string, e.g. "alpha bravo charly"
     :param int auto_place_count:
     :param Optional[str] resource_group: resource group to use
-    :param int mode:
     :param Optional[str] prefer_node: try to place resource on this node
-    :param Optional[int] new_size: new volume size, works only in CloneMode.COPY, None to keep original size
-    :return: True if clone was successful
-    :rtype: bool
+    :param Optional[int] new_size: new volume size, None to keep original size
+    :return: Tuple, first item if success, second if linstor clone was used
+    :rtype: Tuple[bool, bool]
     """
     return_code = 0
-    util.log_info("Cloning from resource '{src}' to '{tgt}' clone mode {m}.".format(
-        src=resource.name, tgt=clone_name, m=CloneMode.to_str(mode))
-    )
+    util.log_info("Cloning from resource '{src}' to '{tgt}'.".format(src=resource.name, tgt=clone_name))
 
-    if mode == CloneMode.SNAPSHOT and resource.placement.storage_pool \
-            and resource.placement.storage_pool != resource.volumes[0].storage_pool_name:
+    use_linstor_clone = True
+
+    if resource.placement.storage_pool and resource.placement.storage_pool != resource.volumes[0].storage_pool_name:
         util.log_info(
             "Deployment storage pool '{dp}' in different storage pool '{sp}', fall back to clone mode COPY".format(
                 dp=resource.placement.storage_pool, sp=resource.volumes[0].storage_pool_name
             )
         )
-        mode = CloneMode.COPY
+        use_linstor_clone = False
 
     use_storpool = resource.placement.storage_pool \
         if resource.placement.storage_pool else resource.volumes[0].storage_pool_name
     linstor_controllers = ",".join(resource.client.uri_list)
 
-    if mode == CloneMode.SNAPSHOT:
-        snap_name = "for-" + clone_name
-        try:
-            resource.snapshot_create(snap_name)
-            clone_res = resource.restore_from_snapshot(snap_name, clone_name)
-            time.sleep(1)  # wait a second for deletion, here is a potential race condition
-            if prefer_node and node_has_storagepool(linstor_controllers, prefer_node, use_storpool):
-                clone_res.placement.storage_pool = use_storpool
-                clone_res.diskful(prefer_node)
-        finally:
-            # always try to get rid of the temporary snapshot
-            try:
-                resource.snapshot_delete(snap_name)
-            except LinstorError as le:
-                #  the snapshot delete will always fail for zfs storage pools (parent-child relation)
-                util.log_info("Snapshot '{s}' delete failed: {ex}".format(s=snap_name, ex=le))
-    elif mode == CloneMode.COPY:
+    if use_linstor_clone:
+        clone_res = resource.clone(clone_name)
+        if prefer_node and node_has_storagepool(linstor_controllers, prefer_node, use_storpool):
+            clone_res.placement.storage_pool = use_storpool
+            clone_res.diskful(prefer_node)
+    else:
         vol_size_str = str(new_size) + "MiB" if new_size else str(resource.volumes[0].size) + "b"
         clone_res = deploy(
             linstor_controllers=linstor_controllers,
@@ -318,7 +283,7 @@ def clone(
 
         clone_res.deactivate(copy_node)
 
-    return return_code == 0
+    return return_code == 0, use_linstor_clone
 
 
 def get_rsc_name(target_vm, disk_id):

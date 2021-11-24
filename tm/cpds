@@ -21,7 +21,7 @@ from __future__ import print_function
 
 import sys
 
-from one.extender import clone, CloneMode, get_rsc_name
+from one.extender import clone, get_rsc_name
 from linstor import Resource
 from one import util, vm
 from one.datastore import Datastore
@@ -45,13 +45,12 @@ def main():
     util.log_info("SOURCE IMAGE: " + res_name)
 
     res = Resource(res_name, datastore.linstor_controllers)
-    success = clone(
+    success, _ = clone(
         res,
         DST,
         datastore.deployment_nodes,
         datastore.auto_place,
         datastore.linstor_resource_group,
-        CloneMode.from_str(datastore.linstor_clone_mode),
         prefer_node=src_host
     )
 

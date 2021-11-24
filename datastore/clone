@@ -22,10 +22,9 @@ from __future__ import print_function
 import base64
 import sys
 
-from one.extender import clone, CloneMode
+from one.extender import clone
 from linstor import Resource
 from one import consts, driver_action, util
-from one.image import Image
 
 DRIVER_ACTION = sys.argv[1]
 IMAGE_ID = sys.argv[2]
@@ -36,13 +35,6 @@ def main():
 
     driver = driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
 
-    # determine cloning mode
-    # use copy if the datastores differ, because snapshot mode would use the same storage pool
-    cloning_image = Image(util.show_image(driver.image.cloning_id))
-
-    cloning_mode = CloneMode.from_str(driver.datastore.linstor_clone_mode) \
-        if cloning_image.datastore_id == driver.datastore.id else CloneMode.COPY
-
     res = Resource(
         name="{}-{}".format(consts.IMAGE_PREFIX, driver.image.cloning_id),
         uri=driver.datastore.linstor_controllers
@@ -51,16 +43,15 @@ def main():
 
     clone_name = "{}-{}".format(consts.IMAGE_PREFIX, IMAGE_ID)
 
-    util.log_info("Cloning into new resource '{r}' with clone mode '{cm}' to pool '{p}'".format(
-        r=clone_name, cm=CloneMode.to_str(cloning_mode), p=res.placement.storage_pool)
+    util.log_info("Cloning into new resource '{r}' to pool '{p}'".format(
+        r=clone_name, p=res.placement.storage_pool)
     )
-    success = clone(
+    success, _ = clone(
         res,
         clone_name,
         driver.datastore.deployment_nodes,
         driver.datastore.auto_place,
-        driver.datastore.linstor_resource_group,
-        cloning_mode
+        driver.datastore.linstor_resource_group
     )
 
     util.log_info("Exiting datastore clone with " + "success." if success else "error.")
