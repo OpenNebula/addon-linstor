@@ -217,7 +217,8 @@ def clone(
 
     use_linstor_clone = True
 
-    if resource.placement.storage_pool and resource.placement.storage_pool != resource.volumes[0].storage_pool_name:
+    if resource.resource_group_name and resource.resource_group_name != resource_group:
+        # maybe check if resource group is using same storage pools
         util.log_info(
             "Deployment storage pool '{dp}' in different storage pool '{sp}', fall back to clone mode COPY".format(
                 dp=resource.placement.storage_pool, sp=resource.volumes[0].storage_pool_name
