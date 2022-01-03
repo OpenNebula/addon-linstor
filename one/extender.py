@@ -196,7 +196,8 @@ def clone(
         auto_place_count,
         resource_group=None,
         prefer_node=None,
-        new_size=None):
+        new_size=None,
+        allow_dependent_clone=False):
     """
     Clones a resource to a new resource.
 
@@ -207,6 +208,7 @@ def clone(
     :param Optional[str] resource_group: resource group to use
     :param Optional[str] prefer_node: try to place resource on this node
     :param Optional[int] new_size: new volume size, None to keep original size
+    :param bool allow_dependent_clone: allow the clone to depend on source resource
     :return: Tuple, first item if success, second if linstor clone was used
     :rtype: Tuple[bool, bool]
     """
@@ -228,7 +230,7 @@ def clone(
     linstor_controllers = ",".join(resource.client.uri_list)
 
     if use_linstor_clone:
-        clone_res = resource.clone(clone_name)
+        clone_res = resource.clone(clone_name, use_zfs_clone=allow_dependent_clone)
         if prefer_node and node_has_storagepool(linstor_controllers, prefer_node, use_storpool):
             clone_res.placement.storage_pool = use_storpool
             clone_res.diskful(prefer_node)

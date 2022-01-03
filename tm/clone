@@ -59,7 +59,8 @@ def main():
         datastore.auto_place,
         datastore.linstor_resource_group,
         prefer_node=dst_host,
-        new_size=new_size
+        new_size=new_size,
+        allow_dependent_clone=True
     )
     if not success:
         util.log_error("Cloning resource {} failed.".format(res.name))
