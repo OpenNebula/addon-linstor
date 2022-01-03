@@ -35,18 +35,14 @@ class Datastore(object):
         self._used_mb = root.find("USED_MB").text
 
         self._base_path = root.find("BASE_PATH")
-        self._auto_place = root.find("TEMPLATE").find("LINSTOR_AUTO_PLACE")
-        self._deployment_nodes = root.find("TEMPLATE").find("LINSTOR_DEPLOYMENT_NODES")
-        self._storage_pool = root.find("TEMPLATE").find("LINSTOR_STORAGE_POOL")
         self._linstor_controllers = root.find("TEMPLATE").find("LINSTOR_CONTROLLERS")
-        self._linstor_clone_mode = root.find("TEMPLATE").find("LINSTOR_CLONE_MODE")
         self._linstor_resource_group = root.find("TEMPLATE").find("LINSTOR_RESOURCE_GROUP")
         self._restricted_dirs = root.find("TEMPLATE").find("RESTRICTED_DIRS")
         self._safe_dirs = root.find("TEMPLATE").find("SAFE_DIRS")
         self._staging_dirs = root.find("TEMPLATE").find("STAGING_DIR")
 
     def __str__(self):
-        return self.xmlstr
+        return self.xmlstr.decode('utf8') if isinstance(self.xmlstr, bytes) else self.xmlstr
 
     @property
     def id(self):
@@ -92,32 +88,6 @@ class Datastore(object):
             return None
 
     @property
-    def auto_place(self):
-        """
-        Returns auto_place
-
-        :rtype: Optional[int]
-        """
-        try:
-            return int(self._auto_place.text)
-        except AttributeError:
-            return None
-
-    @property
-    def deployment_nodes(self):
-        """
-        Returns deployment_nodes
-
-        :return: list on deployment nodes
-        :rtype: list[str]
-        """
-        try:
-            nodes_str = self._deployment_nodes.text
-            return nodes_str.split(" ")
-        except AttributeError:
-            return None
-
-    @property
     def linstor_resource_group(self):
         """
         Returns the defined resource group to use, if none is set return the default resource group
@@ -128,14 +98,6 @@ class Datastore(object):
             return self._linstor_resource_group.text
         except AttributeError:
             return None
-
-    @property
-    def storage_pool(self):
-        """Returns storage_pool"""
-        try:
-            return self._storage_pool.text
-        except AttributeError:
-            return "DfltStorPool"
 
     @property
     def linstor_controllers(self):
@@ -149,21 +111,6 @@ class Datastore(object):
             return self._linstor_controllers.text
         except AttributeError:
             return "linstor://localhost"
-
-    @property
-    def linstor_clone_mode(self):
-        """
-        Returns the set linstor clone method
-        :return: Set clone mode, if not set default "snapshot" is returned
-        :rtype: str
-        """
-        try:
-            clone_method = self._linstor_clone_mode.text
-            if clone_method.lower() == "copy":
-                return "copy"
-            return "snapshot"
-        except AttributeError:
-            return "snapshot"
 
     @property
     def restricted_dirs(self):

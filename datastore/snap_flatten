@@ -21,7 +21,7 @@ limitations under the License.
 import base64
 import sys
 
-from one.extender import clone, delete, get_storage_pool_name
+from one.extender import clone, delete, get_storage_pool_names
 from linstor import Resource, MultiLinstor
 from one import consts, driver_action, util
 
@@ -35,15 +35,13 @@ def main():
     driver = driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
 
     with MultiLinstor(MultiLinstor.controller_uri_list(driver.datastore.linstor_controllers)) as lin:
-        storage_pool_name = get_storage_pool_name(lin, driver.datastore)
-        stor_pool_resp = lin.storage_pool_list_raise(filter_by_stor_pools=[storage_pool_name])
-        if len(stor_pool_resp.storage_pools) == 0:
-            util.log_error("Unable to query storage pool")
-            sys.exit(1)
+        storage_pool_names = get_storage_pool_names(lin, driver.datastore)
+        stor_pool_resp = lin.storage_pool_list_raise(filter_by_stor_pools=storage_pool_names)
 
-        if stor_pool_resp.storage_pools[0].provider_kind.startswith("ZFS"):
-            util.log_error("Cannot flatten snapshots with ZFS storage pool")
-            sys.exit(2)
+        for stor_pool in stor_pool_resp.storage_pools:
+            if stor_pool.provider_kind.startswith("ZFS"):
+                util.log_error("Cannot flatten snapshots with ZFS storage pool")
+                sys.exit(2)
 
     tmp_res_name = driver.image.source + "-flatten"
     snapshot_name = "{}-{}".format(consts.SNAP_PREFIX, driver.image.target_snap)
@@ -62,8 +60,6 @@ def main():
         clone(
             tmp_res,
             driver.image.source,
-            driver.datastore.deployment_nodes,
-            driver.datastore.auto_place,
             driver.datastore.linstor_resource_group
         )
     finally:

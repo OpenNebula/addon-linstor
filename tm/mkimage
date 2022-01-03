@@ -50,10 +50,7 @@ def main():
     resource = deploy(
         linstor_controllers=datastore.linstor_controllers,
         resource_name=res_name,
-        storage_pool=datastore.storage_pool,
         vlm_size_str='{s}Mib'.format(s=SIZE),
-        deployment_nodes=datastore.deployment_nodes,
-        auto_place_count=datastore.auto_place,
         resource_group=datastore.linstor_resource_group
     )
 

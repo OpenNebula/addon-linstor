@@ -48,8 +48,6 @@ def main():
     success, _ = clone(
         res,
         DST,
-        datastore.deployment_nodes,
-        datastore.auto_place,
         datastore.linstor_resource_group,
         prefer_node=src_host
     )

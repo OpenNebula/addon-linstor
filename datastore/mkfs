@@ -63,10 +63,7 @@ def main():
     res = deploy(
         linstor_controllers=driver.datastore.linstor_controllers,
         resource_name=resource_name,
-        storage_pool=driver.datastore.storage_pool,
         vlm_size_str=driver.image.size + "MiB",
-        deployment_nodes=driver.datastore.deployment_nodes,
-        auto_place_count=driver.datastore.auto_place,
         resource_group=driver.datastore.linstor_resource_group
     )
 

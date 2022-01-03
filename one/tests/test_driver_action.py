@@ -216,7 +216,6 @@ class TestDriverAction(unittest.TestCase):
         driver_action_test = driver_action.DriverAction(MONITOR_XML)
 
         self.assertEqual(driver_action_test.datastore.id, "117")
-        self.assertEqual(driver_action_test.datastore.storage_pool, "thin")
 
     def test_mkfs_xml(self):
         da = driver_action.DriverAction(MKFS_XML)

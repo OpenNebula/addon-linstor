@@ -36,23 +36,14 @@ def main():
 
     with linstor.MultiLinstor(linstor.MultiLinstor.controller_uri_list(driver.datastore.linstor_controllers)) as lin:
         rsc_grp_name = driver.datastore.linstor_resource_group
-        if rsc_grp_name:
-            rsc_grp_resp = lin.resource_group_list_raise(filter_by_resource_groups=[rsc_grp_name])
-            if rsc_grp_resp.resource_groups:
-                rsc_grp_data = rsc_grp_resp.resource_groups[0]
-                storage_pool = rsc_grp_data.select_filter.storage_pool \
-                    if rsc_grp_data.select_filter.storage_pool else driver.datastore.storage_pool
-                deployment_nodes = None
-                auto_place_count = rsc_grp_data.select_filter.place_count
-        else:
-            storage_pool = driver.datastore.storage_pool
-            deployment_nodes = driver.datastore.deployment_nodes
-            auto_place_count = driver.datastore.auto_place
+        rsc_grp_resp = lin.resource_group_list_raise(filter_by_resource_groups=[rsc_grp_name])
+        rsc_grp_data = rsc_grp_resp.resource_groups[0]
+        storage_pools = rsc_grp_data.select_filter.storage_pool_list
+        auto_place_count = rsc_grp_data.select_filter.place_count if rsc_grp_data.select_filter.place_count else 2
 
         stor_pool_used, stor_pool_total, stor_pool_free = calculate_space(
             lin,
-            storage_pool,
-            deployment_nodes,
+            storage_pools,
             auto_place_count
         )
 

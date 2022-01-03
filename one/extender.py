@@ -1,6 +1,6 @@
 import time
 
-from linstor import Resource, Volume, MultiLinstor, LinstorError, SizeCalc
+from linstor import Resource, MultiLinstor, LinstorError, SizeCalc
 from linstor.responses import ResourceDefinitionResponse
 from one import util, consts
 from one.vm import Vm
@@ -8,62 +8,46 @@ from one.datastore import Datastore
 from one.image import Image
 
 
-def calculate_space(lin, storage_pool_name, nodes, auto_place):
+def calculate_space(lin, storage_pools, auto_place_count):
     """
 
     :param linstor.MultiLinstor lin:
-    :param str storage_pool_name:
-    :param nodes:
-    :param auto_place:
+    :param list[str] storage_pools:
+    :param int auto_place_count:
     :return: Tuple with 3 values (used, total, free) in MiB
     :rtype: Tuple(int, int, int)
     """
 
-    storage_pools = lin.storage_pool_list_raise(filter_by_stor_pools=[storage_pool_name])
-    free_space_by_node = {x.node_name: x.free_space for x in storage_pools.storage_pools if x.free_space}
+    stor_pool_res = lin.storage_pool_list_raise()
+    if storage_pools:
+        # filter used storage pools
+        stor_pool_to_calc = [x for x in stor_pool_res.storage_pools if x.name in storage_pools]
+    else:
+        # use all
+        stor_pool_to_calc = stor_pool_res.storage_pools
+    free_space_by_node = {}  # type: dict[str, (int, int)]
+    # 0 -> free capacity
+    # 1 -> total capacity
+    for stor_pool in stor_pool_to_calc:
+        if stor_pool.free_space and not stor_pool.is_diskless():
+            if stor_pool.node_name not in free_space_by_node:
+                free_space_by_node[stor_pool.node_name] = (0, 0)
+            free = free_space_by_node[stor_pool.node_name][0] + stor_pool.free_space.free_capacity
+            total = free_space_by_node[stor_pool.node_name][1] + stor_pool.free_space.total_capacity
+            free_space_by_node[stor_pool.node_name] = (free, total)
     storage_pool_total_mib = 0
     storage_pool_free_mib = 0
-    if nodes:
-        lowest_free_node = nodes[0]
-        for node in nodes:
-            if node not in free_space_by_node:
-                raise RuntimeError(
-                    "Node '{node}' does not have storage pool '{sp}'".format(node=node, sp=storage_pool_name)
-                )
-            if free_space_by_node[node].total_capacity < free_space_by_node[node].total_capacity:
-                lowest_free_node = node
-        storage_pool_total_mib += free_space_by_node[lowest_free_node].total_capacity // 1024
-        storage_pool_free_mib += free_space_by_node[lowest_free_node].free_capacity // 1024
-    else:
-        for space_info in free_space_by_node.values():
-            storage_pool_total_mib += (space_info.total_capacity // int(auto_place)) // 1024
-            storage_pool_free_mib += (space_info.free_capacity // int(auto_place)) // 1024
+    for space_info in free_space_by_node.values():
+        storage_pool_total_mib += (space_info[1] // int(auto_place_count)) // 1024
+        storage_pool_free_mib += (space_info[0] // int(auto_place_count)) // 1024
 
     return storage_pool_total_mib - storage_pool_free_mib, storage_pool_total_mib, storage_pool_free_mib
-
-
-def node_has_storagepool(uri_list, node, storage_pool):
-    """
-    Checks if a node has the given storage pool.
-
-    :param str uri_list: linstor controller uri list
-    :param str node: node to check for storage pool
-    :param str storage_pool: storage pool name to check
-    :return: True if node has the given storage pool
-    :rtype: bool
-    """
-    with MultiLinstor(MultiLinstor.controller_uri_list(uri_list)) as lin:
-        stor_pool_result = lin.storage_pool_list_raise(filter_by_nodes=[node], filter_by_stor_pools=[storage_pool])
-        return bool(stor_pool_result.storage_pools)
 
 
 def deploy(
         linstor_controllers,
         resource_name,
-        storage_pool,
         vlm_size_str,
-        deployment_nodes,
-        auto_place_count,
         resource_group=None,
         prefer_node=None
 ):
@@ -72,50 +56,25 @@ def deploy(
 
     :param str linstor_controllers:
     :param str resource_name: Name of the new resource definition
-    :param str storage_pool: Name of the storage pool to use
     :param str vlm_size_str: volume size string
-    :param list[str] deployment_nodes: list of node names
-    :param int auto_place_count:
-    :param Optional[str] resource_group: Name of the resource group to use
+    :param str resource_group: Name of the resource group to use
     :param Optional[str] prefer_node: Tries to place a diskful on this node(if autoplace)
     :return: Resource object of the new deployment
     :rtype: Resource
     """
-    if resource_group:
-        util.log_info("Deploying resource '{}' using resource group '{}', prefer node: {n}".format(
-            resource_name, resource_group, n=prefer_node))
-        resource = Resource.from_resource_group(
-            linstor_controllers,
-            resource_group,
-            resource_name,
-            [vlm_size_str],
-            definitions_only=bool(prefer_node)
-        )
-        if prefer_node:
-            resource.placement.redundancy = None  # force resource group values, default would be 2
-            resource.placement.storage_pool = storage_pool
-            if node_has_storagepool(linstor_controllers, prefer_node, storage_pool):
-                resource.diskful(prefer_node)
-            resource.autoplace()
-    else:
-        resource = Resource(resource_name, linstor_controllers)
-        resource.placement.storage_pool = storage_pool
-        resource.volumes[0] = Volume(vlm_size_str)
-        if deployment_nodes:
-            util.log_info("Deploying resource '{}' using deployment_nodes '{}'".format(resource_name, deployment_nodes))
-            for node in deployment_nodes:
-                resource.diskful(node)
-        elif auto_place_count:
-            util.log_info("Deploying resource '{}' using auto-place-count {}, prefer node: {n}".format(
-                resource_name, auto_place_count, n=prefer_node))
-            if prefer_node and node_has_storagepool(linstor_controllers, prefer_node, storage_pool):
-                resource.diskful(prefer_node)
-            resource.placement.redundancy = auto_place_count
-            resource.autoplace()
-        else:
-            raise RuntimeError("No deploy mode selected. nodes: {n}, resource_group: {a}".format(
-                n=deployment_nodes, a=resource_group)
-            )
+    util.log_info("Deploying resource '{}' using resource group '{}', prefer node: {n}".format(
+        resource_name, resource_group, n=prefer_node))
+    resource = Resource.from_resource_group(
+        linstor_controllers,
+        resource_group,
+        resource_name,
+        [vlm_size_str],
+        definitions_only=bool(prefer_node)
+    )
+    if prefer_node:
+        resource.placement.redundancy = None  # force resource group values, default would be 2
+        resource.diskful(prefer_node)
+        resource.autoplace()
     return resource
 
 
@@ -192,8 +151,6 @@ def get_in_use_node(resource):
 def clone(
         resource,
         clone_name,
-        place_nodes,
-        auto_place_count,
         resource_group=None,
         prefer_node=None,
         new_size=None,
@@ -203,9 +160,7 @@ def clone(
 
     :param Resource resource: resource object to clone
     :param str clone_name: name of the new resource
-    :param list[str] place_nodes: deployment nodes string, e.g. "alpha bravo charly"
-    :param int auto_place_count:
-    :param Optional[str] resource_group: resource group to use
+    :param str resource_group: resource group to use
     :param Optional[str] prefer_node: try to place resource on this node
     :param Optional[int] new_size: new volume size, None to keep original size
     :param bool allow_dependent_clone: allow the clone to depend on source resource
@@ -226,24 +181,18 @@ def clone(
         )
         use_linstor_clone = False
 
-    use_storpool = resource.placement.storage_pool \
-        if resource.placement.storage_pool else resource.volumes[0].storage_pool_name
     linstor_controllers = ",".join(resource.client.uri_list)
 
     if use_linstor_clone:
         clone_res = resource.clone(clone_name, use_zfs_clone=allow_dependent_clone)
-        if prefer_node and node_has_storagepool(linstor_controllers, prefer_node, use_storpool):
-            clone_res.placement.storage_pool = use_storpool
+        if prefer_node:
             clone_res.diskful(prefer_node)
     else:
         vol_size_str = str(new_size) + "MiB" if new_size else str(resource.volumes[0].size) + "b"
         clone_res = deploy(
             linstor_controllers=linstor_controllers,
             resource_name=clone_name,
-            storage_pool=use_storpool,
             vlm_size_str=vol_size_str,
-            deployment_nodes=place_nodes,
-            auto_place_count=auto_place_count,
             resource_group=resource_group,
             prefer_node=prefer_node
         )
@@ -386,27 +335,21 @@ def get_device_path(res):
     return device_path
 
 
-def get_storage_pool_name(lin, datastore):
+def get_storage_pool_names(lin, datastore):
     """
     Returns the used storage pool of the given datastore.
 
     :param MultiLinstor lin: Linstor access object
     :param Datastore datastore: Opennebula datastore object
     :return: Used storage pool name from datastore
-    :rtype: str
+    :rtype: list[str]
     """
-    storage_pool = 'DfltStorPool'
     rsc_grp_name = datastore.linstor_resource_group
-    if rsc_grp_name:
-        rsc_grp_resp = lin.resource_group_list_raise(filter_by_resource_groups=[rsc_grp_name])
-        if rsc_grp_resp.resource_groups:
-            rsc_grp_data = rsc_grp_resp.resource_groups[0]
-            storage_pool = rsc_grp_data.select_filter.storage_pool \
-                if rsc_grp_data.select_filter.storage_pool else datastore.storage_pool
-    else:
-        storage_pool = datastore.storage_pool
+    rsc_grp_resp = lin.resource_group_list_raise(filter_by_resource_groups=[rsc_grp_name])
+    rsc_grp_data = rsc_grp_resp.resource_groups[0]
+    storage_pools = rsc_grp_data.select_filter.storage_pool_list
 
-    return storage_pool
+    return storage_pools
 
 
 def resize_disk(resource, target_vm, disk_id, new_size):

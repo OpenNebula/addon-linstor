@@ -113,9 +113,6 @@ class TestDriverAction(unittest.TestCase):
         self.assertEqual(test_datastore.total_mb, "86845")
         self.assertEqual(test_datastore.free_mb, "20777")
         self.assertEqual(test_datastore.used_mb, "1000")
-        self.assertEqual(test_datastore.storage_pool, "drbdpool")
-        self.assertEqual(test_datastore.auto_place, 3)
-        self.assertIsNone(test_datastore.deployment_nodes)
 
         test_datastore = datastore.Datastore(TEST_XML_2)
 
