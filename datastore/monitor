@@ -55,8 +55,8 @@ def main():
             )
         )
 
-    util.log_info("Exiting datastore monitor[{u}/{t}/{f}].".format(
-        u=stor_pool_used, t=stor_pool_total, f=stor_pool_free)
+    util.log_info("Exiting datastore monitor[{n}/{u}/{t}/{f}].".format(
+        n=driver.datastore.name, u=stor_pool_used, t=stor_pool_total, f=stor_pool_free)
     )
 
 
