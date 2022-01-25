@@ -22,7 +22,7 @@ from __future__ import print_function
 import os
 import sys
 
-from one.extender import clone, get_device_path, resize_disk, resize_if_qcow2
+from one.extender import clone, get_device_path, resize_disk, resize_if_qcow2, wait_resource_ready
 from linstor import Resource, SizeCalc
 from one import util
 from one.datastore import Datastore
@@ -71,6 +71,7 @@ def main():
     util.link_file(dst_host, dst_dir, dst_path, get_device_path(res_clone), res_clone.name)
 
     if new_size:  # we need to resize
+        wait_resource_ready(res_clone)
         if used_linstor_clone:
             resize_disk(res_clone, vm, disk_id, new_size)
         else:

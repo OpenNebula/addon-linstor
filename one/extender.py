@@ -396,3 +396,18 @@ def resize_if_qcow2(resource, target_vm, disk_id, new_size):
             raise RuntimeError("Error qemu resize image {p}: {o}".format(
                 p=get_device_path(resource),
                 o=err))
+
+
+def wait_resource_ready(resource, timeout=1200):
+    """
+    waits for the drbd resource to be in sync
+
+    :param Resource resource: Resource object to check
+    :param int timeout: timeout in seconds
+    :return: return code from command
+    """
+    with MultiLinstor(resource.client.uri_list) as lin:
+        util.log_info("Waiting for resource '{r}' to be ready.".format(r=resource.name))
+        lin.resource_dfn_wait_synced(resource.name, timeout=timeout)
+        util.log_info("Resource '{r}' ready.".format(r=resource.name))
+        return True
