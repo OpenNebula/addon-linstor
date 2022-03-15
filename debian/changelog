@@ -1,3 +1,17 @@
+linstor-opennebula (2.0.0-1) experimental; urgency=medium
+
+  * deploy: Fix incorrect place-count on resource-group with prefer node
+  * util: rename error_message to log_error
+  * clone: use linstor new clone feature
+  * clone-zfs: use zfs clone feature
+  * clone: fix storage pool check
+  * remove deprecated datastore attributes: LINSTOR_*
+  * monitor: show datastore name in exit log
+  * clone-resize: correctly wait until resources are ready
+  * fix dependency versions
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Tue, 15 Mar 2022 12:00:43 +0000
+
 linstor-opennebula (1.1.1-1) experimental; urgency=medium
 
   * ds/mkfs: fix correctly executing mkfs on remote nodes
