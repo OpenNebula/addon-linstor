@@ -42,6 +42,8 @@ def ensure_dir(directory):
 
 
 def main():
+    util.log_info("Entering tm/context on {h} for files {f}.".format(h=DST, f=FILES))
+
     disk_id = DST.split(".")[-1].strip()
 
     dst_host = util.arg_host(DST).strip()
@@ -49,8 +51,6 @@ def main():
     dst_dir = os.path.dirname(dst_path).strip()
 
     datastore = Datastore(util.show_ds(DS_ID))
-
-    util.log_info("Entering context on {h} for files {f}.".format(h=DST, f=FILES))
 
     iso_dir = os.path.join(datastore.base_path, ".isofiles", str(VM_ID))
 
@@ -115,7 +115,7 @@ def main():
 
     shutil.rmtree(iso_dir, ignore_errors=True)
 
-    util.log_info("Leaving context successfully.")
+    util.log_info("Leaving tm/context successfully.")
 
 
 if __name__ == "__main__":
