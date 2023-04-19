@@ -23,7 +23,7 @@ import sys
 
 from one import util, vm
 from one.datastore import Datastore
-from one.extender import delete, get_rsc_name, delete_vm_contexts
+from one.extender import delete, get_rsc_name, delete_vm_contexts, is_device_open
 from linstor import Resource, LinstorError
 
 DST = sys.argv[1]
@@ -54,7 +54,10 @@ def main():
         res_name = get_rsc_name(target_vm, disk_id)
 
         res = Resource(name=res_name, uri=datastore.linstor_controllers)
-        res.deactivate(dst_host)
+        if not is_device_open(dst_host, res.volumes[0].device_path):
+            # CDROM devices are shared between multiple vm's with a read-only open
+            # we can't delete them as long as not all openers are closed
+            res.deactivate(dst_host)
 
         if not (
             target_vm.disk_persistent(disk_id) or target_vm.disk_type(disk_id) == "CDROM"

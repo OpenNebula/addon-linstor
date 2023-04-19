@@ -123,6 +123,20 @@ def ssh_direct(host, cmd):
     return _get_subp_out(_source(SCRIPTS_COMMON, "$SSH", '"{h}" "{c}"'.format(h=host, c=cmd)))
 
 
+def ssh_direct_ignore_errors(host, cmd):
+    """
+    Executes the given cmd on the host and returns the std output of the command, ignoring any command errors.
+
+    :param str host: host to execute the command
+    :param str cmd: Command to execute
+    :return: stdout of the executed command
+    :rtype: str
+    """
+    rc, out, err = _get_subp_out_base(_source(SCRIPTS_COMMON, "$SSH", '"{h}" "{c}"'.format(h=host, c=cmd)))
+
+    return out
+
+
 def ssh_exec_and_log(host, cmd, error_msg):
     """
 

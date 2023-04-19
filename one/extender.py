@@ -411,3 +411,19 @@ def wait_resource_ready(resource, timeout=1200):
         lin.resource_dfn_wait_synced(resource.name, timeout=timeout)
         util.log_info("Resource '{r}' ready.".format(r=resource.name))
         return True
+
+
+def is_device_open(host, device_path):
+    """
+    Checks if the given device is open by any process
+
+    :param str host: node name
+    :param str device_path: Device path to check
+    :return: True if opened by someone, else False
+    :rtype: bool
+    """
+    output = util.ssh_direct_ignore_errors(host, "find /proc/[0-9]*/fd/ -maxdepth 3 -lname " + device_path).strip()
+
+    device_opened = bool(output)
+    util.log_info("Device '{d}' is{o} opened".format(d=device_path, o="" if device_opened else " NOT"))
+    return device_opened
