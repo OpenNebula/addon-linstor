@@ -17,21 +17,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-
-import base64
-import sys
-
 from linstor import Resource
 from one import consts, driver_action, util
-
-DRIVER_ACTION = sys.argv[1]
-IMAGE_ID = sys.argv[2]
 
 
 def main():
     util.log_info("Entering datastore/snap_delete")
 
-    driver = driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
+    arg_driver_action, arg_image_id = util.get_datastore_args()
+    driver = driver_action.DriverAction(arg_driver_action)
 
     res = Resource(name=driver.image.source, uri=driver.datastore.linstor_controllers)
     res.snapshot_delete("{}-{}".format(consts.SNAP_PREFIX, driver.image.target_snap))

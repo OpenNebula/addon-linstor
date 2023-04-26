@@ -20,21 +20,17 @@ limitations under the License.
 
 from __future__ import print_function
 
-import sys
-import base64
-
 from one.extender import delete
 from one import consts, util, driver_action
 
-DRIVER_ACTION = sys.argv[1]
-IMAGE_ID = sys.argv[2]
-
 
 def main():
-    rscname = "{}-{}".format(consts.IMAGE_PREFIX, IMAGE_ID)
+    arg_driver_action, arg_image_id = util.get_datastore_args()
+
+    rscname = "{}-{}".format(consts.IMAGE_PREFIX, arg_image_id)
     util.log_info("Entering datastore rm, deleting resource '{n}'".format(n=rscname))
 
-    driver = driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
+    driver = driver_action.DriverAction(arg_driver_action)
 
     delete(rscname, driver.datastore.linstor_controllers)
 

@@ -25,6 +25,8 @@ import syslog
 import traceback
 import json
 import re
+import io
+import base64
 
 REMOTES_DIR = "/var/lib/one/remotes/"
 
@@ -398,3 +400,18 @@ def run_main(main_func):
         traceback.print_exc(file=sys.stderr)
         print("ERROR: " + str(err), file=sys.stderr)
         sys.exit(1)
+
+
+def get_datastore_args(expected_arg_count=2):
+    arg_image_id = None
+    if one_version_larger(6, 6):
+        outstr = io.BytesIO()
+        base64.decode(sys.stdin, outstr)
+        arg_driver_action = outstr.getvalue().decode()
+        if expected_arg_count > 1:
+            arg_image_id = sys.argv[1]
+    else:
+        arg_driver_action = base64.b64decode(sys.argv[1])
+        if expected_arg_count > 1:
+            arg_image_id = sys.argv[2]
+    return arg_driver_action, arg_image_id

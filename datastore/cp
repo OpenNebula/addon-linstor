@@ -19,21 +19,18 @@ limitations under the License.
 
 from __future__ import print_function
 
-import base64
 import sys
 
 from one.extender import get_device_path, deploy
 from one import consts, driver_action, util
 
-DRIVER_ACTION = sys.argv[1]
-IMAGE_ID = sys.argv[2]
-
 
 def main():
     util.log_info("Entering datastore cp")
 
-    driver = driver_action.DriverAction(base64.b64decode(DRIVER_ACTION))
-    resource_name = "{}-{}".format(consts.IMAGE_PREFIX, IMAGE_ID)
+    arg_driver_action, arg_image_id = util.get_datastore_args()
+    driver = driver_action.DriverAction(arg_driver_action)
+    resource_name = "{}-{}".format(consts.IMAGE_PREFIX, arg_image_id)
 
     res = deploy(
         linstor_controllers=driver.datastore.linstor_controllers,
