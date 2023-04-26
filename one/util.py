@@ -350,7 +350,8 @@ def detect_image_format(host, path):
 
 
 def _get_one_version_str():
-    return subprocess.check_output(["onecluster", "show", "-V"]).decode()
+    with open(REMOTES_DIR + "VERSION") as version_file:
+        return version_file.readline().strip()
 
 
 def _one_version_parse(version_info_str=None):
@@ -362,7 +363,7 @@ def _one_version_parse(version_info_str=None):
     :rtype: (int, int, int)
     """
     output = _get_one_version_str() if version_info_str is None else version_info_str
-    m = re.search(r"OpenNebula (\d+)\.(\d+)\.(\d+)", output)
+    m = re.search(r"(\d+)\.(\d+)\.(\d+)", output)
     if m:
         return int(m.group(1)), int(m.group(2)), int(m.group(3))
     return 0, 0, 0

@@ -22,14 +22,11 @@ from one import util
 
 
 class TestUtils(unittest.TestCase):
-    VERSION_INFO_5_12_0 = """OpenNebula 5.12.0.3
-    Copyright 2002-2020, OpenNebula Project, OpenNebula Systems"""
+    VERSION_INFO_5_12_0 = """5.12.0.3"""
 
-    VERSION_INFO_5_13_80 = """OpenNebula 5.13.80
-Copyright 2002-2021, OpenNebula Project, OpenNebula Systems"""
+    VERSION_INFO_5_13_80 = """5.13.80"""
 
-    VERSION_INFO_6_0_0 = """OpenNebula 6.0.0
-    Copyright 2002-2021, OpenNebula Project, OpenNebula Systems"""
+    VERSION_INFO_6_0_0 = """6.0.0"""
 
     def test__source(self):
 
