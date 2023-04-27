@@ -20,12 +20,11 @@ Support for this addon can be found at the
 ## Authors
 
 * Rene Peinthor [<rene.peinthor@linbit.com>](rene.peinthor@linbit.com)
-* Hayley Swimelar [<hayley@linbit.com>](hayley@linbit.com)
 
 ## Compatibility
 
-* This addon is compatible with OpenNebula versions from 5.8 to 6.2
-* It was tested with version 6.2
+* This addon is compatible with OpenNebula versions from 5.8 to 6.8
+* It was tested with version 6.6
 * This version of README.md describes the installation process for ONE 5.6 environments
 * This is intended for use as an images datastore for use with either an NFS shared
 * system datastore or a SSH system datastore
