@@ -1,3 +1,14 @@
+linstor-opennebula (2.1.0-1) experimental; urgency=medium
+
+  * tm/context: better enter/leave logging
+  * tm/delete: do not delete shared(ro-opened) drbd diskless resources
+  * improve one version parsing
+  * datastore/stat: forward call to fs(common) driver
+  * datastore: 6.8 compatibility
+  * update README.md
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Mon, 15 May 2023 07:24:13 +0000
+
 linstor-opennebula (2.0.0-1) experimental; urgency=medium
 
   * deploy: Fix incorrect place-count on resource-group with prefer node
