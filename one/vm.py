@@ -159,7 +159,7 @@ class Vm(object):
         :rtype: str
         """
         try:
-            driver = self.disk(disk_id).find("DRIVER").text
+            return self.disk(disk_id).find("DRIVER").text
         except AttributeError:
             return None
 
