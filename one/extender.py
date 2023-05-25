@@ -377,15 +377,16 @@ def resize_if_qcow2(resource, target_vm, disk_id, new_size):
     :param int new_size: new size in mega bytes
     :return:
     """
-    image_id = target_vm.disk_image_id(disk_id)
-    if image_id:
-        image_data = Image(util.show_image(image_id))
-        fmt = image_data.format
-        driver = image_data.template_driver
-    else:
-        fmt = target_vm.disk_format(disk_id)
-        driver = target_vm.disk_driver(disk_id)
-    if fmt == "qcow2" or driver == "qcow2":
+    driver = target_vm.disk_driver(disk_id)
+    if driver is None:
+        image_id = target_vm.disk_image_id(disk_id)
+        if image_id:
+            image_data = Image(util.show_image(image_id))
+            driver = image_data.template_driver
+            if not driver:
+                driver = image_data.format
+
+    if driver == "qcow2":
         primary_node = get_in_use_node(resource)
         resize_node = primary_node if primary_node else resource.diskful_nodes()[0]
         rc, err = util.ssh_exec_and_log_with_err(
