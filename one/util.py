@@ -404,7 +404,7 @@ def run_main(main_func):
 
 def get_datastore_args(expected_arg_count=2):
     arg_image_id = None
-    if one_version_larger(6, 6):
+    if one_version_larger(6, 8):
         outstr = io.BytesIO()
         base64.decode(sys.stdin, outstr)
         arg_driver_action = outstr.getvalue().decode()
