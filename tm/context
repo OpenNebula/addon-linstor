@@ -41,6 +41,19 @@ def ensure_dir(directory):
         pass
 
 
+def _get_correct_paths(path):
+    """
+    If a path with a ':' is passed, we have to split this entry.
+    As the part before ':' is the source file and the suffix is the actual filename
+    :param str path: opennebula iso file path argument
+    :return: A tuple with the source and destination name
+    """
+    if ':' in path:
+        s = path.split(':', 1)
+        return s[0], "'" + s[1] + "'"
+    return path, ""
+
+
 def main():
     util.log_info("Entering tm/context on {h} for files {f}.".format(h=DST, f=FILES))
 
@@ -64,10 +77,14 @@ def main():
         util.log_info("copy {s} {d}".format(s=file, d=os.path.join(iso_dir, os.path.basename(file))))
         if file.startswith("http"):
             subprocess.check_call(["wget", "-P", iso_dir, file])
-        elif os.path.isdir(file):
-            shutil.copytree(file, os.path.join(iso_dir, os.path.basename(file)))
         else:
-            shutil.copy2(file, os.path.join(iso_dir, os.path.basename(file)))
+            src, dst_name = _get_correct_paths(file)
+
+            # instead of using python copy utils, we do a bash call
+            # because we don't want to handle shell quoting in python
+            util.exec_and_log(
+                "cp -R {src} {dst}".format(src=src, dst=os.path.join(iso_dir, os.path.basename(dst_name))),
+                "Error copying {src} to {dir}".format(src=src, dir=iso_dir))
 
     rc = util.mkiso_command(
         '-o {iso_file} -V CONTEXT -J -R {iso_dir}'.format(
