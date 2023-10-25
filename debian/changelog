@@ -1,3 +1,15 @@
+linstor-opennebula (2.2.0-1) experimental; urgency=medium
+
+  [ Rene Peinthor ]
+  * one/vm: fix missing return
+  * resize: prefer VM disk info and user DRIVER instead of FORMAT
+  * tm/context: fix copying files from file datastores
+
+  [ antnjakushin ]
+  * tm/monitor: fix for 6.8 using new stdin read
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Wed, 25 Oct 2023 09:00:18 +0000
+
 linstor-opennebula (2.1.0-1) experimental; urgency=medium
 
   * tm/context: better enter/leave logging
