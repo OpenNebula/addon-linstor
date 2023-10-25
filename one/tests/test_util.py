@@ -27,6 +27,7 @@ class TestUtils(unittest.TestCase):
     VERSION_INFO_5_13_80 = """5.13.80"""
 
     VERSION_INFO_6_0_0 = """6.0.0"""
+    VERSION_INFO_6_6_3 = """6.6.3"""
 
     def test__source(self):
 
@@ -115,3 +116,5 @@ class TestUtils(unittest.TestCase):
 
         self.assertTrue(util.one_version_larger(5, 12, 0, self.VERSION_INFO_5_13_80))
         self.assertTrue(util.one_version_larger(5, 12, 0, self.VERSION_INFO_6_0_0))
+        self.assertTrue(util.one_version_larger(6, 6, patch=0, version_info_str=self.VERSION_INFO_6_6_3))
+        self.assertFalse(util.one_version_larger(6, 6, patch=None, version_info_str=self.VERSION_INFO_6_6_3))

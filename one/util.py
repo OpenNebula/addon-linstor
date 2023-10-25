@@ -371,14 +371,14 @@ def _one_version_parse(version_info_str=None):
     return 0, 0, 0
 
 
-def one_version_larger(major=5, minor=0, patch=0, version_info_str=None):
+def one_version_larger(major=5, minor=0, patch=None, version_info_str=None):
     inst_major, inst_minor, inst_patch = _one_version_parse(version_info_str)
     if inst_major > major:
         return True
     elif major == inst_major:
         if inst_minor > minor:
             return True
-        if inst_minor == minor and inst_patch > patch:
+        if patch is not None and inst_minor == minor and inst_patch > patch:
             return True
     return False
 
