@@ -1,3 +1,9 @@
+linstor-opennebula (2.2.1-1) experimental; urgency=medium
+
+  * util.one_version_larger: ignore patch level by default
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Wed, 25 Oct 2023 11:23:35 +0000
+
 linstor-opennebula (2.2.0-1) experimental; urgency=medium
 
   [ Rene Peinthor ]
