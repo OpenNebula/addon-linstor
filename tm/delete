@@ -54,7 +54,7 @@ def main():
         res_name = get_rsc_name(target_vm, disk_id)
 
         res = Resource(name=res_name, uri=datastore.linstor_controllers)
-        if not is_device_open(dst_host, res.volumes[0].device_path):
+        if res.volumes and not is_device_open(dst_host, res.volumes[0].device_path):
             # CDROM devices are shared between multiple vm's with a read-only open
             # we can't delete them as long as not all openers are closed
             res.deactivate(dst_host)
