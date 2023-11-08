@@ -44,6 +44,26 @@ def calculate_space(lin, storage_pools, auto_place_count):
     return storage_pool_total_mib - storage_pool_free_mib, storage_pool_total_mib, storage_pool_free_mib
 
 
+def try_diskful_activate(resource, node):
+    """
+    Try to create a diskful resource on the given node, but also be happy with a diskless
+
+    :param Resource resource: resource object to be used
+    :param str node: node name to create a diskful resource
+    :return: True if resource was created
+    :rtype: bool
+    """
+    try:
+        resource.activate(node, True)
+    except LinstorError as le:
+        # if we can't create a diskful resource, be happy with a diskless one
+        util.log_info("Couldn't create diskful resource {} on {}, trying diskless..."
+                      .format(resource.name, node))
+        if "Autoplacer could not find diskful" in le.message:
+            resource.activate(node)
+    return True
+
+
 def deploy(
         linstor_controllers,
         resource_name,
@@ -73,7 +93,7 @@ def deploy(
     )
     if prefer_node:
         resource.placement.redundancy = None  # force resource group values, default would be 2
-        resource.diskful(prefer_node)
+        try_diskful_activate(resource, prefer_node)
         resource.autoplace()
     return resource
 
@@ -186,7 +206,7 @@ def clone(
     if use_linstor_clone:
         clone_res = resource.clone(clone_name, use_zfs_clone=allow_dependent_clone)
         if prefer_node:
-            clone_res.diskful(prefer_node)
+            try_diskful_activate(clone_res, prefer_node)
     else:
         vol_size_str = str(new_size) + "MiB" if new_size else str(resource.volumes[0].size) + "b"
         clone_res = deploy(
