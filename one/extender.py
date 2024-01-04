@@ -1,5 +1,6 @@
 import time
 
+import linstor.sharedconsts
 from linstor import Resource, MultiLinstor, LinstorError, SizeCalc
 from linstor.responses import ResourceDefinitionResponse
 from one import util, consts
@@ -370,6 +371,20 @@ def get_storage_pool_names(lin, datastore):
     storage_pools = rsc_grp_data.select_filter.storage_pool_list
 
     return storage_pools
+
+
+def get_satellite_nodes(lin):
+    """
+    Returns all satellite node names from Linstor
+
+    :param MultiLinstor lin: Linstor access object
+    :return: List of satellite node names
+    :rtype: list[str]
+    """
+    nodes = lin.node_list_raise()
+    return [n.name for n in nodes.nodes
+            if n.type.upper() in
+                [linstor.sharedconsts.VAL_NODE_TYPE_STLT.upper(), linstor.sharedconsts.VAL_NODE_TYPE_CMBD.upper()]]
 
 
 def resize_disk(resource, target_vm, disk_id, new_size):
