@@ -22,15 +22,102 @@ from __future__ import print_function
 import os
 import sys
 
-from linstor import Resource
+from linstor import Resource, MultiLinstor
 from one import util, vm
 from one.datastore import Datastore
-from one.extender import get_rsc_name, get_device_path
+from one.extender import get_rsc_name, get_device_path, get_satellite_nodes, deploy
 
 SRC = sys.argv[1]
 DST = sys.argv[2]
 VM_ID = int(sys.argv[3])
 DS_ID = sys.argv[4]
+
+
+def move_linstor_resource(lin, src_host, dst_host, dst_path, dst_dir, rsc_name):
+    """
+    Moves linstor resources between linstor hosts
+
+    :param MultiLinstor lin: linstor api object
+    :param str src_host: hostname of source node
+    :param str dst_host: hostname of destination node
+    :param str dst_path: full path of resource on disk
+    :param str dst_dir: directory path of resource on disk
+    :param str rsc_name: linstor resource name
+    """
+    res = Resource(name=rsc_name, existing_client=lin)
+    util.log_info("Active resource '{r}' on destination host: {h}".format(r=rsc_name, h=dst_host))
+    res.activate(dst_host)
+    util.log_info("Deactivate resource '{r}' on source host: {h}".format(r=rsc_name, h=src_host))
+    res.deactivate(src_host)
+
+    util.link_file(dst_host, dst_dir, dst_path, get_device_path(res), res.name)
+
+
+def move_none_linstor_host(linstor, src_host, src_path, dst_host, dst_path, dst_dir, rsc_name):
+    """
+    Moves linstor resources to a non satellite host (maybe undeploy called)
+
+    :param MultiLinstor linstor: linstor api object
+    :param str src_host: hostname of source node
+    :param str src_path: full path of resource on disk
+    :param str dst_host: hostname of destination node
+    :param str dst_path: full path of resource on disk
+    :param str dst_dir: directory path of resource on disk
+    :param str rsc_name: linstor resource name
+    """
+    util.ssh_make_path(" ".join([dst_host, dst_dir]))
+    cmd = [
+        "set -e -o pipefail",
+        "dd if={src_path} bs=4M iflag=direct conv=sparse | ssh {dst_host} -- 'dd of={dst_path} bs=4M conv=sparse'".format(
+            src_path=src_path,
+            dst_host=dst_host,
+            dst_path=dst_path)
+    ]
+    rc, _, err = util.ssh_monitor_and_log(
+        host=src_host,
+        cmd=" && ".join(cmd),
+        error_msg="dd")
+    if rc != 0:
+        raise RuntimeError("Unable to copy linstor resource to new host {host}: {err}".format(host=dst_host, err=err))
+
+    res = Resource(name=rsc_name, existing_client=linstor)
+    res.delete()
+    util.unlink_file(src_host, src_path)
+
+
+def move_from_none_linstor_host(
+        controllers, resource_group, src_host, src_path, dst_host, dst_path, dst_dir, rsc_name, disk_size_mb):
+    """
+    Moves linstor resources to a non satellite host (maybe undeploy called)
+
+    :param str controllers: linstor controllers comma list
+    :param str resource_group: resource group name
+    :param str src_host: hostname of source node
+    :param str src_path: full path of resource on disk
+    :param str dst_host: hostname of destination node
+    :param str dst_path: full path of resource on disk
+    :param str dst_dir: directory path of resource on disk
+    :param str rsc_name: linstor resource name
+    :param int disk_size_mb: disk size in MB
+    """
+    res = deploy(controllers, rsc_name, str(disk_size_mb) + "MiB", resource_group, dst_host)
+    util.link_file(dst_host, dst_dir, dst_path, get_device_path(res), rsc_name)
+
+    util.ssh_make_path(" ".join([dst_host, dst_dir]))
+    cmd = [
+        "set -e -o pipefail",
+        "dd if={src_path} bs=4M conv=sparse | ssh {dst_host} -- 'dd of={dst_path} oflag=direct bs=4M conv=sparse'".format(
+            src_path=src_path,
+            dst_host=dst_host,
+            dst_path=dst_path),
+        "rm -Rf {src_path}".format(src_path=src_path)
+    ]
+    rc, _, err = util.ssh_monitor_and_log(
+        host=src_host,
+        cmd=" && ".join(cmd),
+        error_msg="dd")
+    if rc != 0:
+        raise RuntimeError("Unable to copy linstor resource to new host {host}: {err}".format(host=dst_host, err=err))
 
 
 def main():
@@ -48,11 +135,9 @@ def main():
 
     dst_host = util.arg_host(DST).strip()
     dst_path = util.arg_path(DST).strip()
-    dst_dir = os.path.dirname(dst_path).strip()
+    dst_dir = str(os.path.dirname(dst_path).strip())
 
     datastore = Datastore(util.show_ds(DS_ID))
-
-    target_vm = vm.Vm(util.show_vm(VM_ID))
 
     disk_id = SRC.split(".")[-1].strip() if "disk." in SRC else None
 
@@ -81,16 +166,33 @@ def main():
         if rc != 0:
             raise RuntimeError("Unable to tar copy to new host")
     else:
-        # normal drbd image
-        res_name = get_rsc_name(target_vm, disk_id)
+        with MultiLinstor(MultiLinstor.controller_uri_list(datastore.linstor_controllers)) as lin:
+            satellite_nodes = get_satellite_nodes(lin)
 
-        res = Resource(name=res_name, uri=datastore.linstor_controllers)
-        util.log_info("Active resource '{r}' on destination host: {h}".format(r=res_name, h=dst_host))
-        res.activate(dst_host)
-        util.log_info("Deactivate resource '{r}' on source host: {h}".format(r=res_name, h=src_host))
-        res.deactivate(src_host)
+            target_vm = vm.Vm(util.show_vm(VM_ID))
+            # normal drbd image
+            res_name = get_rsc_name(target_vm, disk_id)
 
-        util.link_file(dst_host, dst_dir, dst_path, get_device_path(res), res.name)
+            if src_host in satellite_nodes:
+                if dst_host in satellite_nodes:
+                    move_linstor_resource(lin, src_host, dst_host, dst_path, dst_dir, res_name)
+                else:
+                    util.log_info("None Linstor dst node: " + dst_host)
+                    move_none_linstor_host(lin, src_host, src_path, dst_host, dst_path, dst_dir, res_name)
+            else:
+                if dst_host in satellite_nodes:
+                    move_from_none_linstor_host(
+                        datastore.linstor_controllers,
+                        datastore.linstor_resource_group,
+                        src_host,
+                        src_path,
+                        dst_host,
+                        dst_path,
+                        dst_dir,
+                        res_name,
+                        target_vm.disk_size(disk_id))
+                else:
+                    raise RuntimeError("Operation not supported: mv none linstor to none linstor node")
 
     util.log_info("Exiting tm mv")
 
