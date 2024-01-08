@@ -1,0 +1,6 @@
+#!/bin/bash
+
+ORIG_LOCATION="/var/lib/one/remotes/tm/shared/$(basename $0)"
+
+# forward to opennebula tm/shared command
+$ORIG_LOCATION $@
