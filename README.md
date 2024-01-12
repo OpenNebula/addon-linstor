@@ -58,6 +58,25 @@ python setup.py install
 
 To upgrade the driver, simply run the above installation script again.
 
+## From 2.x to 3.x
+
+
+### Linstor system datastore
+
+In version 3.x we removed handling context images within Linstor plugin
+and fallback to the `tm/ssh` implementation.
+
+This means you have to remove the `CONTEXT_DISK_TYPE` attribute from
+the Linstor system datastore, as we now use the default FILE type.
+
+Context images are just read-only ISO files that are recreated everytime
+the VM is started and there is not much benefit form having them
+as DRBD resources.
+
+The plugin will delete old context images on VM delete and undeploy actions.
+If you want to clean up the context images `OpenNebula-vm-context-*` you need to
+stop and start the VM that is still using it (no reboot).
+
 ## Configuration
 Please refer the DRBD user guide for configuration and documentation:
 [Linstor User's guide](https://docs.linbit.com/docs/linstor-guide/#ch-opennebula-linstor)

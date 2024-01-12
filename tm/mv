@@ -25,7 +25,7 @@ import sys
 from linstor import Resource, MultiLinstor
 from one import util, vm
 from one.datastore import Datastore
-from one.extender import get_rsc_name, get_device_path, get_satellite_nodes, deploy
+from one.extender import get_rsc_name, get_device_path, get_satellite_nodes, deploy, delete_vm_contexts
 
 SRC = sys.argv[1]
 DST = sys.argv[2]
@@ -140,10 +140,23 @@ def main():
     datastore = Datastore(util.show_ds(DS_ID))
 
     disk_id = SRC.split(".")[-1].strip() if "disk." in SRC else None
+    target_vm = vm.Vm(util.show_vm(VM_ID))
 
     if disk_id is None:
         # this path is executed if used as system ds and as final mv call as the vm directory
         util.ssh_make_path(" ".join([dst_host, dst_dir]))
+
+        # try to delete VM context images as we move to context file images
+        if True:
+            if target_vm.has_context:
+                del_result = delete_vm_contexts(datastore.linstor_controllers, VM_ID, target_vm.context_id)
+
+                for res in del_result:
+                    if del_result[res] is not None:
+                        util.log_info(str(del_result[res]))
+            else:
+                util.log_info("No CONTEXT section in VM({vm}) XML info".format(vm=VM_ID))
+        # end of context delete
 
         # this copy command does the same as the opennebula ssh/mv
         # the tar copy might fail if the src host is already down
@@ -169,7 +182,6 @@ def main():
         with MultiLinstor(MultiLinstor.controller_uri_list(datastore.linstor_controllers)) as lin:
             satellite_nodes = get_satellite_nodes(lin)
 
-            target_vm = vm.Vm(util.show_vm(VM_ID))
             # normal drbd image
             res_name = get_rsc_name(target_vm, disk_id)
 

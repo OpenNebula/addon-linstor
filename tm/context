@@ -20,119 +20,38 @@ limitations under the License.
 from __future__ import print_function
 
 import sys
-import os
-import shutil
 import subprocess
-from one import util, consts
+from one import util, vm
 from one.datastore import Datastore
-from one.extender import get_device_path, get_current_context_id, deploy
-from linstor import Resource
+from one.extender import delete_vm_contexts
 
-FILES = sys.argv[1:-3]
 DST = sys.argv[-3]
-VM_ID = sys.argv[-2]
+VM_ID = int(sys.argv[-2])
 DS_ID = sys.argv[-1]
 
 
-def ensure_dir(directory):
-    try:
-        os.mkdir(directory)
-    except OSError:
-        pass
-
-
-def _get_correct_paths(path):
-    """
-    If a path with a ':' is passed, we have to split this entry.
-    As the part before ':' is the source file and the suffix is the actual filename
-    :param str path: opennebula iso file path argument
-    :return: A tuple with the source and destination name
-    """
-    if ':' in path:
-        s = path.split(':', 1)
-        return s[0], "'" + s[1] + "'"
-    return path, ""
-
-
 def main():
-    util.log_info("Entering tm/context on {h} for files {f}.".format(h=DST, f=FILES))
-
-    disk_id = DST.split(".")[-1].strip()
-
-    dst_host = util.arg_host(DST).strip()
-    dst_path = util.arg_path(DST).strip()
-    dst_dir = os.path.dirname(dst_path).strip()
+    util.log_info("Entering tm/context on {h}.".format(h=DST))
 
     datastore = Datastore(util.show_ds(DS_ID))
+    target_vm = vm.Vm(util.show_vm(VM_ID))
 
-    iso_dir = os.path.join(datastore.base_path, ".isofiles", str(VM_ID))
+    # cleanup old context images no longer needed since v3.x
+    if target_vm.has_context:
+        del_result = delete_vm_contexts(datastore.linstor_controllers, VM_ID, target_vm.context_id)
 
-    ensure_dir(datastore.base_path)
-    ensure_dir(os.path.join(datastore.base_path, ".isofiles"))
-    ensure_dir(iso_dir)
+        for res in del_result:
+            if del_result[res] is not None:
+                util.log_info(str(del_result[res]))
+    else:
+        util.log_info("No CONTEXT section in VM({vm}) XML info".format(vm=VM_ID))
 
-    iso_file = os.path.join(iso_dir, str(VM_ID) + ".iso")
+    arguments = sys.argv[1:]
+    cmd = ["/var/lib/one/remotes/tm/ssh/context"] + arguments
+    process = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    for file in FILES:
-        util.log_info("copy {s} {d}".format(s=file, d=os.path.join(iso_dir, os.path.basename(file))))
-        if file.startswith("http"):
-            subprocess.check_call(["wget", "-P", iso_dir, file])
-        else:
-            src, dst_name = _get_correct_paths(file)
-
-            # instead of using python copy utils, we do a bash call
-            # because we don't want to handle shell quoting in python
-            util.exec_and_log(
-                "cp -R {src} {dst}".format(src=src, dst=os.path.join(iso_dir, os.path.basename(dst_name))),
-                "Error copying {src} to {dir}".format(src=src, dir=iso_dir))
-
-    rc = util.mkiso_command(
-        '-o {iso_file} -V CONTEXT -J -R {iso_dir}'.format(
-                            iso_file=iso_file, iso_dir=iso_dir)
-    )
-
-    if rc == 0:
-        iso_size = os.path.getsize(iso_file)
-        iso_size_mb = int(iso_size / 1024 / 1024) + 1
-
-        c_id = get_current_context_id(datastore.linstor_controllers, int(VM_ID), int(disk_id))
-        # del_result = delete_vm_contexts(datastore.linstor_controllers, VM_ID, disk_id)
-        # for res in del_result:
-        #     if del_result[res] is not None:
-        #         util.log_info(str(del_result[res]))
-
-        if c_id is None:
-            res_name = consts.CONTEXT_PREFIX + "-vm{vm_id}-disk{disk_id}-{cid}".format(
-                vm_id=VM_ID, disk_id=disk_id, cid=1
-            )
-            resource = deploy(
-                linstor_controllers=datastore.linstor_controllers,
-                resource_name=res_name,
-                vlm_size_str='{s}MiB'.format(s=iso_size_mb),
-                resource_group=datastore.linstor_resource_group
-            )
-        else:
-            res_name = consts.CONTEXT_PREFIX + "-vm{vm_id}-disk{disk_id}-{cid}".format(
-                vm_id=VM_ID, disk_id=disk_id, cid=c_id
-            )
-            resource = Resource(res_name, datastore.linstor_controllers)
-
-        resource.activate(dst_host)
-
-        if util.exec_and_log(
-            'cat {iso} | ssh {n} dd of={dev_path} status=none'.format(
-                iso=iso_file, n=dst_host, dev_path=get_device_path(resource)),
-            "Error copying iso to drbd"
-        ) != 0:
-            raise RuntimeError("ERROR: Error copying iso to drbd device {dev_path} on node {n}".format(
-                dev_path=get_device_path(resource), n=dst_host))
-
-        # link drbd device
-        util.link_file(dst_host, dst_dir, dst_path, get_device_path(resource), res_name)
-
-    shutil.rmtree(iso_dir, ignore_errors=True)
-
-    util.log_info("Leaving tm/context successfully.")
+    util.log_info("tm/ssh/context finished with {r}.".format(r=process.returncode))
+    sys.exit(process.returncode)
 
 
 if __name__ == "__main__":

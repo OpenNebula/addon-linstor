@@ -59,17 +59,21 @@ def main():
             res.deactivate(src_host)
             res.allow_two_primaries = False
 
-    datastore = Datastore(util.show_ds(DS_ID))
-    if datastore.tm_mad == "linstor":
-        if target_vm.has_context:
-            # deactivate context image too
-            context_id = target_vm.context_id
-            res_name = get_current_context(datastore.linstor_controllers, int(VM_ID), context_id)
-            res = Resource(name=res_name, uri=datastore.linstor_controllers)
-            res.deactivate(src_host)
-            res.allow_two_primaries = False
-        else:
-            util.log_info("No CONTEXT section in VM({vm}) XML info".format(vm=VM_ID))
+    # TODO delete this if-block after context transition time is over
+    if True:
+        datastore = Datastore(util.show_ds(DS_ID))
+        if datastore.tm_mad == "linstor":
+            if target_vm.has_context:
+                # deactivate context image too
+                context_id = target_vm.context_id
+                res_name = get_current_context(datastore.linstor_controllers, int(VM_ID), context_id)
+                if res_name:
+                    res = Resource(name=res_name, uri=datastore.linstor_controllers)
+                    res.deactivate(src_host)
+                    res.allow_two_primaries = False
+            else:
+                util.log_info("No CONTEXT section in VM({vm}) XML info".format(vm=VM_ID))
+    # end delete
 
     args = ""
     for arg in sys.argv[1:]:

@@ -73,7 +73,8 @@ def main():
 
         context_id = target_vm.context_id
         context_path = "{}/disk.{}".format(dst_dir, context_id)
-        if datastore.tm_mad != "linstor":
+        res_name = get_current_context(datastore.linstor_controllers, VM_ID, context_id)
+        if datastore.tm_mad != "linstor" or res_name is None:
             # [phil] I guess this does not belong here, but I want working live
             # migration with ssh system store.
             # scp'ing context block device from the source to the destination machine
@@ -86,11 +87,12 @@ def main():
                 raise RuntimeError("Error: Unable to scp {} from {} to {}".format(context_path, src_host, dst_host))
         else:
             # here we have for sure a linstor datastore
-            res_name = get_current_context(datastore.linstor_controllers, VM_ID, context_id)
-            res = Resource(name=res_name, uri=datastore.linstor_controllers)
-            res.activate(DST_HOST)
-            res.allow_two_primaries = True
-            util.link_file(dst_host, dst_dir, context_path, get_device_path(res), res.name)
+            # TODO remove this else after we some minor verions, transition code for running VM's
+            if res_name:
+                res = Resource(name=res_name, uri=datastore.linstor_controllers)
+                res.activate(DST_HOST)
+                res.allow_two_primaries = True
+                util.link_file(dst_host, dst_dir, context_path, get_device_path(res), res.name)
     else:
         util.log_info("No CONTEXT section in VM({vm}) XML info".format(vm=VM_ID))
 
