@@ -1,3 +1,13 @@
+linstor-opennebula (3.0.0-1) experimental; urgency=medium
+
+  * extender: add get_satellite_nodes()
+  * tm/mv: add support to mv resource from and to none linstor nodes
+  * backup: forward backup call to tm/shared driver
+  * setup.cfg: build-requires deprecated -> build_requires
+  * context: remove context handling from linstor plugin
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Mon, 15 Jan 2024 08:52:51 +0000
+
 linstor-opennebula (2.2.2-1) experimental; urgency=medium
 
   * tm/delete: fix out of bounds error
