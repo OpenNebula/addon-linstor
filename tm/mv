@@ -25,7 +25,8 @@ import sys
 from linstor import Resource, MultiLinstor
 from one import util, vm
 from one.datastore import Datastore
-from one.extender import get_rsc_name, get_device_path, get_satellite_nodes, deploy, delete_vm_contexts
+from one.extender import get_rsc_name, get_device_path, deploy, delete_vm_contexts
+from one.extender import get_satellite_nodes, get_satellite_nodes_online
 
 SRC = sys.argv[1]
 DST = sys.argv[2]
@@ -55,7 +56,7 @@ def move_linstor_resource(lin, src_host, dst_host, dst_path, dst_dir, rsc_name):
 
 def move_none_linstor_host(linstor, src_host, src_path, dst_host, dst_path, dst_dir, rsc_name):
     """
-    Moves linstor resources to a non satellite host (maybe undeploy called)
+    Moves linstor resources to a none satellite host (maybe undeploy called)
 
     :param MultiLinstor linstor: linstor api object
     :param str src_host: hostname of source node
@@ -65,30 +66,40 @@ def move_none_linstor_host(linstor, src_host, src_path, dst_host, dst_path, dst_
     :param str dst_dir: directory path of resource on disk
     :param str rsc_name: linstor resource name
     """
+    res = Resource(name=rsc_name, existing_client=linstor)
+    diskful_nodes = res.diskful_nodes()
+
+    online_nodes = get_satellite_nodes_online(linstor, node_filter=diskful_nodes)
+    if not online_nodes:
+        raise RuntimeError("No online linstor node to copy resource {resource} from.".format(resource=rsc_name))
+    copy_from_host = src_host if src_host in online_nodes else online_nodes[0]
     util.ssh_make_path(" ".join([dst_host, dst_dir]))
     cmd = [
         "set -e -o pipefail",
         "dd if={src_path} bs=4M iflag=direct conv=sparse | ssh {dst_host} -- 'dd of={dst_path} bs=4M conv=sparse'".format(
-            src_path=src_path,
+            src_path=get_device_path(res),
             dst_host=dst_host,
             dst_path=dst_path)
     ]
     rc, _, err = util.ssh_monitor_and_log(
-        host=src_host,
+        host=copy_from_host,
         cmd=" && ".join(cmd),
         error_msg="dd")
     if rc != 0:
-        raise RuntimeError("Unable to copy linstor resource to new host {host}: {err}".format(host=dst_host, err=err))
+        raise RuntimeError("Unable to copy linstor resource from {from_host} to new host {host}: {err}"
+                           .format(from_host=copy_from_host, host=dst_host, err=err))
 
-    res = Resource(name=rsc_name, existing_client=linstor)
-    res.delete()
-    util.unlink_file(src_host, src_path)
+    if src_host == copy_from_host:
+        res.delete()
+        util.unlink_file(src_host, src_path)
+    # else the resource will not be able to be deleted because original src host is offline
+    # so do not even attempt it, this will create a name collision on deploy (until manually deleted before)
 
 
 def move_from_none_linstor_host(
         controllers, resource_group, src_host, src_path, dst_host, dst_path, dst_dir, rsc_name, disk_size_mb):
     """
-    Moves linstor resources to a non satellite host (maybe undeploy called)
+    Moves linstor resources from a none satellite host to a linstor host (maybe deploy called)
 
     :param str controllers: linstor controllers comma list
     :param str resource_group: resource group name
@@ -177,7 +188,7 @@ def main():
             cmd=tar_copy_cmd,
             error_msg='Unable to tar copy to new host')
         if rc != 0:
-            raise RuntimeError("Unable to tar copy to new host")
+            util.log_error("Unable to tar copy to new host")
     else:
         with MultiLinstor(MultiLinstor.controller_uri_list(datastore.linstor_controllers)) as lin:
             satellite_nodes = get_satellite_nodes(lin)

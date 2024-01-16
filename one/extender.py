@@ -387,6 +387,22 @@ def get_satellite_nodes(lin):
                 [linstor.sharedconsts.VAL_NODE_TYPE_STLT.upper(), linstor.sharedconsts.VAL_NODE_TYPE_CMBD.upper()]]
 
 
+def get_satellite_nodes_online(lin, node_filter = None):
+    """
+    Returns all satellite node names from Linstor that are online
+
+    :param MultiLinstor lin: Linstor access object
+    :param List[str] node_filter: Only find given nodes
+    :return: List of satellite node names
+    :rtype: list[str]
+    """
+    nodes = lin.node_list_raise(filter_by_nodes=node_filter)
+    return [n.name for n in nodes.nodes
+            if n.type.upper() in
+            [linstor.sharedconsts.VAL_NODE_TYPE_STLT.upper(), linstor.sharedconsts.VAL_NODE_TYPE_CMBD.upper()]
+            and n.connection_status == linstor.sharedconsts.ConnectionStatus.ONLINE.name]
+
+
 def resize_disk(resource, target_vm, disk_id, new_size):
     """
 
