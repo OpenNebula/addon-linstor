@@ -34,12 +34,13 @@ VM_ID = int(sys.argv[3])
 DS_ID = sys.argv[4]
 
 
-def move_linstor_resource(lin, src_host, dst_host, dst_path, dst_dir, rsc_name):
+def move_linstor_resource(lin, src_host, src_path, dst_host, dst_path, dst_dir, rsc_name):
     """
     Moves linstor resources between linstor hosts
 
     :param MultiLinstor lin: linstor api object
     :param str src_host: hostname of source node
+    :param str src_path: full path of src resource link
     :param str dst_host: hostname of destination node
     :param str dst_path: full path of resource on disk
     :param str dst_dir: directory path of resource on disk
@@ -50,6 +51,7 @@ def move_linstor_resource(lin, src_host, dst_host, dst_path, dst_dir, rsc_name):
     res.activate(dst_host)
     util.log_info("Deactivate resource '{r}' on source host: {h}".format(r=rsc_name, h=src_host))
     res.deactivate(src_host)
+    util.unlink_file(src_host, src_path)
 
     util.link_file(dst_host, dst_dir, dst_path, get_device_path(res), res.name)
 
@@ -198,7 +200,7 @@ def main():
 
             if src_host in satellite_nodes:
                 if dst_host in satellite_nodes:
-                    move_linstor_resource(lin, src_host, dst_host, dst_path, dst_dir, res_name)
+                    move_linstor_resource(lin, src_host, src_path, dst_host, dst_path, dst_dir, res_name)
                 else:
                     util.log_info("None Linstor dst node: " + dst_host)
                     move_none_linstor_host(lin, src_host, src_path, dst_host, dst_path, dst_dir, res_name)
