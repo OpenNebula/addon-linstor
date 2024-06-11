@@ -1,9 +1,15 @@
+linstor-opennebula (3.0.2-1) experimental; urgency=medium
+
+  * tm/snap_create_live: implement (copy from snap_create)
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Tue, 11 Jun 2024 12:29:37 +0000
+
 linstor-opennebula (3.0.1-1) experimental; urgency=medium
 
   * tm/mv: don't fail on mv from a downed host
   * tm/mv: unlink src node after move
 
- -- Rene Peinthor <builder@33112c7b46b1>  Wed, 17 Jan 2024 07:08:55 +0000
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Wed, 17 Jan 2024 07:08:55 +0000
 
 linstor-opennebula (3.0.0-1) experimental; urgency=medium
 
