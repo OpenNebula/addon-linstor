@@ -12,7 +12,7 @@ before_script:
   - git clone --recursive git@$GIT_HOST:$PYTHON_LINSTOR_PATH
   - cd linstor-api-py
   - ../venv/bin/python setup.py install
-  - ../venv/bin/pip install xmlrunner
+  - ../venv/bin/pip install --trusted-host pypi.python.org xmlrunner
   - popd
 
 test:2.7:
@@ -35,7 +35,7 @@ test:2.7:
     - make gensrc
     - ../venv/bin/python setup.py install
     # and also install xmlrunner package
-    - ../venv/bin/pip install xmlrunner
+    - ../venv/bin/pip install --trusted-host pypi.python.org xmlrunner
     - popd
   script:
     - /tmp/venv/bin/python tests.py
