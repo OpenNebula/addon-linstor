@@ -1,3 +1,10 @@
+linstor-opennebula (3.0.3-1) experimental; urgency=medium
+
+  * tm/mv: do not fail if moving from a shutdown host
+  * gitlab: fix xmlrunner install
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Thu, 01 Aug 2024 08:24:37 +0000
+
 linstor-opennebula (3.0.2-1) experimental; urgency=medium
 
   * tm/snap_create_live: implement (copy from snap_create)
