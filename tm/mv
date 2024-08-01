@@ -51,7 +51,10 @@ def move_linstor_resource(lin, src_host, src_path, dst_host, dst_path, dst_dir, 
     res.activate(dst_host)
     util.log_info("Deactivate resource '{r}' on source host: {h}".format(r=rsc_name, h=src_host))
     res.deactivate(src_host)
-    util.unlink_file(src_host, src_path)
+    try:
+        util.unlink_file(src_host, src_path)
+    except RuntimeError:
+        util.log_error("Unable to unlink file: {f} on {h}".format(f=src_path, h=src_host))
 
     util.link_file(dst_host, dst_dir, dst_path, get_device_path(res), res.name)
 
