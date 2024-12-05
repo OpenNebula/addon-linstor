@@ -1,3 +1,9 @@
+linstor-opennebula (3.0.4-1) experimental; urgency=medium
+
+  * postmigrate: do not deactivate read-only open resources
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Thu, 05 Dec 2024 14:34:55 +0000
+
 linstor-opennebula (3.0.3-1) experimental; urgency=medium
 
   * tm/mv: do not fail if moving from a shutdown host
