@@ -25,7 +25,7 @@ import io
 from linstor import Resource
 from one import util, vm
 from one.datastore import Datastore
-from one.extender import get_rsc_name, get_current_context
+from one.extender import get_rsc_name, get_current_context, is_device_open
 
 SRC_HOST = sys.argv[1]
 DST_HOST = sys.argv[2]
@@ -56,7 +56,8 @@ def main():
             res_name = get_rsc_name(target_vm, disk)
             res = Resource(name=res_name, uri=image_datastore.linstor_controllers)
 
-            res.deactivate(src_host)
+            if res.volumes and not is_device_open(src_host, res.volumes[0].device_path):
+                res.deactivate(src_host)
             res.allow_two_primaries = False
 
     # TODO delete this if-block after context transition time is over
