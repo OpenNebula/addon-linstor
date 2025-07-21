@@ -57,6 +57,8 @@ def main():
             res = Resource(name=res_name, uri=image_datastore.linstor_controllers)
 
             if res.volumes and not is_device_open(src_host, res.volumes[0].device_path):
+                # CDROM devices are shared between multiple vm's with a read-only open
+                # we can't delete them as long as not all openers are closed
                 res.deactivate(src_host)
             res.allow_two_primaries = False
 

@@ -25,7 +25,7 @@ import sys
 from linstor import Resource, MultiLinstor
 from one import util, vm
 from one.datastore import Datastore
-from one.extender import get_rsc_name, get_device_path, deploy, delete_vm_contexts
+from one.extender import get_rsc_name, get_device_path, deploy, delete_vm_contexts, is_device_open
 from one.extender import get_satellite_nodes, get_satellite_nodes_online
 
 SRC = sys.argv[1]
@@ -50,7 +50,11 @@ def move_linstor_resource(lin, src_host, src_path, dst_host, dst_path, dst_dir, 
     util.log_info("Active resource '{r}' on destination host: {h}".format(r=rsc_name, h=dst_host))
     res.activate(dst_host)
     util.log_info("Deactivate resource '{r}' on source host: {h}".format(r=rsc_name, h=src_host))
-    res.deactivate(src_host)
+    if res.volumes and not is_device_open(dst_host, res.volumes[0].device_path):
+        # CDROM devices are shared between multiple vm's with a read-only open
+        # we can't delete them as long as not all openers are closed
+        res.deactivate(src_host)
+
     try:
         util.unlink_file(src_host, src_path)
     except RuntimeError:
