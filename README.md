@@ -23,8 +23,8 @@ Support for this addon can be found at the
 
 ## Compatibility
 
-* This addon is compatible with OpenNebula versions from 5.8 to 6.8
-* It was tested with version 6.6
+* This addon is compatible with OpenNebula versions from 5.8 to 7.0
+* It was tested with version 6.8 and 7.0
 * This version of README.md describes the installation process for ONE 5.6 environments
 * This is intended for use as an images datastore for use with either an NFS shared
 * system datastore or a SSH system datastore
