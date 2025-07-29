@@ -140,6 +140,19 @@ def move_from_none_linstor_host(
         raise RuntimeError("Unable to copy linstor resource to new host {host}: {err}".format(host=dst_host, err=err))
 
 
+def update_rsc_grp(linstor, rsc_name, rsc_grp_name):
+    """
+    Update the resource definitions resource group
+
+    :param MultiLinstor linstor: linstor api object
+    :param str rsc_name: linstor resource name
+    :param str rsc_grp_name: resource group to use
+    """
+    repl = linstor.resource_dfn_modify(rsc_name, {}, None, None, rsc_grp_name)
+    if not linstor.all_api_responses_no_error(repl):
+        raise RuntimeError("Unable to update resource group for resource: {rsc}".format(rsc=rsc_name))
+
+
 def main():
     util.log_info("Entering tm mv, from='{s}' to='{dst}'".format(s=SRC, dst=DST))
 
@@ -152,6 +165,9 @@ def main():
     src_host = util.arg_host(SRC).strip()
     src_path = util.arg_path(SRC).strip()
     src_dir = os.path.dirname(src_path)
+    src_ds_id = util.one_path_ds_id(src_path)
+
+    src_datastore = Datastore(util.show_ds(src_ds_id))
 
     dst_host = util.arg_host(DST).strip()
     dst_path = util.arg_path(DST).strip()
@@ -189,7 +205,6 @@ def main():
                 dst_host=dst_host,
                 dst_dir=dst_dir
             ),
-            "rm -Rf {src_path}".format(src_path=src_path)
         ])
 
         rc = util.ssh_exec_and_log(
@@ -198,6 +213,8 @@ def main():
             error_msg='Unable to tar copy to new host')
         if rc != 0:
             util.log_error("Unable to tar copy to new host")
+        else:
+            util.rm_shared_safe(src_host, src_path)
     else:
         with MultiLinstor(MultiLinstor.controller_uri_list(datastore.linstor_controllers)) as lin:
             satellite_nodes = get_satellite_nodes(lin)
@@ -210,19 +227,33 @@ def main():
                     move_linstor_resource(lin, src_host, src_path, dst_host, dst_path, dst_dir, res_name)
                 else:
                     util.log_info("None Linstor dst node: " + dst_host)
-                    move_none_linstor_host(lin, src_host, src_path, dst_host, dst_path, dst_dir, res_name)
+                    # prevent copying the whole image to the system ds, if it is on the same linstor cluster
+                    if src_datastore.linstor_controllers == datastore.linstor_controllers:
+                        util.log_info("SRC and DST datastore same linstor cluster, only update rscgrp")
+                        update_rsc_grp(lin, res_name, datastore.linstor_resource_group)
+                    else:
+                        move_none_linstor_host(lin, src_host, src_path, dst_host, dst_path, dst_dir, res_name)
             else:
                 if dst_host in satellite_nodes:
-                    move_from_none_linstor_host(
-                        datastore.linstor_controllers,
-                        datastore.linstor_resource_group,
-                        src_host,
-                        src_path,
-                        dst_host,
-                        dst_path,
-                        dst_dir,
-                        res_name,
-                        target_vm.disk_size(disk_id))
+                    rsc_dfns = lin.resource_dfn_list_raise(
+                        query_volume_definitions=False, filter_by_resource_definitions=[res_name])
+
+                    if rsc_dfns:
+                        res_deployed = Resource(res_name, existing_client=lin)
+                        update_rsc_grp(lin, res_name, datastore.linstor_resource_group)
+                        res_deployed.activate(dst_host)
+                        util.link_file(dst_host, dst_dir, dst_path, get_device_path(res_deployed), res_name)
+                    else:
+                        move_from_none_linstor_host(
+                            datastore.linstor_controllers,
+                            datastore.linstor_resource_group,
+                            src_host,
+                            src_path,
+                            dst_host,
+                            dst_path,
+                            dst_dir,
+                            res_name,
+                            target_vm.disk_size(disk_id))
                 else:
                     raise RuntimeError("Operation not supported: mv none linstor to none linstor node")
 

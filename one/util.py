@@ -310,6 +310,19 @@ def arg_path(string_args):
     return os.path.normpath(path)
 
 
+def one_path_ds_id(one_path):
+    """
+    Return the datastore id of the given opennebula path e.g.: /var/lib/datastores/100/32/disk.0
+    :param str one_path: opennebula /var/lib/datastores... path
+    :return: int id of the datastore
+    :rtype: int
+    """
+    m = re.search(r".*/(\d+)/\d+/?.*$", one_path)
+    if m:
+        return int(m.group(1))
+    return None
+
+
 def migrate_other(string_args):
     # We're turning off logging here because this gets called with a huge
     # base64 image dump and it's too noisy.
