@@ -334,21 +334,25 @@ def get_current_context(uri_list, vm_id, disk_id):
     return consts.CONTEXT_PREFIX + "-vm{vm_id}-disk{disk_id}-{cid}".format(vm_id=vm_id, disk_id=disk_id, cid=c_id)
 
 
-def get_device_path(res):
+def get_device_path(res, by_res=True):
     """
     Tries to get the correct device path for the resource.
     Usually device_path should be available from res.volumes[0].device_path,
     but old bugs/timing issues may render them empty, so this helps to acquire a valid device_path.
 
     :param Resource res: resource object to get the device path from
+    :param bool by_res: if True uses /dev/drbd/by-res/{} format
     :return: device path of the first volume
     :rtype: str
     :raises: RuntimeError if it isn't possible to get a device path
     """
-    device_path = res.volumes[0].device_path
+    device_path = "/dev/drbd/by-res/{resname}/0".format(resname=res.name)
+    util.log_info("devpath " + device_path)
+    if not by_res:
+        device_path = res.volumes[0].device_path
 
-    if not device_path and res.volumes[0].minor is not None:
-        device_path = "/dev/drbd{minor}".format(minor=res.volumes[0].minor)
+        if not device_path and res.volumes[0].minor is not None:
+            device_path = "/dev/drbd{minor}".format(minor=res.volumes[0].minor)
 
     if not device_path:
         raise RuntimeError("Could not get volume device path for resource '{res}'".format(res=res.name))
