@@ -26,6 +26,7 @@ from linstor import Resource
 from one import util, vm
 from one.datastore import Datastore
 from one.extender import get_rsc_name, get_device_path, get_current_context
+from one.util import is_shared_fs
 
 SRC_HOST = sys.argv[1]
 DST_HOST = sys.argv[2]
@@ -69,30 +70,33 @@ def main():
     util.migrate_other(args)
 
     if target_vm.has_context:
-        datastore = Datastore(util.show_ds(DS_ID))
+        if not is_shared_fs(dst_host, dst_dir):
+            datastore = Datastore(util.show_ds(DS_ID))
 
-        context_id = target_vm.context_id
-        context_path = "{}/disk.{}".format(dst_dir, context_id)
-        res_name = get_current_context(datastore.linstor_controllers, VM_ID, context_id)
-        if datastore.tm_mad != "linstor" or res_name is None:
-            # [phil] I guess this does not belong here, but I want working live
-            # migration with ssh system store.
-            # scp'ing context block device from the source to the destination machine
-            scp_command = "if test ! -e {cp}; then scp {srch}:{cp} {cp}; fi".format(srch=src_host, cp=context_path)
-            rc = util.ssh_exec_and_log(
-                host=dst_host,
-                cmd=scp_command,
-                error_msg='Error: Unable to scp {} from {} to {}'.format(context_path, src_host, dst_host))
-            if rc != 0:
-                raise RuntimeError("Error: Unable to scp {} from {} to {}".format(context_path, src_host, dst_host))
+            context_id = target_vm.context_id
+            context_path = "{}/disk.{}".format(dst_dir, context_id)
+            res_name = get_current_context(datastore.linstor_controllers, VM_ID, context_id)
+            if datastore.tm_mad != "linstor" or res_name is None:
+                # [phil] I guess this does not belong here, but I want working live
+                # migration with ssh system store.
+                # scp'ing context block device from the source to the destination machine
+                scp_command = "if test ! -e {cp}; then scp {srch}:{cp} {cp}; fi".format(srch=src_host, cp=context_path)
+                rc = util.ssh_exec_and_log(
+                    host=dst_host,
+                    cmd=scp_command,
+                    error_msg='Error: Unable to scp {} from {} to {}'.format(context_path, src_host, dst_host))
+                if rc != 0:
+                    raise RuntimeError("Error: Unable to scp {} from {} to {}".format(context_path, src_host, dst_host))
+            else:
+                # here we have for sure a linstor datastore
+                # TODO remove this else after we some minor verions, transition code for running VM's
+                if res_name:
+                    res = Resource(name=res_name, uri=datastore.linstor_controllers)
+                    res.activate(DST_HOST)
+                    res.allow_two_primaries = True
+                    util.link_file(dst_host, dst_dir, context_path, get_device_path(res), res.name)
         else:
-            # here we have for sure a linstor datastore
-            # TODO remove this else after we some minor verions, transition code for running VM's
-            if res_name:
-                res = Resource(name=res_name, uri=datastore.linstor_controllers)
-                res.activate(DST_HOST)
-                res.allow_two_primaries = True
-                util.link_file(dst_host, dst_dir, context_path, get_device_path(res), res.name)
+            util.log_info("Shared FS no copy necessary")
     else:
         util.log_info("No CONTEXT section in VM({vm}) XML info".format(vm=VM_ID))
 

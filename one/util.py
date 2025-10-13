@@ -245,6 +245,17 @@ def unlink_file(host, path):
         raise RuntimeError("Error: Unable to remove symbolic link {} on {}".format(path, host))
     return True
 
+def is_shared_fs(host, path):
+    """
+    Check if path on host is a shared filesystem(nfs)
+
+    :param str host: host computer
+    :param str path: path on the host to delete
+    :return: True, or raises RuntimeError()
+    """
+    fstype = ssh_direct(host, 'stat --file-system --format=%T "{dst}"'.format(dst=path)).strip()
+    return fstype and fstype in ['nfs', 'fuseblk']
+
 
 def rm_shared_safe(host, path):
     """
@@ -254,12 +265,10 @@ def rm_shared_safe(host, path):
     :param str path: path on the host to delete
     :return: True, or raises RuntimeError()
     """
-    fstype = ssh_direct(host, 'stat --file-system --format=%T "{dst}"'.format(dst=path)).strip()
-
-    if fstype and fstype not in ['nfs', 'fuseblk']:
+    if not is_shared_fs(host, path):
         unlink_file(host, path)
     else:
-        log_info("filesystem is shared('{fs}'), not deleting: {p}".format(fs=fstype, p=path))
+        log_info("filesystem is shared, not deleting: {p}".format(p=path))
 
     return True
 
