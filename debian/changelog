@@ -1,3 +1,13 @@
+linstor-opennebula (3.0.5-1) experimental; urgency=medium
+
+  * tm/mv: fix delete attempt of open (CDROM) devices
+  * tm/mv: improve undeploy if datastores are on the same Linstor cluster
+  * device_path: per default use /dev/drbd/by-res/ names now
+  * readme: update compatibility version strings
+  * premigrate: do not ssh migrate on shared filesystems
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Wed, 15 Oct 2025 09:03:46 +0000
+
 linstor-opennebula (3.0.4-1) experimental; urgency=medium
 
   * postmigrate: do not deactivate read-only open resources
