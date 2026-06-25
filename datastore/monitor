@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 OpenNebula Driver for Linstor
 Copyright 2018 LINBIT USA LLC
@@ -16,10 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from __future__ import print_function
-
-import linstor
-from one.extender import calculate_space
+from one.extender import calculate_space, connect
 from one import driver_action, util
 
 
@@ -28,7 +24,7 @@ def main():
     driver = driver_action.DriverAction(arg_driver_action)
     util.log_info("Entering datastore monitor[{n}]".format(n=driver.datastore.name))
 
-    with linstor.MultiLinstor(linstor.MultiLinstor.controller_uri_list(driver.datastore.linstor_controllers)) as lin:
+    with connect(driver.datastore.linstor_controllers, driver.datastore.linstor_controller_auth_token) as lin:
         rsc_grp_name = driver.datastore.linstor_resource_group
         rsc_grp_resp = lin.resource_group_list_raise(filter_by_resource_groups=[rsc_grp_name])
         rsc_grp_data = rsc_grp_resp.resource_groups[0]

@@ -81,6 +81,20 @@ stop and start the VM that is still using it (no reboot).
 Please refer the DRBD user guide for configuration and documentation:
 [Linstor User's guide](https://docs.linbit.com/docs/linstor-guide/#ch-opennebula-linstor)
 
+### Controller authentication
+
+If your LINSTOR controller requires authentication, set the auth token on the
+datastore template with the `LINSTOR_CONTROLLER_AUTH_TOKEN` attribute:
+
+```
+LINSTOR_CONTROLLER_AUTH_TOKEN = "<token>"
+```
+
+The token is sent as a bearer token and **only over a secure (HTTPS) connection**.
+Make sure `LINSTOR_CONTROLLERS` uses the `linstor+ssl://` scheme (or a plain
+`linstor://` controller that redirects to HTTPS); over plain HTTP the token is not
+transmitted and requests would be unauthenticated.
+
 ## Usage
 
 This driver will use Linstor to create new images and transfer them to

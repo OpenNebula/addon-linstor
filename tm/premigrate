@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 OpenNebula Driver for Linstor
 Copyright 2018 LINBIT USA LLC
@@ -22,10 +21,9 @@ import base64
 import sys
 import io
 
-from linstor import Resource
 from one import util, vm
 from one.datastore import Datastore
-from one.extender import get_rsc_name, get_device_path, get_current_context
+from one.extender import get_rsc_name, get_device_path, get_current_context, make_resource
 from one.util import is_shared_fs
 
 SRC_HOST = sys.argv[1]
@@ -57,7 +55,8 @@ def main():
             image_datastore = Datastore(util.show_ds(target_vm.disk_datastore_id(disk)))
             res_name = get_rsc_name(target_vm, disk)
 
-            res = Resource(name=res_name, uri=image_datastore.linstor_controllers)
+            res = make_resource(res_name, image_datastore.linstor_controllers,
+                                image_datastore.linstor_controller_auth_token)
             res.activate(DST_HOST)
             res.allow_two_primaries = True
             dst_path = "{}/disk.{}".format(dst_dir, disk)
@@ -75,7 +74,8 @@ def main():
 
             context_id = target_vm.context_id
             context_path = "{}/disk.{}".format(dst_dir, context_id)
-            res_name = get_current_context(datastore.linstor_controllers, VM_ID, context_id)
+            res_name = get_current_context(datastore.linstor_controllers, VM_ID, context_id,
+                                           auth_token=datastore.linstor_controller_auth_token)
             if datastore.tm_mad != "linstor" or res_name is None:
                 # [phil] I guess this does not belong here, but I want working live
                 # migration with ssh system store.
@@ -91,7 +91,8 @@ def main():
                 # here we have for sure a linstor datastore
                 # TODO remove this else after we some minor verions, transition code for running VM's
                 if res_name:
-                    res = Resource(name=res_name, uri=datastore.linstor_controllers)
+                    res = make_resource(res_name, datastore.linstor_controllers,
+                                        datastore.linstor_controller_auth_token)
                     res.activate(DST_HOST)
                     res.allow_two_primaries = True
                     util.link_file(dst_host, dst_dir, context_path, get_device_path(res), res.name)

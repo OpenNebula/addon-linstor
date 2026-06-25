@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 OpenNebula Driver for Linstor
 Copyright 2018 LINBIT USA LLC
@@ -17,14 +16,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from __future__ import print_function
-
 import sys
 
 from one import util, vm
 from one.datastore import Datastore
-from one.extender import delete, get_rsc_name, delete_vm_contexts, is_device_open
-from linstor import Resource, LinstorError
+from one.extender import delete, get_rsc_name, delete_vm_contexts, is_device_open, make_resource
+from linstor import LinstorError
 
 DST = sys.argv[1]
 VM_ID = int(sys.argv[2])
@@ -53,7 +50,7 @@ def main():
     if disk_id is not None:
         res_name = get_rsc_name(target_vm, disk_id)
 
-        res = Resource(name=res_name, uri=datastore.linstor_controllers)
+        res = make_resource(res_name, datastore.linstor_controllers, datastore.linstor_controller_auth_token)
         if res.volumes and not is_device_open(dst_host, res.volumes[0].device_path):
             # CDROM devices are shared between multiple vm's with a read-only open
             # we can't delete them as long as not all openers are closed
@@ -63,12 +60,14 @@ def main():
             target_vm.disk_persistent(disk_id) or target_vm.disk_type(disk_id) == "CDROM"
         ):
             try:
-                delete(res_name, datastore.linstor_controllers)
+                delete(res_name, datastore.linstor_controllers, datastore.linstor_controller_auth_token)
             except LinstorError as le:
                 util.log_info(str(le))
     else:
         if target_vm.has_context:
-            del_result = delete_vm_contexts(datastore.linstor_controllers, VM_ID, target_vm.context_id)
+            del_result = delete_vm_contexts(
+                datastore.linstor_controllers, VM_ID, target_vm.context_id,
+                auth_token=datastore.linstor_controller_auth_token)
 
             for res in del_result:
                 if del_result[res] is not None:

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 OpenNebula Driver for Linstor
 Copyright 2018 LINBIT USA LLC
@@ -17,12 +16,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from __future__ import print_function
-
 import sys
 
-from one.extender import clone, get_rsc_name
-from linstor import Resource
+from one.extender import clone, get_rsc_name, make_resource
 from one import util, vm
 from one.datastore import Datastore
 
@@ -44,12 +40,13 @@ def main():
     res_name = get_rsc_name(target_vm, disk_id)
     util.log_info("SOURCE IMAGE: " + res_name)
 
-    res = Resource(res_name, datastore.linstor_controllers)
+    res = make_resource(res_name, datastore.linstor_controllers, datastore.linstor_controller_auth_token)
     success, _ = clone(
         res,
         DST,
         datastore.linstor_resource_group,
-        prefer_node=src_host
+        prefer_node=src_host,
+        auth_token=datastore.linstor_controller_auth_token
     )
 
     util.log_info("Exiting tm cpds with " + "success." if success else "error.")

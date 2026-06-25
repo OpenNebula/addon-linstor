@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 OpenNebula Driver for Linstor
 Copyright 2018 LINBIT USA LLC
@@ -19,7 +18,7 @@ limitations under the License.
 import xml.etree.ElementTree as ET
 
 
-class Datastore(object):
+class Datastore:
 
     """Docstring for Datastore. """
 
@@ -37,6 +36,7 @@ class Datastore(object):
         self._base_path = root.find("BASE_PATH")
         self._linstor_controllers = root.find("TEMPLATE").find("LINSTOR_CONTROLLERS")
         self._linstor_resource_group = root.find("TEMPLATE").find("LINSTOR_RESOURCE_GROUP")
+        self._linstor_controller_auth_token = root.find("TEMPLATE").find("LINSTOR_CONTROLLER_AUTH_TOKEN")
         self._restricted_dirs = root.find("TEMPLATE").find("RESTRICTED_DIRS")
         self._safe_dirs = root.find("TEMPLATE").find("SAFE_DIRS")
         self._staging_dirs = root.find("TEMPLATE").find("STAGING_DIR")
@@ -111,6 +111,21 @@ class Datastore(object):
             return self._linstor_controllers.text
         except AttributeError:
             return "linstor://localhost"
+
+    @property
+    def linstor_controller_auth_token(self):
+        """
+        Returns the configured Linstor controller auth token, if any.
+
+        The token is only sent to the controller over a secure (HTTPS) connection.
+
+        :return: Auth token string or None if not set
+        :rtype: Optional[str]
+        """
+        try:
+            return self._linstor_controller_auth_token.text
+        except AttributeError:
+            return None
 
     @property
     def restricted_dirs(self):

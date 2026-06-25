@@ -9,6 +9,38 @@ from one.datastore import Datastore
 from one.image import Image
 
 
+def connect(uri_list, auth_token=None):
+    """
+    Creates a MultiLinstor client for the given controllers, optionally authenticated.
+
+    :param str uri_list: linstor controllers string (comma separated)
+    :param Optional[str] auth_token: controller auth token, sent only over HTTPS
+    :return: MultiLinstor client object (not yet connected)
+    :rtype: MultiLinstor
+    """
+    return MultiLinstor(MultiLinstor.controller_uri_list(uri_list), auth_token=auth_token)
+
+
+def make_resource(name, uri_list, auth_token=None, resource_group=None):
+    """
+    Creates a Resource object, threading an optional auth token via an authenticated client.
+
+    python-linstor's Resource has no auth_token parameter; a token can only reach it through
+    an existing_client, so when a token is set we build an authenticated MultiLinstor and hand
+    it over. Without a token the behaviour is identical to Resource(name, uri=uri_list).
+
+    :param str name: resource name
+    :param str uri_list: linstor controllers string (comma separated)
+    :param Optional[str] auth_token: controller auth token
+    :param Optional[str] resource_group: resource group to associate
+    :return: Resource object
+    :rtype: Resource
+    """
+    if auth_token:
+        return Resource(name, existing_client=connect(uri_list, auth_token), resource_group=resource_group)
+    return Resource(name, uri=uri_list, resource_group=resource_group)
+
+
 def calculate_space(lin, storage_pools, auto_place_count):
     """
 
@@ -70,7 +102,8 @@ def deploy(
         resource_name,
         vlm_size_str,
         resource_group=None,
-        prefer_node=None
+        prefer_node=None,
+        auth_token=None
 ):
     """
     Deploys resource depending on resource_group, deployment nodes or auto_place setting.
@@ -80,6 +113,7 @@ def deploy(
     :param str vlm_size_str: volume size string
     :param str resource_group: Name of the resource group to use
     :param Optional[str] prefer_node: Tries to place a diskful on this node(if autoplace)
+    :param Optional[str] auth_token: controller auth token
     :return: Resource object of the new deployment
     :rtype: Resource
     """
@@ -90,7 +124,8 @@ def deploy(
         resource_group,
         resource_name,
         [vlm_size_str],
-        definitions_only=bool(prefer_node)
+        definitions_only=bool(prefer_node),
+        existing_client=connect(linstor_controllers, auth_token) if auth_token else None
     )
     if prefer_node:
         resource.placement.redundancy = None  # force resource group values, default would be 2
@@ -99,15 +134,16 @@ def deploy(
     return resource
 
 
-def delete(resource_name, uri_list):
+def delete(resource_name, uri_list, auth_token=None):
     """
     Deletes a resource with all it's snapshots
 
     :param str resource_name: name of the resource
     :param str uri_list: linstor uris string
+    :param Optional[str] auth_token: controller auth token
     :return: True
     """
-    with MultiLinstor(MultiLinstor.controller_uri_list(uri_list)) as lin:
+    with connect(uri_list, auth_token) as lin:
         snapshots = lin.snapshot_dfn_list()[0]
         for snap in [x for x in snapshots.snapshots if x.rsc_name == resource_name]:
             util.log_info("Deleting snapshot '{r}/{s}'".format(r=resource_name, s=snap.snapshot_name))
@@ -123,7 +159,7 @@ def delete(resource_name, uri_list):
     return True
 
 
-def delete_vm_contexts(uri_list, vm_id, disk_id):
+def delete_vm_contexts(uri_list, vm_id, disk_id, auth_token=None):
     """
     Tries to delete all generated vm context images.
     First queries linstor for all context images for the vm and then deletes one by one ignoring any failed attempts.
@@ -131,11 +167,12 @@ def delete_vm_contexts(uri_list, vm_id, disk_id):
     :param str uri_list: linstor uri list string
     :param int vm_id: Opennebula id of the VM
     :param int disk_id: Opennebula disk id of the VM
+    :param Optional[str] auth_token: controller auth token
     :return: Dict, where key is the resource name and either None(Success) or LinstorError on failure.
     :rtype: dict[str, Optional[LinstorError]]
     """
     del_result = {}
-    with MultiLinstor(MultiLinstor.controller_uri_list(uri_list)) as lin:
+    with connect(uri_list, auth_token) as lin:
         rsc_dfn_list_resp = lin.resource_dfn_list(query_volume_definitions=False)
         if rsc_dfn_list_resp:
             rsc_dfn_list = rsc_dfn_list_resp[0]  # type: ResourceDefinitionResponse
@@ -144,7 +181,7 @@ def delete_vm_contexts(uri_list, vm_id, disk_id):
                                                                         .format(vm_id=vm_id, disk_id=disk_id))]
             for rsc_name in delete_list:
                 try:
-                    delete(rsc_name, uri_list)
+                    delete(rsc_name, uri_list, auth_token)
                     del_result[rsc_name] = None
                 except LinstorError as le:
                     del_result[rsc_name] = le
@@ -160,7 +197,8 @@ def get_in_use_node(resource):
     :return: node name of the primary node, or None if all secondary
     :rtype: Optional[str]
     """
-    with MultiLinstor(resource.client.uri_list) as lin:
+    # reuse the resource's own connection so an authenticated client (existing_client) is kept
+    with resource._get_connection() as lin:
         lst = lin.resource_list(filter_by_resources=[resource.name])
         if lst:
             nodes = [x for x in lst[0].resource_states if x.in_use]
@@ -175,7 +213,8 @@ def clone(
         resource_group=None,
         prefer_node=None,
         new_size=None,
-        allow_dependent_clone=False):
+        allow_dependent_clone=False,
+        auth_token=None):
     """
     Clones a resource to a new resource.
 
@@ -185,6 +224,7 @@ def clone(
     :param Optional[str] prefer_node: try to place resource on this node
     :param Optional[int] new_size: new volume size, None to keep original size
     :param bool allow_dependent_clone: allow the clone to depend on source resource
+    :param Optional[str] auth_token: controller auth token (only needed for the COPY fallback)
     :return: Tuple, first item if success, second if linstor clone was used
     :rtype: Tuple[bool, bool]
     """
@@ -215,7 +255,8 @@ def clone(
             resource_name=clone_name,
             vlm_size_str=vol_size_str,
             resource_group=resource_group,
-            prefer_node=prefer_node
+            prefer_node=prefer_node,
+            auth_token=auth_token
         )
 
         # use copy source on the current primary node or on one with a disk, if all secondary
@@ -288,16 +329,17 @@ def get_rsc_name(target_vm, disk_id):
     return res_name
 
 
-def get_current_context_id(uri_list, vm_id, disk_id):
+def get_current_context_id(uri_list, vm_id, disk_id, auth_token=None):
     """
 
     :param str uri_list: linstor uri list string
     :param int vm_id: Opennebula id of the VM
     :param int disk_id: Opennebula disk id of the VM
+    :param Optional[str] auth_token: controller auth token
     :return:
     :rtype: Optional[int]
     """
-    with MultiLinstor(MultiLinstor.controller_uri_list(uri_list)) as lin:
+    with connect(uri_list, auth_token) as lin:
         rsc_dfn_list_resp = lin.resource_dfn_list(query_volume_definitions=False)
         if rsc_dfn_list_resp:
             rsc_dfn_list = rsc_dfn_list_resp[0]  # type: ResourceDefinitionResponse
@@ -316,17 +358,18 @@ def get_current_context_id(uri_list, vm_id, disk_id):
     return None
 
 
-def get_current_context(uri_list, vm_id, disk_id):
+def get_current_context(uri_list, vm_id, disk_id, auth_token=None):
     """
     Returns the latest/current context resource name for the specified vm_id and disk_id
 
     :param str uri_list: linstor uri list string
     :param int vm_id: Opennebula id of the VM
     :param int disk_id: Opennebula disk id of the VM
+    :param Optional[str] auth_token: controller auth token
     :return: resource name string
     :rtype: str
     """
-    c_id = get_current_context_id(uri_list, vm_id, disk_id)
+    c_id = get_current_context_id(uri_list, vm_id, disk_id, auth_token)
     if c_id is None:
         return None
     elif c_id == 0:
@@ -462,7 +505,8 @@ def wait_resource_ready(resource, timeout=1200):
     :param int timeout: timeout in seconds
     :return: return code from command
     """
-    with MultiLinstor(resource.client.uri_list) as lin:
+    # reuse the resource's own connection so an authenticated client (existing_client) is kept
+    with resource._get_connection() as lin:
         util.log_info("Waiting for resource '{r}' to be ready.".format(r=resource.name))
         lin.resource_dfn_wait_synced(resource.name, timeout=timeout)
         util.log_info("Resource '{r}' ready.".format(r=resource.name))

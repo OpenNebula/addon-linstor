@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 OpenNebula Driver for Linstor
 Copyright 2018 LINBIT USA LLC
@@ -20,8 +19,7 @@ limitations under the License.
 
 import sys
 
-from one.extender import clone, delete, get_storage_pool_names
-from linstor import Resource, MultiLinstor
+from one.extender import clone, connect, delete, get_storage_pool_names, make_resource
 from one import consts, driver_action, util
 
 
@@ -31,7 +29,7 @@ def main():
     arg_driver_action, arg_image_id = util.get_datastore_args()
     driver = driver_action.DriverAction(arg_driver_action)
 
-    with MultiLinstor(MultiLinstor.controller_uri_list(driver.datastore.linstor_controllers)) as lin:
+    with connect(driver.datastore.linstor_controllers, driver.datastore.linstor_controller_auth_token) as lin:
         storage_pool_names = get_storage_pool_names(lin, driver.datastore)
         stor_pool_resp = lin.storage_pool_list_raise(filter_by_stor_pools=storage_pool_names)
 
@@ -42,7 +40,8 @@ def main():
 
     tmp_res_name = driver.image.source + "-flatten"
     snapshot_name = "{}-{}".format(consts.SNAP_PREFIX, driver.image.target_snap)
-    res = Resource(name=driver.image.source, uri=driver.datastore.linstor_controllers)
+    res = make_resource(driver.image.source, driver.datastore.linstor_controllers,
+                        driver.datastore.linstor_controller_auth_token)
     util.log_info("Creating temporary resource '{rt}' from selected snapshot '{s}'".format(
         rt=tmp_res_name,
         s=snapshot_name
@@ -50,14 +49,16 @@ def main():
     tmp_res = res.restore_from_snapshot(snapshot_name, tmp_res_name)
 
     try:
-        delete(driver.image.source, driver.datastore.linstor_controllers)
+        delete(driver.image.source, driver.datastore.linstor_controllers,
+               driver.datastore.linstor_controller_auth_token)
         util.log_info("Restore flattened resource '{r}' from temporary resource '{rt}'".format(
             r=res.name, rt=tmp_res.name)
         )
         clone(
             tmp_res,
             driver.image.source,
-            driver.datastore.linstor_resource_group
+            driver.datastore.linstor_resource_group,
+            auth_token=driver.datastore.linstor_controller_auth_token
         )
     finally:
         util.log_info("Deleting temporary resource '{r}'".format(r=tmp_res.name))

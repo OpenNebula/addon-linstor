@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 OpenNebula Driver for Linstor
 Copyright 2018 LINBIT USA LLC
@@ -18,14 +17,11 @@ limitations under the License.
 """
 
 
-from __future__ import print_function
-
 import os
 import sys
 
-from linstor import Resource, MultiLinstor
 from one import driver_action, util
-from one.extender import get_device_path
+from one.extender import connect, get_device_path, make_resource
 
 
 def main():
@@ -33,10 +29,11 @@ def main():
 
     arg_driver_action, arg_app_id = util.get_datastore_args()
     driver = driver_action.DriverAction(arg_driver_action)
-    res = Resource(name=driver.image.source, uri=driver.datastore.linstor_controllers)
+    res = make_resource(driver.image.source, driver.datastore.linstor_controllers,
+                        driver.datastore.linstor_controller_auth_token)
     hosts = res.diskful_nodes()
 
-    with MultiLinstor(MultiLinstor.controller_uri_list(driver.datastore.linstor_controllers)) as lin:
+    with connect(driver.datastore.linstor_controllers, driver.datastore.linstor_controller_auth_token) as lin:
         nodelist = lin.node_list_raise()
         dst_host = nodelist.node(hosts[0]).net_interfaces[0].address
 

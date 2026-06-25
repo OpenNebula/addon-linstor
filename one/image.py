@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 OpenNebula Driver for Linstor
 Copyright 2018 LINBIT USA LLC
@@ -19,7 +18,7 @@ limitations under the License.
 import xml.etree.ElementTree as ET
 
 
-class Image(object):
+class Image:
 
     """Docstring for vm. """
 

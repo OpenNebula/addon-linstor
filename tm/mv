@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 OpenNebula Driver for Linstor
 Copyright 2018 LINBIT USA LLC
@@ -17,16 +16,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from __future__ import print_function
-
 import os
 import sys
 
-from linstor import Resource, MultiLinstor
+from linstor import Resource
 from one import util, vm
 from one.datastore import Datastore
 from one.extender import get_rsc_name, get_device_path, deploy, delete_vm_contexts, is_device_open
-from one.extender import get_satellite_nodes, get_satellite_nodes_online
+from one.extender import get_satellite_nodes, get_satellite_nodes_online, connect
 
 SRC = sys.argv[1]
 DST = sys.argv[2]
@@ -106,7 +103,8 @@ def move_none_linstor_host(linstor, src_host, src_path, dst_host, dst_path, dst_
 
 
 def move_from_none_linstor_host(
-        controllers, resource_group, src_host, src_path, dst_host, dst_path, dst_dir, rsc_name, disk_size_mb):
+        controllers, resource_group, src_host, src_path, dst_host, dst_path, dst_dir, rsc_name, disk_size_mb,
+        auth_token=None):
     """
     Moves linstor resources from a none satellite host to a linstor host (maybe deploy called)
 
@@ -119,8 +117,9 @@ def move_from_none_linstor_host(
     :param str dst_dir: directory path of resource on disk
     :param str rsc_name: linstor resource name
     :param int disk_size_mb: disk size in MB
+    :param Optional[str] auth_token: controller auth token
     """
-    res = deploy(controllers, rsc_name, str(disk_size_mb) + "MiB", resource_group, dst_host)
+    res = deploy(controllers, rsc_name, str(disk_size_mb) + "MiB", resource_group, dst_host, auth_token=auth_token)
     util.link_file(dst_host, dst_dir, dst_path, get_device_path(res), rsc_name)
 
     util.ssh_make_path(" ".join([dst_host, dst_dir]))
@@ -185,7 +184,9 @@ def main():
         # try to delete VM context images as we move to context file images
         if True:
             if target_vm.has_context:
-                del_result = delete_vm_contexts(datastore.linstor_controllers, VM_ID, target_vm.context_id)
+                del_result = delete_vm_contexts(
+                    datastore.linstor_controllers, VM_ID, target_vm.context_id,
+                    auth_token=datastore.linstor_controller_auth_token)
 
                 for res in del_result:
                     if del_result[res] is not None:
@@ -216,7 +217,7 @@ def main():
         else:
             util.rm_shared_safe(src_host, src_path)
     else:
-        with MultiLinstor(MultiLinstor.controller_uri_list(datastore.linstor_controllers)) as lin:
+        with connect(datastore.linstor_controllers, datastore.linstor_controller_auth_token) as lin:
             satellite_nodes = get_satellite_nodes(lin)
 
             # normal drbd image
@@ -253,7 +254,8 @@ def main():
                             dst_path,
                             dst_dir,
                             res_name,
-                            target_vm.disk_size(disk_id))
+                            target_vm.disk_size(disk_id),
+                            auth_token=datastore.linstor_controller_auth_token)
                 else:
                     raise RuntimeError("Operation not supported: mv none linstor to none linstor node")
 

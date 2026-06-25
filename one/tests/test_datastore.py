@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 OpenNebula Driver for Linstor
 Copyright 2018 LINBIT USA LLC
@@ -57,6 +56,7 @@ TEST_XML_1 = """
       <TYPE><![CDATA[IMAGE_DS]]></TYPE>
       <LINSTOR_STORAGE_POOL>drbdpool</LINSTOR_STORAGE_POOL>
       <LINSTOR_AUTO_PLACE>3</LINSTOR_AUTO_PLACE>
+      <LINSTOR_CONTROLLER_AUTH_TOKEN>tok-abc123</LINSTOR_CONTROLLER_AUTH_TOKEN>
    </TEMPLATE>
 </DATASTORE>
 """
@@ -113,6 +113,7 @@ class TestDriverAction(unittest.TestCase):
         self.assertEqual(test_datastore.total_mb, "86845")
         self.assertEqual(test_datastore.free_mb, "20777")
         self.assertEqual(test_datastore.used_mb, "1000")
+        self.assertEqual(test_datastore.linstor_controller_auth_token, "tok-abc123")
 
         test_datastore = datastore.Datastore(TEST_XML_2)
 
@@ -123,3 +124,7 @@ class TestDriverAction(unittest.TestCase):
         self.assertEqual(test_datastore.total_mb, "555555585")
         self.assertEqual(test_datastore.free_mb, "20000")
         self.assertEqual(test_datastore.used_mb, "5000")
+        # back-compat: when the attribute is absent the token is None and controllers
+        # still fall back to the localhost default
+        self.assertIsNone(test_datastore.linstor_controller_auth_token)
+        self.assertEqual(test_datastore.linstor_controllers, "linstor://localhost")

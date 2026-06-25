@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 OpenNebula Driver for Linstor
 Copyright 2018 LINBIT USA LLC
@@ -16,8 +15,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
-from __future__ import print_function
 
 import sys
 
@@ -36,7 +33,8 @@ def main():
         linstor_controllers=driver.datastore.linstor_controllers,
         resource_name=resource_name,
         vlm_size_str=driver.image.size + "MiB",
-        resource_group=driver.datastore.linstor_resource_group
+        resource_group=driver.datastore.linstor_resource_group,
+        auth_token=driver.datastore.linstor_controller_auth_token
     )
 
     util.set_up_datastore(

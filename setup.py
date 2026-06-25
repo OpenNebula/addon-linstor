@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 OpenNebula Driver for Linstor
 Copyright 2018 LINBIT USA LLC
@@ -66,8 +65,9 @@ setup(
     description="Linstor addon for OpenNebula",
     packages=["one"],
     install_requires=[
-        "python-linstor>=1.13.0"
+        "python-linstor>=1.28.0"
     ],
+    python_requires=">=3.6",
     author="Rene Peinthor <rene.peinthor@linbit.com>",
     author_email="rene.peinthor@linbit.com",
     url="https://github.com/LINBIT/addon-linstor",

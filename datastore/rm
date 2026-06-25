@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 OpenNebula Driver for Linstor
 Copyright 2018 LINBIT USA LLC
@@ -18,8 +17,6 @@ limitations under the License.
 """
 
 
-from __future__ import print_function
-
 from one.extender import delete
 from one import consts, util, driver_action
 
@@ -32,7 +29,7 @@ def main():
 
     driver = driver_action.DriverAction(arg_driver_action)
 
-    delete(rscname, driver.datastore.linstor_controllers)
+    delete(rscname, driver.datastore.linstor_controllers, driver.datastore.linstor_controller_auth_token)
 
     util.log_info("Exiting datastore rm.")
 
