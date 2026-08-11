@@ -50,11 +50,12 @@ def _source(file, command, string_args=None):
 
 def _source_ssh(file, command, string_args=None, forward_agent=False):
     sourced_cmd = "source {}".format(file)
-    if forward_agent:
-        sourced_cmd = sourced_cmd + \
-            ' && SSH="${SSH_FWD:-${SSH} -o ForwardAgent=yes -o ControlMaster=no -o ControlPath=none}"'
 
-    sourced_cmd = sourced_cmd + " && {}".format(command)
+    sourced_cmd = sourced_cmd + " && "
+    if forward_agent:
+        sourced_cmd = sourced_cmd + "ssh_forward "
+
+    sourced_cmd = sourced_cmd + "{}".format(command)
     if string_args:
         sourced_cmd = sourced_cmd + " {}".format(string_args)
 
