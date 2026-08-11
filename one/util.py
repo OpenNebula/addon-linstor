@@ -48,6 +48,21 @@ def _source(file, command, string_args=None):
     return exec_string
 
 
+def _source_ssh(file, command, string_args=None, forward_agent=False):
+    sourced_cmd = "source {}".format(file)
+    if forward_agent:
+        sourced_cmd = sourced_cmd + \
+            ' && SSH="${SSH_FWD:-${SSH} -o ForwardAgent=yes -o ControlMaster=no -o ControlPath=none}"'
+
+    sourced_cmd = sourced_cmd + " && {}".format(command)
+    if string_args:
+        sourced_cmd = sourced_cmd + " {}".format(string_args)
+
+    exec_string = ["bash", "-c", sourced_cmd]
+
+    return exec_string
+
+
 def log_error(msg):
     syslog.syslog(syslog.LOG_ERR, "ERROR {}".format(msg))
 
@@ -136,12 +151,13 @@ def ssh_direct_ignore_errors(host, cmd):
     return out
 
 
-def ssh_exec_and_log(host, cmd, error_msg):
+def ssh_exec_and_log(host, cmd, error_msg, forward_agent=False):
     """
 
     :param str host: hostname to ssh to
     :param str cmd: cmd to execute
     :param str error_msg: error message if cmd fails
+    :param bool forward_agent: enable SSH agent forwarding
     :return:
     """
     log_info("ssh '{h}' cmd: {c}".format(h=host, c=cmd))
@@ -150,15 +166,18 @@ def ssh_exec_and_log(host, cmd, error_msg):
         '"{}"'.format(cmd),
         '"{}"'.format(error_msg)
     ]
-    return _wait_for_subp(_source(SCRIPTS_COMMON, "ssh_exec_and_log", " ".join(ssh_cmd)), log=False)
+    return _wait_for_subp(
+        _source_ssh(SCRIPTS_COMMON, "ssh_exec_and_log", " ".join(ssh_cmd), forward_agent=forward_agent),
+        log=False)
 
 
-def ssh_exec_and_log_with_err(host, cmd, error_msg):
+def ssh_exec_and_log_with_err(host, cmd, error_msg, forward_agent=False):
     """
     Runs cmd and logs into syslog and returns return code and stderr
     :param str host: Where ssh should connect to
     :param str cmd: command to run on host
     :param str error_msg: log message if error occurs
+    :param bool forward_agent: enable SSH agent forwarding
     :return: Tuple of [returncode, stderr]
     :rtype: (int, str)
     """
@@ -169,16 +188,19 @@ def ssh_exec_and_log_with_err(host, cmd, error_msg):
         '"{}"'.format(error_msg)
     ]
     # ssh_exec_and_log doesn't return stdout
-    rc, _, err = _get_subp_out_base(_source(SCRIPTS_COMMON, "ssh_exec_and_log", " ".join(ssh_cmd)), log=False)
+    rc, _, err = _get_subp_out_base(
+        _source_ssh(SCRIPTS_COMMON, "ssh_exec_and_log", " ".join(ssh_cmd), forward_agent=forward_agent),
+        log=False)
     return rc, err
 
 
-def ssh_monitor_and_log(host, cmd, error_msg):
+def ssh_monitor_and_log(host, cmd, error_msg, forward_agent=False):
     """
     Runs cmd and logs into syslog and returns return code, output and stderr
     :param str host: Where ssh should connect to
     :param str cmd: command to run on host
     :param str error_msg: log message if error occurs
+    :param bool forward_agent: enable SSH agent forwarding
     :return: Tuple of [returncode, stdout, stderr]
     :rtype: (int, str, str)
     """
@@ -188,7 +210,9 @@ def ssh_monitor_and_log(host, cmd, error_msg):
         '"{}"'.format(cmd),
         '"{}"'.format(error_msg)
     ]
-    return _get_subp_out_base(_source(SCRIPTS_COMMON, "ssh_monitor_and_log", " ".join(ssh_cmd)), log=False)
+    return _get_subp_out_base(
+        _source_ssh(SCRIPTS_COMMON, "ssh_monitor_and_log", " ".join(ssh_cmd), forward_agent=forward_agent),
+        log=False)
 
 
 def exec_and_log(cmd, message):
