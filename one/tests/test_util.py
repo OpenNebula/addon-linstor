@@ -57,7 +57,9 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(util._source_ssh("bar.sh", "bar_cmd", "args", forward_agent=True), [
                 "bash",
                 "-c",
-                "source bar.sh && ssh_forward bar_cmd args",
+                'source bar.sh && if declare -F ssh_forward >/dev/null; then ssh_forward bar_cmd args; '
+                'else SSH="${SSH_FWD:-${SSH} -o ForwardAgent=yes -o ControlMaster=no -o ControlPath=none}" '
+                'bar_cmd args; fi',
             ])
 
         dst_dir = "/var/lib/one/datastores/115/34"
