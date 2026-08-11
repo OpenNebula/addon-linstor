@@ -90,7 +90,8 @@ def move_none_linstor_host(linstor, src_host, src_path, dst_host, dst_path, dst_
     rc, _, err = util.ssh_monitor_and_log(
         host=copy_from_host,
         cmd=" && ".join(cmd),
-        error_msg="dd")
+        error_msg="dd",
+        forward_agent=True)
     if rc != 0:
         raise RuntimeError("Unable to copy linstor resource from {from_host} to new host {host}: {err}"
                            .format(from_host=copy_from_host, host=dst_host, err=err))
@@ -134,7 +135,8 @@ def move_from_none_linstor_host(
     rc, _, err = util.ssh_monitor_and_log(
         host=src_host,
         cmd=" && ".join(cmd),
-        error_msg="dd")
+        error_msg="dd",
+        forward_agent=True)
     if rc != 0:
         raise RuntimeError("Unable to copy linstor resource to new host {host}: {err}".format(host=dst_host, err=err))
 
@@ -211,7 +213,8 @@ def main():
         rc = util.ssh_exec_and_log(
             host=src_host,
             cmd=tar_copy_cmd,
-            error_msg='Unable to tar copy to new host')
+            error_msg='Unable to tar copy to new host',
+            forward_agent=True)
         if rc != 0:
             util.log_error("Unable to tar copy to new host")
         else:
