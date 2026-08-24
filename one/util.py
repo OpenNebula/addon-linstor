@@ -38,17 +38,7 @@ DOWNLOADER = UTILS_DIR + "downloader.sh"
 TM_COMMON = REMOTES_DIR + "/tm/tm_common.sh"
 
 
-def _source(file, command, string_args=None):
-    sourced_cmd = "source {} && {}".format(file, command)
-    if string_args:
-        sourced_cmd = sourced_cmd + " {}".format(string_args)
-
-    exec_string = ["bash", "-c", sourced_cmd]
-
-    return exec_string
-
-
-def _source_ssh(file, command, string_args=None, forward_agent=False):
+def _source(file, command, string_args=None, forward_agent=False):
     sourced_cmd = "source {}".format(file)
     command_call = "{}".format(command)
     if string_args:
@@ -171,7 +161,7 @@ def ssh_exec_and_log(host, cmd, error_msg, forward_agent=False):
         '"{}"'.format(error_msg)
     ]
     return _wait_for_subp(
-        _source_ssh(SCRIPTS_COMMON, "ssh_exec_and_log", " ".join(ssh_cmd), forward_agent=forward_agent),
+        _source(SCRIPTS_COMMON, "ssh_exec_and_log", " ".join(ssh_cmd), forward_agent=forward_agent),
         log=False)
 
 
@@ -193,7 +183,7 @@ def ssh_exec_and_log_with_err(host, cmd, error_msg, forward_agent=False):
     ]
     # ssh_exec_and_log doesn't return stdout
     rc, _, err = _get_subp_out_base(
-        _source_ssh(SCRIPTS_COMMON, "ssh_exec_and_log", " ".join(ssh_cmd), forward_agent=forward_agent),
+        _source(SCRIPTS_COMMON, "ssh_exec_and_log", " ".join(ssh_cmd), forward_agent=forward_agent),
         log=False)
     return rc, err
 
@@ -215,7 +205,7 @@ def ssh_monitor_and_log(host, cmd, error_msg, forward_agent=False):
         '"{}"'.format(error_msg)
     ]
     return _get_subp_out_base(
-        _source_ssh(SCRIPTS_COMMON, "ssh_monitor_and_log", " ".join(ssh_cmd), forward_agent=forward_agent),
+        _source(SCRIPTS_COMMON, "ssh_monitor_and_log", " ".join(ssh_cmd), forward_agent=forward_agent),
         log=False)
 
 

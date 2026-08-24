@@ -48,13 +48,7 @@ class TestUtils(unittest.TestCase):
                 "source bar.sh && bar_cmd multi args",
             ])
 
-        self.assertEqual(util._source_ssh("bar.sh", "bar_cmd", "args"), [
-                "bash",
-                "-c",
-                "source bar.sh && bar_cmd args",
-            ])
-
-        self.assertEqual(util._source_ssh("bar.sh", "bar_cmd", "args", forward_agent=True), [
+        self.assertEqual(util._source("bar.sh", "bar_cmd", "args", forward_agent=True), [
                 "bash",
                 "-c",
                 'source bar.sh && if declare -F ssh_forward >/dev/null; then ssh_forward bar_cmd args; '
