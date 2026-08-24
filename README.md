@@ -25,6 +25,12 @@ Support for this addon can be found at the
 
 * This addon is compatible with OpenNebula versions from 5.8 to 7.0
 * It was tested with version 6.8 and 7.0
+* SSH agent forwarding for nested SSH transfer paths uses OpenNebula's
+  `ssh_forward` helper when it is available. The helper is present in
+  OpenNebula release 5.11.8 and newer stable releases, including 5.12 and
+  later. On older OpenNebula versions, the driver falls back to an equivalent
+  SSH command override using `ForwardAgent=yes`, `ControlMaster=no`, and
+  `ControlPath=none`.
 * This version of README.md describes the installation process for ONE 5.6 environments
 * This is intended for use as an images datastore for use with either an NFS shared
 * system datastore or a SSH system datastore

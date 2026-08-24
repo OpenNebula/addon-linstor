@@ -48,6 +48,14 @@ class TestUtils(unittest.TestCase):
                 "source bar.sh && bar_cmd multi args",
             ])
 
+        self.assertEqual(util._source("bar.sh", "bar_cmd", "args", forward_agent=True), [
+                "bash",
+                "-c",
+                'source bar.sh && if declare -F ssh_forward >/dev/null; then ssh_forward bar_cmd args; '
+                'else SSH="${SSH_FWD:-${SSH} -o ForwardAgent=yes -o ControlMaster=no -o ControlPath=none}" '
+                'bar_cmd args; fi',
+            ])
+
         dst_dir = "/var/lib/one/datastores/115/34"
         res_path = "/dev/drbd1007"
         dst_path = "/var/lib/one/datastores/115/34/disk.0"
