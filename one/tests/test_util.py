@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import shlex
 import unittest
 
 from one import util
@@ -125,3 +126,24 @@ class TestUtils(unittest.TestCase):
         self.assertTrue(util.one_version_larger(5, 12, 0, self.VERSION_INFO_6_0_0))
         self.assertTrue(util.one_version_larger(6, 6, patch=0, version_info_str=self.VERSION_INFO_6_6_3))
         self.assertFalse(util.one_version_larger(6, 6, patch=None, version_info_str=self.VERSION_INFO_6_6_3))
+
+    def test_get_copy_command(self):
+        self.assertEqual(
+            shlex.split(util.get_copy_command("/var/tmp/image.qcow2")),
+            [util.DOWNLOADER, "/var/tmp/image.qcow2", "-"])
+
+        self.assertEqual(
+            shlex.split(util.get_copy_command(
+                "https://example.com/image.qcow2",
+                md5="abc", sha1="def", no_decompress="YES", limit_transfer_bw="10M")),
+            [util.DOWNLOADER, "--md5", "abc", "--sha1", "def", "--nodecomp", "--limit", "10M",
+             "https://example.com/image.qcow2", "-"])
+
+        self.assertNotIn("--nodecomp", util.get_copy_command("/var/tmp/image.qcow2", no_decompress="NO"))
+
+    def test_get_copy_command_quotes_user_input(self):
+        payload = "x;id>/tmp/injected;#"
+        path = "/var/tmp/$(id) image.qcow2"
+        self.assertEqual(
+            shlex.split(util.get_copy_command(path, md5=payload, sha1=payload, limit_transfer_bw=payload)),
+            [util.DOWNLOADER, "--md5", payload, "--sha1", payload, "--limit", payload, path, "-"])

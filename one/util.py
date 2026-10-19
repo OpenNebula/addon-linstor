@@ -305,10 +305,6 @@ def set_up_datastore(string_args):
     return _wait_for_subp(_source(LIBFS, "set_up_datastore", string_args))
 
 
-def set_downloader_args(string_args):
-    return _get_subp_out(_source(LIBFS, "set_downloader_args", string_args))
-
-
 def check_restricted(path, base_path, restricted_dirs, safe_dirs):
     """
     Checks if path is in a restricted dir of the datastore, using OpenNebula's libfs.sh.
@@ -438,8 +434,32 @@ def one_version_larger(major=5, minor=0, patch=None, version_info_str=None):
     return False
 
 
-def get_copy_command(string_args):
-    return DOWNLOADER + " " + string_args
+def get_copy_command(path, md5="", sha1="", no_decompress="", limit_transfer_bw=""):
+    """
+    Returns the shell command that writes the image at path to stdout using OpenNebula's downloader.sh.
+
+    Builds the same arguments as set_downloader_args from libfs.sh, but quotes every one of them,
+    as they come from the user controlled image template.
+
+    :param str path: image path or URL
+    :param str md5: expected md5 checksum
+    :param str sha1: expected sha1 checksum
+    :param str no_decompress: "yes" to skip decompression
+    :param str limit_transfer_bw: transfer bandwidth limit
+    :return: shell command string
+    :rtype: str
+    """
+    args = [DOWNLOADER]
+    if md5:
+        args += ["--md5", md5]
+    if sha1:
+        args += ["--sha1", sha1]
+    if no_decompress.lower() == "yes":
+        args.append("--nodecomp")
+    if limit_transfer_bw:
+        args += ["--limit", limit_transfer_bw]
+    args += [path, "-"]
+    return " ".join(shlex.quote(arg) for arg in args)
 
 
 def run_main(main_func):

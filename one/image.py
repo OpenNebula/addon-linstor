@@ -107,7 +107,7 @@ class Image:
         try:
             return self._root.find("TEMPLATE").find("MD5").text or ""
         except AttributeError:
-            return '""'
+            return ""
 
     @property
     def sha1(self):
@@ -115,7 +115,7 @@ class Image:
         try:
             return self._root.find("TEMPLATE").find("SHA1").text or ""
         except AttributeError:
-            return '""'
+            return ""
 
     @property
     def no_decompress(self):
@@ -123,7 +123,7 @@ class Image:
         try:
             return self._root.find("TEMPLATE").find("NO_DECOMPRESS").text or ""
         except AttributeError:
-            return '""'
+            return ""
 
     @property
     def limit_transfer_bw(self):
@@ -131,7 +131,7 @@ class Image:
         try:
             return self._root.find("TEMPLATE").find("LIMIT_TRANSFER_BW").text or ""
         except AttributeError:
-            return '""'
+            return ""
 
     @property
     def format(self):

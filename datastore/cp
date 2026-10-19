@@ -64,20 +64,13 @@ def main():
         auth_token=driver.datastore.linstor_controller_auth_token
     )
 
-    downloader_args = util.set_downloader_args(
-        " ".join(
-            [
-                driver.image.md5,
-                driver.image.sha1,
-                driver.image.no_decompress,
-                driver.image.limit_transfer_bw,
-                driver.image.path,
-                "-",
-            ]
-        )
+    copy_command = util.get_copy_command(
+        driver.image.path,
+        md5=driver.image.md5,
+        sha1=driver.image.sha1,
+        no_decompress=driver.image.no_decompress,
+        limit_transfer_bw=driver.image.limit_transfer_bw,
     )
-
-    copy_command = util.get_copy_command(downloader_args).strip()
 
     hosts = res.diskful_nodes()
     dest_node = hosts[0]
