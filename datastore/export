@@ -43,7 +43,7 @@ def main():
 
     rc, _, err = util.ssh_monitor_and_log(
         host=dst_host,
-        cmd="dd if={} of={} bs=4M oflag=fsync".format(get_device_path(res), output_file),
+        cmd="dd if={} of={} bs=4M conv=fsync".format(get_device_path(res), output_file),
         error_msg="could not dd image")
 
     if rc != 0:
