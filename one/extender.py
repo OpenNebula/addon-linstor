@@ -37,7 +37,8 @@ def make_resource(name, uri_list, auth_token=None, resource_group=None):
     :rtype: Resource
     """
     if auth_token:
-        return Resource(name, existing_client=connect(uri_list, auth_token), resource_group=resource_group)
+        return Resource(name, uri=uri_list, existing_client=connect(uri_list, auth_token),
+                        resource_group=resource_group)
     return Resource(name, uri=uri_list, resource_group=resource_group)
 
 
