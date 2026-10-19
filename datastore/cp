@@ -81,6 +81,7 @@ def main():
 
     device_path = get_device_path(res)
     command = [
+        "set -o pipefail;",
         copy_command,
         "|",
         "ssh",
