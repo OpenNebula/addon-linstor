@@ -245,6 +245,12 @@ def clone(
 
     linstor_controllers = ",".join(resource.client.uri_list)
 
+    # A freshly imported or created image can be visible to OpenNebula before
+    # all of its DRBD replicas have reached UpToDate. LINSTOR rejects a clone
+    # while any backing device is still synchronizing, so close that race here
+    # for every caller of the shared clone helper.
+    wait_resource_ready(resource)
+
     if use_linstor_clone:
         clone_res = resource.clone(clone_name, use_zfs_clone=allow_dependent_clone)
         if prefer_node:
