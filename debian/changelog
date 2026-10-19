@@ -1,3 +1,23 @@
+linstor-opennebula (3.1.1-1ubuntu1) UNRELEASED; urgency=medium
+
+  [ Christian Groschupp ]
+  * tm: enable SSH agent forwarding for nested SSH transfers
+
+  [ Rene Peinthor ]
+  * tm/mv: check the source host for open devices before deactivating
+  * datastore: return STAGING_DIR from staging_dirs
+  * datastore/export: fix malformed IMPORT_INFO XML
+  * datastore/export: use conv=fsync for dd
+  * treat only PERSISTENT=YES disks as persistent
+  * datastore/cp: enforce RESTRICTED_DIRS for local image paths
+  * datastore/cp: quote user controlled downloader arguments
+  * datastore/cp: fail on downloader errors in the copy pipeline
+  * datastore/snap_flatten: keep the temporary resource if restoring fails
+  * extender: use an integer dd block count for COPY clones
+  * extender: keep the controller URIs on token authenticated resources
+
+ -- Christian Groschupp <rene.peinthor@linbit.com>  Mon, 19 Oct 2026 11:27:07 +0000
+
 linstor-opennebula (3.1.0-1) experimental; urgency=medium
 
   * add LINSTOR controller auth-token support
