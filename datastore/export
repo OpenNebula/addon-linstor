@@ -75,11 +75,11 @@ def main():
     <MD5><![CDATA[{}]]></MD5>
     <SIZE><![CDATA[{}]]></SIZE>
     <FORMAT><![CDATA[{}]]></FORMAT>
-    <DISPOSE><![CDATA[NO]]</DISPOSE>
+    <DISPOSE>NO</DISPOSE>
     </IMPORT_INFO>""".format(
             "ssh://{}:{}".format(dst_host, output_file),
-            img_checksum,
-            img_size,
+            img_checksum.strip(),
+            img_size.strip(),
             img_format,
         )
     )
