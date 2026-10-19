@@ -16,6 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import re
 import sys
 
 from one.extender import get_device_path, deploy
@@ -29,22 +30,38 @@ def main():
     driver = driver_action.DriverAction(arg_driver_action)
     resource_name = "{}-{}".format(consts.IMAGE_PREFIX, arg_image_id)
 
+    if re.match(r"https?://", driver.image.path):
+        util.log_info(
+            "Downloading {} to the image repository".format(driver.image.path)
+        )
+    else:
+        if util.check_restricted(
+            driver.image.path,
+            driver.datastore.base_path,
+            driver.datastore.restricted_dirs,
+            driver.datastore.safe_dirs,
+        ):
+            util.log_error(
+                "Not allowed to copy images from {}".format(
+                    driver.datastore.restricted_dirs
+                )
+            )
+            raise RuntimeError(
+                "Not allowed to copy image from {}, check RESTRICTED_DIRS in your datastore".format(
+                    driver.image.path
+                )
+            )
+
+        util.log_info(
+            "Copying local image {} to the image repository".format(driver.image.path)
+        )
+
     res = deploy(
         linstor_controllers=driver.datastore.linstor_controllers,
         resource_name=resource_name,
         vlm_size_str=driver.image.size + "MiB",
         resource_group=driver.datastore.linstor_resource_group,
         auth_token=driver.datastore.linstor_controller_auth_token
-    )
-
-    util.set_up_datastore(
-        " ".join(
-            [
-                driver.datastore.base_path,
-                driver.datastore.restricted_dirs,
-                driver.datastore.safe_dirs,
-            ]
-        )
     )
 
     downloader_args = util.set_downloader_args(
@@ -61,27 +78,6 @@ def main():
     )
 
     copy_command = util.get_copy_command(downloader_args).strip()
-
-    if driver.image.path.startswith("http"):
-        util.log_info(
-            "Downloading {} to the image repository".format(driver.image.path)
-        )
-
-        if int(util.check_restricted(driver.image.path)) == 1:
-            util.log_error(
-                "Not allowed to copy images from {}".format(
-                    driver.datastore.restricted_dirs
-                )
-            )
-            util.log_error(
-                "Not allowed to copy image file {}".format(driver.image.path)
-            )
-
-            res.delete()
-
-        util.log_info(
-            "Copying local image {} to the image repository".format(driver.image.path)
-        )
 
     hosts = res.diskful_nodes()
     dest_node = hosts[0]

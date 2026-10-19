@@ -23,6 +23,7 @@ import traceback
 import json
 import re
 import io
+import shlex
 import base64
 
 REMOTES_DIR = "/var/lib/one/remotes/"
@@ -308,8 +309,25 @@ def set_downloader_args(string_args):
     return _get_subp_out(_source(LIBFS, "set_downloader_args", string_args))
 
 
-def check_restricted(string_args):
-    return _get_subp_out(_source(LIBFS, "check_restricted", string_args))
+def check_restricted(path, base_path, restricted_dirs, safe_dirs):
+    """
+    Checks if path is in a restricted dir of the datastore, using OpenNebula's libfs.sh.
+
+    set_up_datastore and check_restricted have to run in the same shell, as
+    check_restricted reads the dirs set up by set_up_datastore.
+
+    :param str path: image path to check
+    :param Optional[str] base_path: datastore BASE_PATH
+    :param Optional[str] restricted_dirs: datastore RESTRICTED_DIRS
+    :param Optional[str] safe_dirs: datastore SAFE_DIRS
+    :return: True if path is restricted
+    :rtype: bool
+    """
+    cmd = "set_up_datastore {b} {r} {s} && check_restricted".format(
+        b=shlex.quote(base_path or ""),
+        r=shlex.quote(restricted_dirs or ""),
+        s=shlex.quote(safe_dirs or ""))
+    return _get_subp_out(_source(LIBFS, cmd, shlex.quote(path))).strip() == "1"
 
 
 def arg_host(string_args):
