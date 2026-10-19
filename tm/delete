@@ -57,7 +57,7 @@ def main():
             res.deactivate(dst_host)
 
         if not (
-            target_vm.disk_persistent(disk_id) or target_vm.disk_type(disk_id) == "CDROM"
+            target_vm.disk_persistent(disk_id) == "YES" or target_vm.disk_type(disk_id) == "CDROM"
         ):
             try:
                 delete(res_name, datastore.linstor_controllers, datastore.linstor_controller_auth_token)

@@ -315,7 +315,7 @@ def get_rsc_name(target_vm, disk_id):
     else:
         res_name = target_vm.disk_source(disk_id)
 
-        if not target_vm.disk_persistent(disk_id):
+        if target_vm.disk_persistent(disk_id) != "YES":
             if target_vm.disk_type(disk_id) == "CDROM":
                 util.log_info("{} is a non-persistent CDROM image".format(res_name))
             else:
