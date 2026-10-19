@@ -273,8 +273,7 @@ def clone(
 
         block_size_kb = 64
 
-        block_count = resource.volumes[0].size / 1024.0 / block_size_kb  # float division
-        block_count_int = int(block_count) if block_count.is_integer() else (block_count + 1)
+        block_count = -(-resource.volumes[0].size // (block_size_kb * 1024))  # round up to whole blocks
 
         conv_opts = ["fsync"]
         if clone_res.is_thin():
@@ -284,7 +283,7 @@ def clone(
             _if=from_dev_path,
             _of=to_dev_path,
             bs=block_size_kb,
-            c=block_count_int,
+            c=block_count,
             conv=",".join(conv_opts)
         )
         # dd on the node
