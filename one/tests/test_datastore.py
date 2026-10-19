@@ -57,6 +57,8 @@ TEST_XML_1 = """
       <LINSTOR_STORAGE_POOL>drbdpool</LINSTOR_STORAGE_POOL>
       <LINSTOR_AUTO_PLACE>3</LINSTOR_AUTO_PLACE>
       <LINSTOR_CONTROLLER_AUTH_TOKEN>tok-abc123</LINSTOR_CONTROLLER_AUTH_TOKEN>
+      <SAFE_DIRS><![CDATA[/var/tmp /tmp]]></SAFE_DIRS>
+      <STAGING_DIR><![CDATA[/var/tmp/staging]]></STAGING_DIR>
    </TEMPLATE>
 </DATASTORE>
 """
@@ -114,6 +116,8 @@ class TestDriverAction(unittest.TestCase):
         self.assertEqual(test_datastore.free_mb, "20777")
         self.assertEqual(test_datastore.used_mb, "1000")
         self.assertEqual(test_datastore.linstor_controller_auth_token, "tok-abc123")
+        self.assertEqual(test_datastore.safe_dirs, "/var/tmp /tmp")
+        self.assertEqual(test_datastore.staging_dirs, "/var/tmp/staging")
 
         test_datastore = datastore.Datastore(TEST_XML_2)
 
@@ -128,3 +132,4 @@ class TestDriverAction(unittest.TestCase):
         # still fall back to the localhost default
         self.assertIsNone(test_datastore.linstor_controller_auth_token)
         self.assertEqual(test_datastore.linstor_controllers, "linstor://localhost")
+        self.assertEqual(test_datastore.staging_dirs, "/var/tmp")

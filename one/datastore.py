@@ -147,6 +147,6 @@ class Datastore:
     def staging_dirs(self):
         """Returns staging_dirs or /var/tmp"""
         try:
-            return self._safe_dirs.text
+            return self._staging_dirs.text
         except AttributeError:
             return "/var/tmp"
