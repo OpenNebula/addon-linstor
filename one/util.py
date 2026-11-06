@@ -25,6 +25,10 @@ import re
 import io
 import shlex
 import base64
+import signal
+import xml.etree.ElementTree as ET
+from types import FrameType
+from typing import IO, Any, Dict, Optional, Tuple, Union
 
 REMOTES_DIR = "/var/lib/one/remotes/"
 
@@ -210,6 +214,33 @@ def ssh_monitor_and_log(host, cmd, error_msg, forward_agent=False):
         log=False)
 
 
+def ssh_run(host: str, cmd: str, stdin: Optional[Union[bytes, IO[bytes]]] = None) -> Tuple[int, str, str]:
+    """
+    Runs cmd on host with OpenNebula's $SSH and returns return code, stdout and stderr.
+
+    Unlike the other ssh helpers, host and cmd are passed to bash as arguments instead of being inserted
+    into the bash command string, so cmd only has to be quoted for the remote shell (shlex.quote).
+
+    :param host: host to execute the command
+    :param cmd: command line for the remote shell
+    :param stdin: data or open binary file passed to the remote command's stdin
+    :return: Tuple of [returncode, stdout, stderr]
+    """
+    log_info("ssh '{h}' cmd: {c}".format(h=host, c=cmd))
+    exec_string = ["bash", "-c", 'source {} && $SSH "$1" "$2"'.format(SCRIPTS_COMMON), "ssh_run", host, cmd]
+    if stdin is None:
+        proc = subprocess.run(exec_string, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    elif isinstance(stdin, bytes):
+        proc = subprocess.run(exec_string, input=stdin, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    else:
+        proc = subprocess.run(exec_string, stdin=stdin, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out = proc.stdout.decode(errors="replace")
+    err = proc.stderr.decode(errors="replace")
+    if proc.returncode != 0:
+        log_error("ssh '{h}' cmd {c} failed ({rc}): {e}".format(h=host, c=cmd, rc=proc.returncode, e=err))
+    return proc.returncode, out, err
+
+
 def exec_and_log(cmd, message):
     rc = _wait_for_subp(["bash", "-c", cmd])
 
@@ -381,6 +412,22 @@ def show_image(image_id):
     return _get_subp_out(["oneimage", "show", "--xml", str(image_id)])
 
 
+def image_is_locked(image_id: int) -> Optional[bool]:
+    """
+    Returns whether OpenNebula is still creating the image (state LOCKED), e.g. datastore/cp is running for it.
+
+    :param image_id: OpenNebula image id
+    :return: True if locked, False if not or if the image doesn't exist, None if OpenNebula didn't tell
+    """
+    rc, out, err = _get_subp_out_base(["oneimage", "show", "--xml", str(image_id)], log=False)
+    if rc != 0:
+        return False if "Error getting image" in err else None
+    try:
+        return ET.fromstring(out).find("STATE").text == "4"
+    except (ET.ParseError, AttributeError):
+        return None
+
+
 def show_ds(ds_id):
     return _get_subp_out(["onedatastore", "show", "--xml", str(ds_id)])
 
@@ -400,6 +447,164 @@ def detect_image_format(host, path):
 
     img_data = json.loads(stdout)
     return img_data["format"]
+
+
+def image_info(host: str, path: str) -> Dict[str, Any]:
+    """
+    Returns qemu-img info of the image file at path on host.
+
+    :param host: host to run qemu-img on
+    :param path: image file
+    :return: qemu-img info
+    """
+    rc, out, err = ssh_run(host, "qemu-img info --output json {}".format(shlex.quote(path)))
+    if rc != 0:
+        raise RuntimeError("qemu-img info failed for {} on {}: {}".format(path, host, err.strip()))
+    return json.loads(out)
+
+
+def raw_conversion_source(info: Dict[str, Any], path: str) -> Tuple[str, int]:
+    """
+    Checks that qemu-img can convert the image file at path to raw on its own and returns its format and virtual
+    size.
+
+    Images can refer to other files (backing files, qcow2 external data files, VMDK extents), qemu-img would read
+    them with the driver's permissions on the host. These and encrypted images are rejected.
+
+    :param info: qemu-img info of the image
+    :param path: image file
+    :return: image format and virtual size in bytes
+    """
+    backing_file = info.get("full-backing-filename") or info.get("backing-filename")
+    if backing_file:
+        raise RuntimeError("Image {} has the backing file {}, it can't be converted to raw".format(path, backing_file))
+
+    if info.get("encrypted"):
+        raise RuntimeError("Image {} is encrypted, it can't be converted to raw".format(path))
+
+    data = (info.get("format-specific") or {}).get("data") or {}
+    if data.get("data-file"):
+        raise RuntimeError("Image {} has the external data file {}, it can't be converted to raw".format(
+            path, data["data-file"]))
+
+    for extent in data.get("extents") or []:
+        if extent.get("filename") != path:
+            raise RuntimeError("Image {} refers to the extent {}, it can't be converted to raw".format(
+                path, extent.get("filename")))
+
+    return info["format"], int(info["virtual-size"])
+
+
+def image_range_is_zero(host: str, path: str, image_format: str, offset: int, length: int) -> bool:
+    """
+    Returns whether a range of the image reads as zeros.
+
+    qemu-img compares the range with a zero image, it only reads the allocated parts of it. qemu-img map isn't exact
+    enough: it reports whole clusters as data (qcow2: 64 KiB), e.g. a GPT backup header and the zeros after it.
+
+    :param host: host with the image file
+    :param path: image file
+    :param image_format: format of the image file, as qemu-img info reports it
+    :param offset: start of the range in bytes, a multiple of 512
+    :param length: length of the range in bytes, a multiple of 512
+    :return: True if the range only has zeros
+    """
+    args = [
+        "qemu-img", "compare", "-q",
+        "--image-opts", raw_source_image_opts(path, image_format, length, offset=offset),
+        "--image-opts", "driver=null-co,size={},read-zeroes=on".format(length),
+    ]
+    # compare exits with 1 if the range differs, which ssh_run would log as a failure
+    rc, out, err = ssh_run(host, " ".join(shlex.quote(arg) for arg in args) + "; echo $?")
+    result = out.strip().splitlines()[-1] if rc == 0 and out.strip() else None
+    if result not in ("0", "1"):
+        raise RuntimeError("qemu-img compare failed for {} on {}: {}".format(path, host, err.strip()))
+    return result == "0"
+
+
+def block_device_size(host: str, device_path: str) -> int:
+    """
+    :param host: host with the device
+    :param device_path: block device
+    :return: size of the device in bytes
+    """
+    rc, out, err = ssh_run(host, "blockdev --getsize64 {}".format(shlex.quote(device_path)))
+    if rc != 0:
+        raise RuntimeError("Could not get the size of {} on {}: {}".format(device_path, host, err.strip()))
+    return int(out.strip())
+
+
+def copy_to_device(copy_command: str, host: str, device_path: str, sparse: bool = False) -> int:
+    """
+    Writes the output of copy_command to the block device on host and returns the number of bytes.
+
+    :param copy_command: local command writing the data to stdout
+    :param host: host with the device
+    :param device_path: block device
+    :param sparse: don't write zero blocks, the device has to read as zeros (a new thin volume)
+    :return: bytes written
+    """
+    conv = "fsync,sparse" if sparse else "fsync"
+    remote_cmd = "LC_ALL=C dd of={d} bs=2M iflag=fullblock oflag=direct conv={c}".format(
+        d=shlex.quote(device_path), c=conv)
+    cmd = "set -o pipefail; {c} | ssh {h} {r}".format(c=copy_command, h=shlex.quote(host), r=shlex.quote(remote_cmd))
+    log_info("Copying to {d} on {h}: {c}".format(d=device_path, h=host, c=cmd))
+    proc = subprocess.run(["bash", "-c", cmd], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                          stderr=subprocess.PIPE)
+    err = proc.stderr.decode(errors="replace")
+    if proc.returncode != 0:
+        raise RuntimeError("Error copying data to {} on {}: {}".format(device_path, host, err.strip()))
+    # dd's statistics: "<bytes> bytes (...) copied, ..."
+    copied = re.findall(r"^(\d+) bytes", err, re.MULTILINE)
+    if not copied:
+        raise RuntimeError("No size of the data copied to {} on {}: {}".format(device_path, host, err.strip()))
+    return int(copied[-1])
+
+
+def raw_source_image_opts(path: str, image_format: str, size: int, offset: int = 0) -> str:
+    """
+    Returns qemu-img --image-opts for size bytes of the image on the block device at path, starting at offset.
+
+    :param path: block device with the image
+    :param image_format: format of the image file, as qemu-img info reports it
+    :param size: bytes to read, a multiple of 512
+    :param offset: first byte to read, a multiple of 512
+    :return: image options
+    """
+    filename = path.replace(",", ",,")
+    raw = "driver=raw,{o}size={s}".format(o="offset={},".format(offset) if offset else "", s=size)
+    if image_format == "raw":
+        return "{r},file.driver=host_device,file.filename={f}".format(r=raw, f=filename)
+    return "{r},file.driver={d},file.file.driver=host_device,file.file.filename={f}".format(
+        r=raw, d=image_format, f=filename)
+
+
+def convert_to_raw(
+        host: str, path: str, image_format: str, device_path: str, target_is_zero: bool = False,
+        size: Optional[int] = None) -> None:
+    """
+    Writes the image file at path as raw data to the block device on host.
+
+    :param host: host with the image file and the device
+    :param path: image file
+    :param image_format: format of the image file, as qemu-img info reports it
+    :param device_path: block device, at least as large as the image's virtual size or size
+    :param target_is_zero: the device reads as zeros (a new thin volume), the zero areas are not written
+    :param size: write only the first size bytes of the image, the rest must read as zeros
+    """
+    # -W, -m: several writes at once and out of order. DRBD's peers flush after each group of writes that were in
+    # flight together, one write at a time makes thin pools commit their metadata for nearly every write
+    args = ["qemu-img", "convert", "-q", "-n", "-t", "none", "-O", "raw", "-W", "-m", "16"]
+    if target_is_zero:
+        args.append("--target-is-zero")
+    if size is None:
+        args += ["-f", image_format, path, device_path]
+    else:
+        args += ["--image-opts", raw_source_image_opts(path, image_format, size), device_path]
+
+    rc, _, err = ssh_run(host, " ".join(shlex.quote(arg) for arg in args))
+    if rc != 0:
+        raise RuntimeError("Converting {} to raw on {} failed: {}".format(path, host, err.strip()))
 
 
 def _get_one_version_str():
@@ -462,7 +667,18 @@ def get_copy_command(path, md5="", sha1="", no_decompress="", limit_transfer_bw=
     return " ".join(shlex.quote(arg) for arg in args)
 
 
+class Terminated(Exception):
+    """The driver action got SIGTERM, OpenNebula sends it when the action runs into its timeout"""
+
+
+def _raise_terminated(signum: int, frame: Optional[FrameType]) -> None:
+    signal.signal(signal.SIGTERM, signal.SIG_IGN)  # let the cleanup finish
+    raise Terminated("Terminated by signal {}".format(signum))
+
+
 def run_main(main_func):
+    # the default action ends the process right away: no finally or except block would clean up
+    signal.signal(signal.SIGTERM, _raise_terminated)
     try:
         main_func()
     except subprocess.CalledProcessError as cpe:

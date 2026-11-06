@@ -40,6 +40,7 @@ class Datastore:
         self._restricted_dirs = root.find("TEMPLATE").find("RESTRICTED_DIRS")
         self._safe_dirs = root.find("TEMPLATE").find("SAFE_DIRS")
         self._staging_dirs = root.find("TEMPLATE").find("STAGING_DIR")
+        self._linstor_convert_to_raw = root.find("TEMPLATE").find("LINSTOR_CONVERT_TO_RAW")
 
     def __str__(self):
         return self.xmlstr.decode('utf8') if isinstance(self.xmlstr, bytes) else self.xmlstr
@@ -150,3 +151,15 @@ class Datastore:
             return self._staging_dirs.text
         except AttributeError:
             return "/var/tmp"
+
+    @property
+    def linstor_convert_to_raw(self) -> bool:
+        """
+        Returns whether images are converted to raw when they are copied into the datastore.
+
+        :return: True if LINSTOR_CONVERT_TO_RAW is YES
+        """
+        try:
+            return (self._linstor_convert_to_raw.text or "").strip().upper() == "YES"
+        except AttributeError:
+            return False

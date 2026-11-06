@@ -74,6 +74,72 @@ class TestExtender(unittest.TestCase):
         self.assertEqual(extender.get_rsc_name(test_vm, "3"), "OpenNebula-Image-13")
         self.assertEqual(extender.get_rsc_name(test_vm, "4"), "OpenNebula-Volatile-vm7-disk4")
 
+    def test_staging_volume(self):
+        calls = []
+        existing = ["openNebula-staging-7"]
+
+        def volumes(pool, path):
+            return SimpleNamespace(resources=[SimpleNamespace(volumes=[SimpleNamespace(
+                storage_pool_name=pool, device_path=path)])])
+
+        class Lin:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+            def resource_dfn_list_raise(self, query_volume_definitions, filter_by_resource_definitions=None):
+                return SimpleNamespace(resource_definitions=[SimpleNamespace(name=x) for x in existing])
+
+            def resource_dfn_delete(self, name):
+                calls.append(("delete", name))
+                del existing[:]
+                return []
+
+            def resource_list_raise(self, filter_by_nodes, filter_by_resources):
+                if filter_by_resources == ["OpenNebula-Image-7"]:
+                    return volumes("thinpool", "/dev/drbd1000")
+                return volumes("thinpool", "/dev/vg/OpenNebula-Staging-7_00000")
+
+            def resource_dfn_create(self, name, layer_list):
+                calls.append(("rsc_dfn", name, layer_list))
+                return []
+
+            def volume_dfn_create(self, name, size):
+                calls.append(("vlm_dfn", name, size))
+                return []
+
+            def resource_create(self, rscs):
+                calls.append(("rsc", [(x.node_name, x.rsc_name, x.storage_pool, x.layer_list) for x in rscs]))
+                return []
+
+        resource = SimpleNamespace(name="OpenNebula-Image-7", _get_connection=Lin)
+        with patch.object(extender.util, "log_info"):
+            # a stale staging resource of an earlier import is removed first
+            path = extender.create_staging_volume(resource, "OpenNebula-Staging-7", "node2", 1048576 * 100 + 1)
+            extender.delete_staging_volume(resource, "OpenNebula-Staging-7")
+
+        self.assertEqual(path, "/dev/vg/OpenNebula-Staging-7_00000")
+        self.assertEqual(calls, [
+            ("delete", "OpenNebula-Staging-7"),
+            ("rsc_dfn", "OpenNebula-Staging-7", ["storage"]),
+            ("vlm_dfn", "OpenNebula-Staging-7", 102401),
+            ("rsc", [("node2", "OpenNebula-Staging-7", "thinpool", ["storage"])]),
+        ])
+
+        # stale: the image is gone or ready. Kept: still locked, unknown state, and other resources
+        del calls[:]
+        existing[:] = ["OpenNebula-Staging-7", "OpenNebula-Staging-8", "OpenNebula-Staging-9", "OpenNebula-Image-7",
+                       "OpenNebula-Staging-x"]
+        states = {"7": False, "8": True, "9": None}
+        with patch.object(extender.util, "log_info"), \
+                patch.object(extender.util, "image_is_locked", side_effect=lambda image_id: states[image_id]), \
+                patch.object(extender, "delete_staging_volume",
+                             side_effect=lambda rsc, name: calls.append(("stale", name))):
+            extender.delete_stale_staging_volumes(resource)
+        self.assertEqual(calls, [("stale", "OpenNebula-Staging-7")])
+
     def test_clone_waits_for_source_resource_to_be_uptodate(self):
         events = []
 

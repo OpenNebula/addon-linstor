@@ -101,6 +101,64 @@ Make sure `LINSTOR_CONTROLLERS` uses the `linstor+ssl://` scheme (or a plain
 `linstor://` controller that redirects to HTTPS); over plain HTTP the token is not
 transmitted and requests would be unauthenticated.
 
+### Raw images
+
+Without `LINSTOR_CONVERT_TO_RAW` the driver writes images to the DRBD device as
+they are: a qcow2 image stays a qcow2 container on the device. Snapshots, CBT and
+interactive backups see the device, so backups of such disks export the container
+instead of the guest's blocks. To store all images as raw, set in the image
+datastore template:
+
+```
+LINSTOR_CONVERT_TO_RAW = "YES"
+```
+
+This is the recommended setting for new image datastores, set it when you create
+the datastore:
+
+```
+NAME = linstor_datastore
+TYPE = IMAGE_DS
+DS_MAD = linstor
+TM_MAD = linstor
+DISK_TYPE = BLOCK
+LINSTOR_CONTROLLERS = "alice:3370"
+LINSTOR_RESOURCE_GROUP = "OneRscGrp"
+BRIDGE_LIST = "alice bob charlie"
+LINSTOR_CONVERT_TO_RAW = "YES"
+DRIVER = "raw"
+```
+
+The option is off if the attribute is missing, so existing datastores keep their
+behavior. It can also be enabled on a datastore that already has images, see the
+notes below.
+
+Every image copied into the datastore (imports, marketplace appliances, restores of
+backups) is then copied onto a temporary volume on the first diskful node of its new
+resource and converted from there with `qemu-img convert` onto the DRBD device. The
+image is registered as `FORMAT = raw`, so VMs use it with the raw driver.
+
+The volume gets the image's size. For imports `stat` reports the image's virtual
+size, so the volume holds it. Marketplace appliances and backups report a size of
+their own: if their virtual size is larger than the device and the image only has
+zeros beyond it, they are dropped. Otherwise, e.g. for GPT disks with their backup
+header in the last sector, the volume is grown to the virtual size.
+
+* the temporary volume is a LINSTOR resource without DRBD (`OpenNebula-Staging-<image>`)
+  in the storage pool of the image on that node: the downloaded image isn't replicated
+  and needs no space in a file system of the node. It is removed afterwards
+* the temporary volume has the image's size plus 1% and 64 MiB, the storage pool needs
+  room for it during the import (thin pools only for the downloaded data). Image files
+  larger than that, e.g. qcow2 images with internal snapshots, fail the import
+* `qemu-img` has to be installed on the storage nodes
+* on new thin volumes (LVM-thin, ZFS) the zero areas of the image aren't written
+* images that refer to other files (backing files, external data files, VMDKs with
+  separate extent files) and encrypted images are rejected
+* empty datablocks must have `FORMAT = raw`, the default. `DRIVER = "raw"` in the
+  datastore template enforces it
+* existing images aren't converted, and image clones and disks saved with
+  `onevm disk-saveas` keep the format of their source
+
 ## Usage
 
 This driver will use Linstor to create new images and transfer them to

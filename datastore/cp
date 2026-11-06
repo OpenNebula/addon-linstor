@@ -19,8 +19,82 @@ limitations under the License.
 import re
 import sys
 
-from one.extender import get_device_path, deploy
+from linstor import Resource, SizeCalc
+from one.extender import create_staging_volume, delete_staging_volume, delete_stale_staging_volumes, deploy
+from one.extender import get_device_path
 from one import consts, driver_action, util
+
+
+# room for the metadata of the image formats on top of the image size: 1% and 64 MiB
+STAGING_MARGIN = 64 * 1024 * 1024
+
+
+def copy_as_raw(res: Resource, dest_node: str, device_path: str, copy_command: str, staging_name: str) -> None:
+    """
+    Copies the image onto a temporary volume on dest_node and converts it from there to raw onto the device.
+
+    qemu-img needs random access to images of most formats, so it can't read the download stream. The temporary
+    volume is in the storage pool of the resource on dest_node, without DRBD: the image isn't replicated and needs no
+    space in a file system of the node.
+
+    The volume has the OpenNebula size of the image, which holds the virtual size stat reports. Marketplace appliances
+    and backups report a size of their own, their virtual size can be larger than the device. A zero tail beyond the
+    device is dropped, otherwise the volume is grown to the image's virtual size.
+
+    :param res: the image's resource
+    :param dest_node: diskful node of the resource
+    :param device_path: DRBD device of the resource
+    :param copy_command: command writing the image to stdout
+    :param staging_name: name of the temporary resource
+    """
+    delete_stale_staging_volumes(res)
+
+    is_thin = res.is_thin()
+    volume_size = res.volumes[0].size
+    staging_size = volume_size + volume_size // 100 + STAGING_MARGIN
+    staging_path = create_staging_volume(res, staging_name, dest_node, staging_size)
+
+    try:
+        try:
+            # a new thin volume reads as zeros, others have old data: all of the image has to be written
+            copied = util.copy_to_device(copy_command, dest_node, staging_path, sparse=is_thin)
+        except RuntimeError as err:
+            raise RuntimeError(
+                "{e} (the staging volume {n} has {s} bytes, the image file has to fit into the image size plus "
+                "1% and 64 MiB)".format(e=err, n=staging_name, s=staging_size))
+
+        image_format, virtual_size = util.raw_conversion_source(util.image_info(dest_node, staging_path),
+                                                                staging_path)
+        convert_size = None
+        if image_format == "raw":
+            # qemu-img sees the whole staging volume, the image ends after the copied data (in 512 byte sectors)
+            virtual_size = -(-copied // 512) * 512
+            convert_size = virtual_size
+
+        device_size = util.block_device_size(dest_node, device_path)
+        if virtual_size > device_size:
+            if util.image_range_is_zero(dest_node, staging_path, image_format, device_size, virtual_size - device_size):
+                util.log_info("Image has a virtual size of {v} bytes, {r} has {d}: dropping the zero tail".format(
+                    v=virtual_size, r=res.name, d=device_size))
+                convert_size = device_size
+            else:
+                vlm_size = SizeCalc.convert(-(-virtual_size // 1048576), SizeCalc.UNIT_MiB, SizeCalc.UNIT_B)
+                util.log_info("Image has data beyond byte {d}, growing {r} to {s} bytes, its device will be larger "
+                              "than the image size".format(d=device_size, r=res.name, s=vlm_size))
+                res.volumes[0].size = vlm_size
+                device_size = util.block_device_size(dest_node, device_path)
+                if virtual_size > device_size:
+                    raise RuntimeError("{r} has {d} bytes after growing it, the image needs {v}".format(
+                        r=res.name, d=device_size, v=virtual_size))
+
+        util.log_info("Converting {f} image to raw onto {r} on {n}".format(f=image_format, r=res.name, n=dest_node))
+        util.convert_to_raw(dest_node, staging_path, image_format, device_path, target_is_zero=is_thin,
+                            size=convert_size)
+    finally:
+        try:
+            delete_staging_volume(res, staging_name)
+        except Exception as err:
+            util.log_error("Could not delete the staging volume {}: {}".format(staging_name, err))
 
 
 def main():
@@ -75,11 +149,25 @@ def main():
     hosts = res.diskful_nodes()
     dest_node = hosts[0]
 
+    device_path = get_device_path(res)
+
+    if driver.datastore.linstor_convert_to_raw:
+        try:
+            copy_as_raw(res, dest_node, device_path, copy_command,
+                        "{}-{}".format(consts.STAGING_PREFIX, arg_image_id))
+        except Exception:
+            res.delete()
+            raise
+
+        util.log_info("Exiting datastore cp")
+
+        print(res.name, "raw")
+        return
+
     conv_opts = []
     if res.is_thin():
         conv_opts.append("sparse")
 
-    device_path = get_device_path(res)
     command = [
         "set -o pipefail;",
         copy_command,

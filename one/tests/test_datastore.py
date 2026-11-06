@@ -133,3 +133,12 @@ class TestDriverAction(unittest.TestCase):
         self.assertIsNone(test_datastore.linstor_controller_auth_token)
         self.assertEqual(test_datastore.linstor_controllers, "linstor://localhost")
         self.assertEqual(test_datastore.staging_dirs, "/var/tmp")
+
+    def test_linstor_convert_to_raw(self):
+        self.assertFalse(datastore.Datastore(TEST_XML_1).linstor_convert_to_raw)
+
+        for value, expected in [("YES", True), ("yes", True), ("NO", False), ("", False)]:
+            configured = TEST_XML_1.replace(
+                "<TEMPLATE>", "<TEMPLATE><LINSTOR_CONVERT_TO_RAW><![CDATA[{}]]></LINSTOR_CONVERT_TO_RAW>".format(value),
+                1)
+            self.assertEqual(datastore.Datastore(configured).linstor_convert_to_raw, expected, value)

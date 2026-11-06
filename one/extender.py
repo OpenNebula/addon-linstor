@@ -1,7 +1,7 @@
 import time
 
 import linstor.sharedconsts
-from linstor import Resource, MultiLinstor, LinstorError, SizeCalc
+from linstor import Resource, ResourceData, MultiLinstor, LinstorError, SizeCalc
 from linstor.responses import ResourceDefinitionResponse
 from one import util, consts
 from one.vm import Vm
@@ -133,6 +133,79 @@ def deploy(
         try_diskful_activate(resource, prefer_node)
         resource.autoplace()
     return resource
+
+
+def _raise_on_error(replies: list, msg: str) -> None:
+    if not MultiLinstor.all_api_responses_no_error(replies):
+        raise LinstorError("{}: {}".format(msg, "; ".join(str(x) for x in replies if x.is_error())))
+
+
+def create_staging_volume(resource: Resource, name: str, node: str, size: int) -> str:
+    """
+    Creates a temporary volume without DRBD (storage layer only) on node, in the storage pool resource uses there.
+
+    :param resource: resource whose storage pool on node is used
+    :param name: name of the temporary resource, an existing one is removed
+    :param node: diskful node of resource
+    :param size: volume size in bytes
+    :return: device path of the volume on node
+    """
+    delete_staging_volume(resource, name)
+
+    with resource._get_connection() as lin:
+        rsc = lin.resource_list_raise(filter_by_nodes=[node], filter_by_resources=[resource.name]).resources[0]
+        storage_pool = rsc.volumes[0].storage_pool_name
+
+        util.log_info("Creating staging volume '{n}' with {s} bytes on {h} in storage pool '{p}'".format(
+            n=name, s=size, h=node, p=storage_pool))
+        layers = ["storage"]
+        _raise_on_error(lin.resource_dfn_create(name, layer_list=layers),
+                        "Could not create the staging resource definition {}".format(name))
+        _raise_on_error(lin.volume_dfn_create(name, -(-size // 1024)),
+                        "Could not create the staging volume definition of {}".format(name))
+        _raise_on_error(
+            lin.resource_create([ResourceData(node, name, storage_pool=storage_pool, layer_list=layers)]),
+            "Could not create the staging volume {} on {}".format(name, node))
+
+        staging = lin.resource_list_raise(filter_by_nodes=[node], filter_by_resources=[name]).resources[0]
+        device_path = staging.volumes[0].device_path
+        if not device_path:
+            raise LinstorError("Staging volume {} on {} has no device".format(name, node))
+        return device_path
+
+
+def delete_stale_staging_volumes(resource: Resource) -> None:
+    """
+    Deletes the staging volumes of imports that didn't remove theirs (killed, or LINSTOR wasn't reachable): the ones
+    whose image isn't being created in OpenNebula anymore.
+
+    :param resource: any resource of the LINSTOR cluster
+    """
+    prefix = (consts.STAGING_PREFIX + "-").lower()
+    with resource._get_connection() as lin:
+        names = [x.name for x in lin.resource_dfn_list_raise(query_volume_definitions=False).resource_definitions]
+    for name in names:
+        image_id = name[len(prefix):]
+        if name.lower().startswith(prefix) and image_id.isdigit() and util.image_is_locked(image_id) is False:
+            util.log_info("Image {} isn't being created anymore, its staging volume is stale".format(image_id))
+            try:
+                delete_staging_volume(resource, name)
+            except LinstorError as err:
+                util.log_error("Could not delete the stale staging volume {}: {}".format(name, err))
+
+
+def delete_staging_volume(resource: Resource, name: str) -> None:
+    """
+    Deletes the temporary resource of create_staging_volume, if it exists.
+
+    :param resource: resource the staging volume was created for
+    :param name: name of the temporary resource
+    """
+    with resource._get_connection() as lin:
+        rsc_dfns = lin.resource_dfn_list_raise(query_volume_definitions=False, filter_by_resource_definitions=[name])
+        if any(x.name.lower() == name.lower() for x in rsc_dfns.resource_definitions):
+            util.log_info("Deleting staging volume '{}'".format(name))
+            _raise_on_error(lin.resource_dfn_delete(name), "Could not delete the staging volume {}".format(name))
 
 
 def delete(resource_name, uri_list, auth_token=None):

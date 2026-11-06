@@ -41,6 +41,11 @@ def main():
         print(resource_name)
         sys.exit(0)
 
+    if is_version6 and driver.datastore.linstor_convert_to_raw and format_ != "raw":
+        raise RuntimeError(
+            "Datastore {} stores raw images (LINSTOR_CONVERT_TO_RAW), create the image with FORMAT raw instead of "
+            "{}".format(driver.datastore.name, format_))
+
     util.set_up_datastore(
         " ".join(
             [
