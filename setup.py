@@ -60,6 +60,7 @@ setup(
     data_files=[
         (os.path.join(REMOTES_DIR, "tm", DRIVER_NAME), glob("tm/*")),
         (os.path.join(REMOTES_DIR, "datastore", DRIVER_NAME), glob("datastore/*")),
+        (os.path.join(REMOTES_DIR, "onebex", "exporters"), glob("onebex/exporters/*.rb")),
     ],
     license="Apache-2.0",
     description="Linstor addon for OpenNebula",

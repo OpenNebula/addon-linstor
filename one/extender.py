@@ -1,4 +1,5 @@
 import time
+from typing import Optional
 
 import linstor.sharedconsts
 from linstor import Resource, ResourceData, MultiLinstor, LinstorError, SizeCalc
@@ -9,16 +10,16 @@ from one.datastore import Datastore
 from one.image import Image
 
 
-def connect(uri_list, auth_token=None):
+def connect(uri_list: str, auth_token: Optional[str] = None, timeout: int = 300) -> MultiLinstor:
     """
     Creates a MultiLinstor client for the given controllers, optionally authenticated.
 
-    :param str uri_list: linstor controllers string (comma separated)
-    :param Optional[str] auth_token: controller auth token, sent only over HTTPS
+    :param uri_list: linstor controllers string (comma separated)
+    :param auth_token: controller auth token, sent only over HTTPS
+    :param timeout: request timeout in seconds
     :return: MultiLinstor client object (not yet connected)
-    :rtype: MultiLinstor
     """
-    return MultiLinstor(MultiLinstor.controller_uri_list(uri_list), auth_token=auth_token)
+    return MultiLinstor(MultiLinstor.controller_uri_list(uri_list), timeout=timeout, auth_token=auth_token)
 
 
 def make_resource(name, uri_list, auth_token=None, resource_group=None):

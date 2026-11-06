@@ -101,6 +101,74 @@ Make sure `LINSTOR_CONTROLLERS` uses the `linstor+ssl://` scheme (or a plain
 `linstor://` controller that redirects to HTTPS); over plain HTTP the token is not
 transmitted and requests would be unauthenticated.
 
+### Interactive backups (OneBEX)
+
+Interactive backups (`BACKUP_CONFIG/INTERACTIVE = "YES"`, e.g. the Veeam
+integration) export the disks through the OpenNebula Backup Exporter (OneBEX)
+with the `linstor` exporter. Full and incremental backups are supported;
+incremental backups use LINSTOR's changed block tracking (CBT) if the LINSTOR
+cluster supports it, see below. Non-interactive backups are still done by
+OpenNebula's shared TM driver.
+
+Requirements:
+
+* OpenNebula 7.4.2 or later. Earlier versions only allow interactive backups for
+  OpenNebula's own storage drivers and don't load third party OneBEX exporters
+* the VM hosts are LINSTOR satellites: the backup reads the snapshot there through a
+  (diskless) temporary resource
+* for changed block tracking: LINSTOR with CBT support (REST API 1.30.0+), a
+  python-linstor that supports it, DRBD and drbd-utils with CBT support and storage
+  pools of type LVM, LVM-thin, ZFS or ZFS-thin
+* for Veeam: an oVirt API server that reports the device size of the disks, see
+  below
+
+Without changed block tracking (any of the latter missing), interactive backups
+still work, but every backup — also an increment of a chain — exports the whole
+disk: the driver restores a plain snapshot into a temporary resource
+(`OpenNebula-Backup-vm<vm>-disk<disk>`) that is made available on the VM's host.
+Restoring a snapshot of a thick LVM pool copies the volume, thin LVM and ZFS pools
+are recommended. The driver decides per backup, so it uses CBT once the cluster
+supports it (the first such backup of a chain exports the whole disk once more).
+
+Enable interactive backups for the driver in the `linstor` `TM_MAD_CONF` of
+`/etc/one/oned.conf` and restart OpenNebula (`systemctl restart opennebula`):
+
+```
+TM_MAD_CONF = [
+    NAME = "linstor", ...,
+    INTERACTIVE_BACKUP = "YES"
+]
+```
+
+Without it, `onevm backup` fails with `Disk does not support interactive backup`.
+
+`python setup.py install` installs the exporter to
+`/var/lib/one/remotes/onebex/exporters/linstor.rb`, where OneBEX loads it;
+copy it to the hosts with `onehost sync --force`. If backups fail with
+`Unsupported exporter: linstor`, OneBEX on the VM's host could not load it: the
+error is logged in `/var/log/one/onebex.log` when OneBEX starts.
+
+How a backup with CBT works: the guest is frozen if `FS_FREEZE` asks for it, all
+disks get one CBT snapshot (`OpenNebula-Backup-<timestamp>`), and each snapshot is
+made readable on the VM's host through a LINSTOR CBT session. The session and the
+snapshot are removed once the backup application finished. The exporter reports the
+disk's extents as ovirt-imageio does: a full backup skips the blocks that were never
+written (with drbd-utils 9.36.0 or later). An incremental backup
+only exports the changed blocks if the previous backup of the chain was the last
+CBT snapshot of the disk; it is recorded in the resource definition property
+`Aux/one/backup-cbt`. Otherwise — the previous backup failed, or another CBT
+snapshot of the resource was taken in between — the increment contains the whole
+disk. Every CBT snapshot starts a new tracking interval, so don't take CBT
+snapshots of OpenNebula resources outside of the backups.
+
+Exports have the size of the disk's DRBD device. LINSTOR allocates a volume's size
+plus the DRBD metadata, rounded up to the allocation granularity of the storage pool
+(the LVM extent size), so the device is up to one extent larger than the disk size
+OpenNebula shows, and guests use that space (cloud-init growpart, one-context
+grow-rootfs). Backup applications have to take the disk size from the device: with
+an oVirt API server that reports the OpenNebula size, Veeam aborts backups of such
+disks with `Received an area which goes beyond disk size`.
+
 ### Raw images
 
 Without `LINSTOR_CONVERT_TO_RAW` the driver writes images to the DRBD device as
@@ -158,6 +226,10 @@ header in the last sector, the volume is grown to the virtual size.
   datastore template enforces it
 * existing images aren't converted, and image clones and disks saved with
   `onevm disk-saveas` keep the format of their source
+
+For interactive backups, also set `INTERACTIVE_BACKUP_FORMATS = "raw"` in the
+`linstor` `TM_MAD_CONF`, so OpenNebula rejects backups of remaining qcow2 disks right
+away.
 
 ## Usage
 

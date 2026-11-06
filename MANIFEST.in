@@ -1,6 +1,7 @@
 include .version
 include tm/*
 include datastore/*
+include onebex/exporters/*.rb
 include MANIFEST.in
 include README.md
 include LICENSE

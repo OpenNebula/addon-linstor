@@ -114,6 +114,17 @@ Live migrate VM
 
 Called if a KVM migrate command failed, used for cleanup premigrate stuff
 
+### prebackup / prebackup_live
+
+Instances -> VM -> (Powered off / Running) VM -> Backup, or a backup job.
+Non-interactive backups are forwarded to tm/shared. Interactive backups (BACKUP_CONFIG/INTERACTIVE,
+e.g. Veeam) take a CBT snapshot, start a CBT session per disk on the VM's host, start OneBEX there
+(exporter onebex/exporters/linstor.rb) and block until the backup application finished.
+
+### postbackup / postbackup_live
+
+After the backup: forwarded to tm/shared, for interactive backups only removes the backup directory
+
 ### resize
 
 Instances -> VM -> (Running) VM -> Storage -> Actions -> resize

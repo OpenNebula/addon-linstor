@@ -191,7 +191,41 @@ TEXT_XML_1 = """
 """
 
 
+BACKUP_XML = """
+<VM>
+  <ID>7</ID>
+  <TEMPLATE>
+    <DISK>
+      <DISK_ID><![CDATA[0]]></DISK_ID>
+    </DISK>
+  </TEMPLATE>
+  <BACKUPS>
+    <BACKUP_CONFIG>
+      <FS_FREEZE><![CDATA[agent]]></FS_FREEZE>
+      <INTERACTIVE><![CDATA[yes]]></INTERACTIVE>
+      <LAST_INCREMENT_ID><![CDATA[3]]></LAST_INCREMENT_ID>
+      <MODE><![CDATA[INCREMENT]]></MODE>
+    </BACKUP_CONFIG>
+  </BACKUPS>
+</VM>
+"""
+
+
 class TestVMs(unittest.TestCase):
+    def test_backup_config(self):
+        test_vm = vm.Vm(BACKUP_XML)
+        self.assertTrue(test_vm.backup_interactive)
+        self.assertTrue(test_vm.backup_incremental_mode)
+        self.assertEqual(test_vm.backup_last_increment_id, 3)
+        self.assertEqual(test_vm.backup_fs_freeze, "AGENT")
+
+    def test_backup_config_defaults(self):
+        test_vm = vm.Vm(TEXT_XML_1)
+        self.assertFalse(test_vm.backup_interactive)
+        self.assertFalse(test_vm.backup_incremental_mode)
+        self.assertEqual(test_vm.backup_last_increment_id, -1)
+        self.assertEqual(test_vm.backup_fs_freeze, "NONE")
+
     def test_create_vm(self):
         test_vm = vm.Vm(TEXT_XML_1)
         self.assertEqual(test_vm.id, "0")

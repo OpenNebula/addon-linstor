@@ -168,3 +168,33 @@ class Vm:
             return self.disk(disk_id).find("TM_MAD").text
         except AttributeError:
             return None
+
+    def _backup_config(self, key: str) -> str:
+        """Returns the text of BACKUPS/BACKUP_CONFIG/<key>, "" if not set"""
+        try:
+            return self._root.find("BACKUPS").find("BACKUP_CONFIG").find(key).text or ""
+        except AttributeError:
+            return ""
+
+    @property
+    def backup_interactive(self) -> bool:
+        """Returns True if the backup is an interactive backup (exported through OneBEX)"""
+        return self._backup_config("INTERACTIVE").upper() == "YES"
+
+    @property
+    def backup_incremental_mode(self) -> bool:
+        """Returns True if the backup config keeps an increment chain (MODE INCREMENT)"""
+        return self._backup_config("MODE").upper() == "INCREMENT"
+
+    @property
+    def backup_last_increment_id(self) -> int:
+        """Returns the id of the last increment of the backup chain, -1 if the chain has none"""
+        try:
+            return int(self._backup_config("LAST_INCREMENT_ID"))
+        except ValueError:
+            return -1
+
+    @property
+    def backup_fs_freeze(self) -> str:
+        """Returns the file system freeze mode of live backups (NONE, AGENT, SUSPEND or TRY)"""
+        return self._backup_config("FS_FREEZE").upper() or "NONE"
