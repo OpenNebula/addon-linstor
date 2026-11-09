@@ -297,7 +297,7 @@ def clone(
     :param str clone_name: name of the new resource
     :param str resource_group: resource group to use
     :param Optional[str] prefer_node: try to place resource on this node
-    :param Optional[int] new_size: new volume size, None to keep original size
+    :param Optional[int] new_size: new volume size in MiB, None to keep the original size
     :param bool allow_dependent_clone: allow the clone to depend on source resource
     :param Optional[str] auth_token: controller auth token (only needed for the COPY fallback)
     :return: Tuple, first item if success, second if linstor clone was used
@@ -330,16 +330,6 @@ def clone(
         if prefer_node:
             try_diskful_activate(clone_res, prefer_node)
     else:
-        vol_size_str = str(new_size) + "MiB" if new_size else str(resource.volumes[0].size) + "b"
-        clone_res = deploy(
-            linstor_controllers=linstor_controllers,
-            resource_name=clone_name,
-            vlm_size_str=vol_size_str,
-            resource_group=resource_group,
-            prefer_node=prefer_node,
-            auth_token=auth_token
-        )
-
         # use copy source on the current primary node or on one with a disk, if all secondary
         copy_node = get_in_use_node(resource)
         if copy_node is None:
@@ -347,14 +337,27 @@ def clone(
                 copy_node = prefer_node
             else:
                 copy_node = resource.diskful_nodes()[0]
+        from_dev_path = get_device_path(resource)
+
+        # the DRBD device is larger than the volume size (metadata, allocation granularity) and guests use all of
+        # it: the clone gets the whole device
+        device_size = util.block_device_size(copy_node, from_dev_path)
+        vlm_size = SizeCalc.convert(new_size, SizeCalc.UNIT_MiB, SizeCalc.UNIT_B) if new_size else 0
+        clone_res = deploy(
+            linstor_controllers=linstor_controllers,
+            resource_name=clone_name,
+            vlm_size_str="{}b".format(max(vlm_size, device_size)),
+            resource_group=resource_group,
+            prefer_node=prefer_node,
+            auth_token=auth_token
+        )
         clone_res.activate(copy_node)
 
-        from_dev_path = get_device_path(resource)
         to_dev_path = get_device_path(clone_res)
 
         block_size_kb = 64
 
-        block_count = -(-resource.volumes[0].size // (block_size_kb * 1024))  # round up to whole blocks
+        block_count = -(-device_size // (block_size_kb * 1024))  # round up to whole blocks
 
         conv_opts = ["fsync"]
         if clone_res.is_thin():

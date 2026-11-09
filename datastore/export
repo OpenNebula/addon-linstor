@@ -23,6 +23,8 @@ import sys
 from one import driver_action, util
 from one.extender import connect, get_device_path, make_resource
 
+MIB = 1024 * 1024
+
 
 def main():
     util.log_info("Entering datastore/export")
@@ -51,14 +53,16 @@ def main():
 
     img_format = util.detect_image_format(dst_host, output_file)
 
-    if not driver.image.size:
-        rc, img_size, _ = util.ssh_monitor_and_log(
-            host=dst_host,
-            cmd=" ".join(["du", "-LM", output_file, "|", "cut", "-f1"]),
-            error_msg="could not determine the size of the exported file"
-        )
-    else:
-        img_size = driver.image.size
+    # the export holds the whole DRBD device, which is larger than the image size (DRBD metadata, allocation
+    # granularity): the appliance's size has to hold it, or datastores of this driver create too small volumes for it
+    rc, file_size, _ = util.ssh_monitor_and_log(
+        host=dst_host,
+        cmd="stat -c %s {}".format(output_file),
+        error_msg="could not determine the size of the exported file"
+    )
+    if rc != 0:
+        raise RuntimeError("Unable to determine the size of the exported file " + output_file)
+    img_size = max(int(driver.image.size or 0), -(-int(file_size) // MIB))
 
     rc, img_checksum, _ = util.ssh_monitor_and_log(
         host=dst_host,
@@ -79,7 +83,7 @@ def main():
     </IMPORT_INFO>""".format(
             "ssh://{}:{}".format(dst_host, output_file),
             img_checksum.strip(),
-            img_size.strip(),
+            img_size,
             img_format,
         )
     )

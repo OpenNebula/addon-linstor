@@ -74,6 +74,55 @@ class TestExtender(unittest.TestCase):
         self.assertEqual(extender.get_rsc_name(test_vm, "3"), "OpenNebula-Image-13")
         self.assertEqual(extender.get_rsc_name(test_vm, "4"), "OpenNebula-Volatile-vm7-disk4")
 
+    def test_clone_copy_takes_the_whole_device(self):
+        # a clone into another resource group copies with dd: the DRBD device is larger than the volume size
+        calls = []
+        device_size = 3761446912
+
+        class Resource:
+            name = "OpenNebula-Image-11"
+            resource_group_name = "one-image"
+            client = SimpleNamespace(uri_list=["linstor://controller"])
+            placement = SimpleNamespace(storage_pool="thin")
+            volumes = [SimpleNamespace(size=3758096384, storage_pool_name="thin")]
+
+            def diskful_nodes(self):
+                return ["node1", "node2"]
+
+        clone_res = SimpleNamespace(
+            name="OpenNebula-Image-11-vm28-disk0",
+            activate=lambda node: calls.append(("activate", node)),
+            deactivate=lambda node: calls.append(("deactivate", node)),
+            is_thin=lambda: True)
+
+        def deploy(**kwargs):
+            calls.append(("deploy", kwargs["vlm_size_str"]))
+            return clone_res
+
+        for new_size, vlm_size_str in [(None, "3761446912b"), (3584, "3761446912b"), (4096, "4294967296b")]:
+            del calls[:]
+            with patch.object(extender, "wait_resource_ready"), \
+                    patch.object(extender, "get_in_use_node", return_value=None), \
+                    patch.object(extender, "deploy", deploy), \
+                    patch.object(extender.time, "sleep"), \
+                    patch.object(extender.util, "block_device_size", return_value=device_size) as size, \
+                    patch.object(extender.util, "ssh_exec_and_log",
+                                 side_effect=lambda host, cmd, error_msg: calls.append(("ssh", host, cmd)) or 0):
+                success, native = extender.clone(Resource(), clone_res.name, resource_group="one-image-2",
+                                                 prefer_node="node2", new_size=new_size)
+
+            self.assertTrue(success)
+            self.assertFalse(native)
+            size.assert_called_once_with("node2", "/dev/drbd/by-res/OpenNebula-Image-11/0")
+            self.assertEqual(calls, [
+                ("deploy", vlm_size_str),
+                ("activate", "node2"),
+                ("ssh", "node2", "dd if=/dev/drbd/by-res/OpenNebula-Image-11/0 "
+                                 "of=/dev/drbd/by-res/OpenNebula-Image-11-vm28-disk0/0 bs=64K count=57396 "
+                                 "conv=fsync,sparse"),
+                ("deactivate", "node2"),
+            ], new_size)
+
     def test_staging_volume(self):
         calls = []
         existing = ["openNebula-staging-7"]
