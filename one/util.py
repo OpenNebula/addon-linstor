@@ -561,6 +561,31 @@ def copy_to_device(copy_command: str, host: str, device_path: str, sparse: bool 
     return int(copied[-1])
 
 
+def wait_device_writable(host: str, device_path: str, timeout: int = 60) -> None:
+    """
+    Waits until the block device on host can be opened for writing.
+
+    A new DRBD resource refuses to become primary on a replica for a moment: LINSTOR creates thin replicas UpToDate,
+    all but one are outdated once they connect, until their (empty) resync from that one starts. Opening the device
+    read-write fails with EROFS meanwhile.
+
+    :param host: host that is going to write to the device
+    :param device_path: block device
+    :param timeout: seconds to wait
+    """
+    cmd = (
+        'end=$(($(date +%s) + {t})); '
+        'until err=$({{ true >> {d}; }} 2>&1); do '
+        'if [ "$(date +%s)" -ge "$end" ]; then echo "$err" >&2; exit 1; fi; '
+        'sleep 0.5; '
+        'done'
+    ).format(t=int(timeout), d=shlex.quote(device_path))
+    rc, _, err = ssh_run(host, cmd)
+    if rc != 0:
+        raise RuntimeError("{} on {} is not writable after {} seconds: {}".format(
+            device_path, host, timeout, err.strip()))
+
+
 def raw_source_image_opts(path: str, image_format: str, size: int, offset: int = 0) -> str:
     """
     Returns qemu-img --image-opts for size bytes of the image on the block device at path, starting at offset.

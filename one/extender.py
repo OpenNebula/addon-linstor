@@ -354,6 +354,7 @@ def clone(
         clone_res.activate(copy_node)
 
         to_dev_path = get_device_path(clone_res)
+        util.wait_device_writable(copy_node, to_dev_path)
 
         block_size_kb = 64
 

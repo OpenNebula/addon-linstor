@@ -17,8 +17,10 @@ limitations under the License.
 
 import os
 import shlex
+import shutil
 import signal
 import subprocess
+import tempfile
 import time
 import unittest
 from unittest import mock
@@ -274,6 +276,43 @@ class TestUtils(unittest.TestCase):
         with mock.patch.object(util.subprocess, "run", return_value=no_stats), mock.patch.object(util, "log_info"):
             with self.assertRaises(RuntimeError):
                 util.copy_to_device("cat img", "node1", "/dev/vg/stage_00000")
+
+    def test_wait_device_writable(self):
+        with mock.patch.object(util, "ssh_run", return_value=(0, "", "")) as ssh_run:
+            util.wait_device_writable("node1", "/dev/drbd/by-res/my res/0", timeout=5)
+
+        host, cmd = ssh_run.call_args[0]
+        self.assertEqual(host, "node1")
+        self.assertIn("+ 5))", cmd)
+        self.assertIn("true >> '/dev/drbd/by-res/my res/0';", cmd)
+
+        with mock.patch.object(util, "ssh_run", return_value=(1, "", "Read-only file system\n")):
+            with self.assertRaises(RuntimeError) as ctx:
+                util.wait_device_writable("node1", "/dev/drbd1000")
+        self.assertIn("Read-only file system", str(ctx.exception))
+
+    def test_wait_device_writable_command(self):
+        # the remote loop, run by a local shell: succeeds on a writable file, gives up on an unwritable one
+        tmp_dir = tempfile.mkdtemp()
+        try:
+            writable = os.path.join(tmp_dir, "device")
+            with open(writable, "w") as device:
+                device.write("data")
+
+            def run(host, cmd):
+                proc = subprocess.run(["sh", "-c", cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                return proc.returncode, proc.stdout.decode(), proc.stderr.decode()
+
+            with mock.patch.object(util, "ssh_run", side_effect=run):
+                util.wait_device_writable("node1", writable, timeout=1)
+                with open(writable) as device:
+                    self.assertEqual(device.read(), "data")
+
+                with self.assertRaises(RuntimeError) as ctx:
+                    util.wait_device_writable("node1", os.path.join(tmp_dir, "missing", "device"), timeout=1)
+            self.assertIn("missing/device", str(ctx.exception))
+        finally:
+            shutil.rmtree(tmp_dir)
 
     def test_convert_to_raw(self):
         with mock.patch.object(util, "ssh_run", return_value=(0, "", "")) as ssh_run:

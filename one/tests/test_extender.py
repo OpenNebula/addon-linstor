@@ -106,6 +106,8 @@ class TestExtender(unittest.TestCase):
                     patch.object(extender, "deploy", deploy), \
                     patch.object(extender.time, "sleep"), \
                     patch.object(extender.util, "block_device_size", return_value=device_size) as size, \
+                    patch.object(extender.util, "wait_device_writable",
+                                 side_effect=lambda host, path: calls.append(("writable", host, path))), \
                     patch.object(extender.util, "ssh_exec_and_log",
                                  side_effect=lambda host, cmd, error_msg: calls.append(("ssh", host, cmd)) or 0):
                 success, native = extender.clone(Resource(), clone_res.name, resource_group="one-image-2",
@@ -117,6 +119,7 @@ class TestExtender(unittest.TestCase):
             self.assertEqual(calls, [
                 ("deploy", vlm_size_str),
                 ("activate", "node2"),
+                ("writable", "node2", "/dev/drbd/by-res/OpenNebula-Image-11-vm28-disk0/0"),
                 ("ssh", "node2", "dd if=/dev/drbd/by-res/OpenNebula-Image-11/0 "
                                  "of=/dev/drbd/by-res/OpenNebula-Image-11-vm28-disk0/0 bs=64K count=57396 "
                                  "conv=fsync,sparse"),

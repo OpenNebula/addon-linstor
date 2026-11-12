@@ -121,7 +121,9 @@ def move_from_none_linstor_host(
     :param Optional[str] auth_token: controller auth token
     """
     res = deploy(controllers, rsc_name, str(disk_size_mb) + "MiB", resource_group, dst_host, auth_token=auth_token)
-    util.link_file(dst_host, dst_dir, dst_path, get_device_path(res), rsc_name)
+    device_path = get_device_path(res)
+    util.link_file(dst_host, dst_dir, dst_path, device_path, rsc_name)
+    util.wait_device_writable(dst_host, device_path)
 
     util.ssh_make_path(" ".join([dst_host, dst_dir]))
     cmd = [

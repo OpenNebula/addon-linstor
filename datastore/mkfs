@@ -65,6 +65,13 @@ def main():
         auth_token=driver.datastore.linstor_controller_auth_token
     )
 
+    if format_ == "raw" and not (is_version6 and driver.image.fs):
+        # mkfs_command only runs qemu-img create -f raw on the device, which doesn't change it
+        util.log_info("Raw image without file system, nothing to write on {}".format(res))
+        util.log_info("Exiting datastore mkfs.")
+        print(res.name)
+        return
+
     device_path = get_device_path(res)
 
     res_host = random.choice(list(res.diskful_nodes()))
@@ -86,6 +93,12 @@ mkfs_command "{devp}" "{format}" "{size}" "$SUPPORTED_FS" "{fs}" "$FS_OPTS"'.for
 
     output = util.exec_local_with_out(mkfs_cmd)
     output = 'set -e\nexport PATH=/usr/sbin:/sbin:$PATH\n' + output
+
+    try:
+        util.wait_device_writable(res_host, device_path)
+    except Exception:
+        res.delete()
+        raise
 
     rc = util.ssh_exec_and_log(
         host=res_host,

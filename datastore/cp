@@ -55,6 +55,7 @@ def copy_as_raw(res: Resource, dest_node: str, device_path: str, copy_command: s
     staging_path = create_staging_volume(res, staging_name, dest_node, staging_size)
 
     try:
+        util.wait_device_writable(dest_node, staging_path)
         try:
             # a new thin volume reads as zeros, others have old data: all of the image has to be written
             copied = util.copy_to_device(copy_command, dest_node, staging_path, sparse=is_thin)
@@ -153,6 +154,7 @@ def main():
 
     if driver.datastore.linstor_convert_to_raw:
         try:
+            util.wait_device_writable(dest_node, device_path)
             copy_as_raw(res, dest_node, device_path, copy_command,
                         "{}-{}".format(consts.STAGING_PREFIX, arg_image_id))
         except Exception:
@@ -163,6 +165,12 @@ def main():
 
         print(res.name, "raw")
         return
+
+    try:
+        util.wait_device_writable(dest_node, device_path)
+    except Exception:
+        res.delete()
+        raise
 
     conv_opts = []
     if res.is_thin():

@@ -57,6 +57,7 @@ def main():
     device_path = get_device_path(resource)
 
     if FORMAT and FORMAT != "raw":
+        util.wait_device_writable(dst_host, device_path)
         mkfs_command = 'set -e ; export PATH=/usr/sbin:/sbin:$PATH ; $(mkfs_command "{0}" "{1}" "{2}")'.format(
             device_path,
             FORMAT,
