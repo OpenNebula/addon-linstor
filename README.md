@@ -23,8 +23,8 @@ Support for this addon can be found at the
 
 ## Compatibility
 
-* This addon is compatible with OpenNebula versions from 5.8 to 7.0
-* It was tested with version 6.8 and 7.0
+* This addon is compatible with OpenNebula versions from 5.8 to 7.4
+* It was tested with version 6.8, 7.0 and 7.4
 * SSH agent forwarding for nested SSH transfer paths uses OpenNebula's
   `ssh_forward` helper when it is available. The helper is present in
   OpenNebula release 5.11.8 and newer stable releases, including 5.12 and
