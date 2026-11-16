@@ -1,4 +1,18 @@
-linstor-opennebula (3.1.1-1ubuntu1) UNRELEASED; urgency=medium
+linstor-opennebula (3.2.0-1) experimental; urgency=medium
+
+  [ Christian Groschupp ]
+  * tm: wait for source resources before cloning
+
+  [ Rene Peinthor ]
+  * datastore: convert images to raw (LINSTOR_CONVERT_TO_RAW)
+  * backup: interactive backups through OneBEX with LINSTOR CBT
+  * extender, datastore/export: copy and export whole DRBD devices
+  * wait until a new DRBD device is writable before writing to it
+  * README: tested with OpenNebula 7.4
+
+ -- Rene Peinthor <rene.peinthor@linbit.com>  Mon, 16 Nov 2026 08:26:16 +0000
+
+linstor-opennebula (3.1.1-1) experimental; urgency=medium
 
   [ Christian Groschupp ]
   * tm: enable SSH agent forwarding for nested SSH transfers
