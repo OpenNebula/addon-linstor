@@ -277,6 +277,18 @@ class TestUtils(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 util.copy_to_device("cat img", "node1", "/dev/vg/stage_00000")
 
+    def test_block_device_size_adds_sbin_to_remote_path(self):
+        device = "/dev/drbd/by-res/my res/0"
+        with mock.patch.object(util, "ssh_run", return_value=(0, "5242880000\n", "")) as ssh_run:
+            self.assertEqual(util.block_device_size("node1", device), 5242880000)
+
+        host, cmd = ssh_run.call_args[0]
+        self.assertEqual(host, "node1")
+        self.assertEqual(
+            shlex.split(cmd),
+            ["PATH=$PATH:/usr/sbin:/sbin", "blockdev", "--getsize64", device],
+        )
+
     def test_wait_device_writable(self):
         with mock.patch.object(util, "ssh_run", return_value=(0, "", "")) as ssh_run:
             util.wait_device_writable("node1", "/dev/drbd/by-res/my res/0", timeout=5)
