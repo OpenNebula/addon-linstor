@@ -528,7 +528,9 @@ def block_device_size(host: str, device_path: str) -> int:
     :param device_path: block device
     :return: size of the device in bytes
     """
-    rc, out, err = ssh_run(host, "blockdev --getsize64 {}".format(shlex.quote(device_path)))
+    # Non-interactive SSH sessions may omit the directories containing blockdev.
+    cmd = 'PATH="$PATH:/usr/sbin:/sbin" blockdev --getsize64 {}'.format(shlex.quote(device_path))
+    rc, out, err = ssh_run(host, cmd)
     if rc != 0:
         raise RuntimeError("Could not get the size of {} on {}: {}".format(device_path, host, err.strip()))
     return int(out.strip())
